@@ -1,0 +1,2 @@
+include covid_api/templates/*.html
+include covid_api/templates/*.xml
