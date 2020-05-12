@@ -12,6 +12,9 @@ inst_reqs = [
     "rio-color",
     "rio-tiler~=2.0a6",
     "email-validator",
+    "fiona",
+    "shapely",
+    "rasterstats",
 ]
 extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit"],
