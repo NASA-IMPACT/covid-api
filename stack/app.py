@@ -69,8 +69,8 @@ class covidApiLambdaStack(core.Stack):
             memory_size=memory,
             reserved_concurrent_executions=concurrent,
             timeout=core.Duration.seconds(timeout),
-            initial_policy=iam_policy_statement,
         )
+        lambda_function.add_to_role_policy(iam_policy_statement)
 
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
         apigw.HttpApi(
