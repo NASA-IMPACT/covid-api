@@ -2,8 +2,11 @@
 
 import os
 
-PROJECT_NAME = "covid_api"
+PROJECT_NAME = "covid-api"
 STAGE = os.environ.get("STAGE", "dev")
+
+# primary bucket
+BUCKET = "covid-eo-data"
 
 # Additional environement variable to set in the task/lambda
 ENV: dict = dict()
