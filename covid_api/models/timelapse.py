@@ -3,11 +3,7 @@ from typing import Dict, List, Tuple
 from pydantic import BaseModel
 
 class TimelapseValue(BaseModel):
-    date: d
     value: float
-
-class Timelapse(BaseModel):
-    values: List[TimelapseValue]
 
 class Polygon(BaseModel):
     type: str = "Polygon"
@@ -19,5 +15,5 @@ class Feature(BaseModel):
     properties: Dict
 
 class TimelapseRequest(BaseModel):
-    date_range: Tuple[d, d]
+    month: str
     geojson: Feature
