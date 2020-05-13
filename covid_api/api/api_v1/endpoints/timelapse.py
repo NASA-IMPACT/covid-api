@@ -33,5 +33,5 @@ def timelapse(
 ):
     """Handle /timelapse requests."""
     url = f's3://covid-eo-data/OMNO2d_HRM/OMI_trno2_0.10x0.10_{query.month}_Col3_V4.nc.tif'
-    value = get_zonal_stat(query.geojson, url)
-    return dict(value=value)
+    mean, median = get_zonal_stat(query.geojson, url)
+    return dict(mean=mean, median=median)

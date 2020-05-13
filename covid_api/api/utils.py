@@ -1,6 +1,6 @@
 """covid_api.api.utils."""
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Tuple, Optional
 
 import time
 import json
@@ -206,7 +206,7 @@ def rasterize_pctcover(geom, atrans, shape):
 
     return pctcover
 
-def get_zonal_stat(geojson: Feature, raster: str) -> float:
+def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
     geom = shape(geojson.geometry.dict())
     with rasterio.open(raster) as src:
         # read the raster data matching the geometry bounds
@@ -221,5 +221,8 @@ def get_zonal_stat(geojson: Feature, raster: str) -> float:
             shape=data.shape[1:]
         )
 
-        return np.nanmean(data * pctcover)
+        return (
+            np.nanmean(data * pctcover),
+            np.nanmedian(data * pctcover),
+        )
 

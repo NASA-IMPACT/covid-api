@@ -3,7 +3,8 @@ from typing import Dict, List, Tuple
 from pydantic import BaseModel
 
 class TimelapseValue(BaseModel):
-    value: float
+    mean: float
+    median: float
 
 class Polygon(BaseModel):
     type: str = "Polygon"
