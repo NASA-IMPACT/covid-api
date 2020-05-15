@@ -14,6 +14,7 @@ from aws_cdk import (
     aws_ecs_patterns as ecs_patterns,
     aws_lambda,
     aws_apigatewayv2 as apigw,
+    aws_elasticache as escache,
 )
 
 import config
@@ -60,6 +61,54 @@ class covidApiLambdaStack(core.Stack):
         """Define stack."""
         super().__init__(scope, id, *kwargs)
 
+        # add cache
+        vpc = ec2.Vpc(self, f"{id}-vpc")
+        sb_group = escache.CfnSubnetGroup(
+            self,
+            f"{id}-subnet-group",
+            description=f"{id} subnet group",
+            subnet_ids=[sb.subnet_id for sb in vpc.private_subnets]
+        )
+
+        sg = ec2.SecurityGroup(
+            self,
+            f"{id}-cache-sg",
+            vpc=vpc
+        )
+        cache = escache.CfnCacheCluster(
+            self,
+            f"{id}-cache",
+            cache_node_type=config.CACHE_NODE_TYPE,
+            engine=config.CACHE_ENGINE,
+            num_cache_nodes=config.CACHE_NODE_NUM,
+            vpc_security_group_ids=[sg.security_group_id],
+            cache_subnet_group_name=sb_group.ref,
+        )
+
+        vpc_access_policy_statement = iam.PolicyStatement(
+            actions=[
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "ec2:CreateNetworkInterface",
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:DeleteNetworkInterface",
+            ],
+            resources=["*"]
+        )
+
+        lambda_env = DEFAULT_ENV.copy()
+        lambda_env.update(
+            dict(
+                MODULE_NAME="covid_api.main",
+                VARIABLE_NAME="app",
+                WORKERS_PER_CORE="1",
+                LOG_LEVEL="error",
+                MEMCACHE_HOST=cache.attr_configuration_endpoint_address,
+                MEMCACHE_PORT=cache.attr_configuration_endpoint_port,
+            )
+        )
+
         lambda_function = aws_lambda.Function(
             self,
             f"{id}-lambda",
@@ -69,8 +118,11 @@ class covidApiLambdaStack(core.Stack):
             memory_size=memory,
             reserved_concurrent_executions=concurrent,
             timeout=core.Duration.seconds(timeout),
+            environment=lambda_env,
+            vpc=vpc
         )
         lambda_function.add_to_role_policy(iam_policy_statement)
+        lambda_function.add_to_role_policy(vpc_access_policy_statement)
 
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
         apigw.HttpApi(
@@ -79,21 +131,23 @@ class covidApiLambdaStack(core.Stack):
             default_integration=apigw.LambdaProxyIntegration(handler=lambda_function),
         )
 
+
     def create_package(self, code_dir: str) -> aws_lambda.Code:
         """Build docker image and create package."""
-        client = docker.from_env()
-        client.images.build(
-            path=code_dir,
-            dockerfile="Dockerfiles/lambda/Dockerfile",
-            tag="lambda:latest",
-        )
-        client.containers.run(
-            image="lambda:latest",
-            command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
-            remove=True,
-            volumes={os.path.abspath(code_dir): {"bind": "/local/", "mode": "rw"}},
-            user=0,
-        )
+        print('using old code')
+        # client = docker.from_env()
+        # client.images.build(
+        #     path=code_dir,
+        #     dockerfile="Dockerfiles/lambda/Dockerfile",
+        #     tag="lambda:latest",
+        # )
+        # client.containers.run(
+        #     image="lambda:latest",
+        #     command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
+        #     remove=True,
+        #     volumes={os.path.abspath(code_dir): {"bind": "/local/", "mode": "rw"}},
+        #     user=0,
+        # )
 
         return aws_lambda.Code.asset(os.path.join(code_dir, "package.zip"))
 

@@ -35,5 +35,10 @@ TASK_MEMORY: int = 512
 #                                                                              #
 ################################################################################
 TIMEOUT: int = 10
-MEMORY: int = 512
+MEMORY: int = 1536
 MAX_CONCURRENT: int = 500
+
+# Cache
+CACHE_NODE_TYPE = "cache.m5.large"
+CACHE_ENGINE = "memcached"
+CACHE_NODE_NUM = 1

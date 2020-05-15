@@ -29,6 +29,7 @@ extra_reqs = {
         "aws-cdk.aws_autoscaling",
         "aws-cdk.aws_ecs_patterns",
         "aws-cdk.aws_iam",
+        "aws-cdk.aws_elasticache",
     ],
     "test": ["mock", "pytest", "pytest-cov", "pytest-asyncio", "requests"],
 }
