@@ -1,6 +1,9 @@
-from typing import Dict, List
+from covid_api.models.common import Polygon
+from typing import Dict, List, Union
 from pydantic import BaseModel
 from pydantic.color import Color
+
+from .common import Polygon
 
 class Source(BaseModel):
     type: str
@@ -29,3 +32,13 @@ class Dataset(BaseModel):
 
 class Datasets(BaseModel):
     datasets: List[Dataset]
+
+class Site(BaseModel):
+    id: str
+    label: str
+    center: List[float]
+    polygon: Union[Polygon, None] = None
+    bounding_box: Union[List[float], None] = None
+
+class Sites(BaseModel):
+    sites: List[Site]

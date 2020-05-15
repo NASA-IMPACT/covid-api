@@ -1,5 +1,5 @@
 {
-  "id": "gibs-population",
+  "id": "population",
   "name": "Population",
   "type": "raster",
   "source": {
