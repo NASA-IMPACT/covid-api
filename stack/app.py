@@ -134,20 +134,19 @@ class covidApiLambdaStack(core.Stack):
 
     def create_package(self, code_dir: str) -> aws_lambda.Code:
         """Build docker image and create package."""
-        print('using old code')
-        # client = docker.from_env()
-        # client.images.build(
-        #     path=code_dir,
-        #     dockerfile="Dockerfiles/lambda/Dockerfile",
-        #     tag="lambda:latest",
-        # )
-        # client.containers.run(
-        #     image="lambda:latest",
-        #     command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
-        #     remove=True,
-        #     volumes={os.path.abspath(code_dir): {"bind": "/local/", "mode": "rw"}},
-        #     user=0,
-        # )
+        client = docker.from_env()
+        client.images.build(
+            path=code_dir,
+            dockerfile="Dockerfiles/lambda/Dockerfile",
+            tag="lambda:latest",
+        )
+        client.containers.run(
+            image="lambda:latest",
+            command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
+            remove=True,
+            volumes={os.path.abspath(code_dir): {"bind": "/local/", "mode": "rw"}},
+            user=0,
+        )
 
         return aws_lambda.Code.asset(os.path.join(code_dir, "package.zip"))
 
