@@ -29,7 +29,6 @@ class DatasetManager(object):
 
     def get_all(self) -> Datasets:
         """Fetch all Datasets."""
-        print(data_dir)
         return Datasets(
             datasets=[dataset.dict() for dataset in self._data.values()]
         )
