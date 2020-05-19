@@ -3,10 +3,8 @@ import os
 from typing import List
 
 from covid_api.models.static import Datasets, Dataset
+from covid_api.db.static.errors import InvalidIdentifier
 data_dir = os.path.join(os.path.dirname(__file__))
-
-class InvalidIdentifier(Exception):
-    """Raise if no key is found"""
 
 class DatasetManager(object):
     """Default Dataset holder."""
