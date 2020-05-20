@@ -28,8 +28,9 @@ jobs:
           name: create lambda package
           command: |
             docker build . -t lambda:latest -f Dockerfiles/lambda/Dockerfile
-            docker run --name lambda lambda:latest
+            docker run --name lambda lambda:latest echo "container up"
             docker cp lambda:/tmp/package.zip package.zip
+            docker stop lambda
 
       - deploy:
           name: master branch deployed to cdk stack
