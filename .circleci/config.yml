@@ -12,6 +12,7 @@ jobs:
           command: |
             pip install -e .["deploy"] --user
             npm install -g cdk
+            apt-get update && apt-get install docker -y
 
       - run:
           name: create lambda package
