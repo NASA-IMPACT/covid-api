@@ -1,0 +1,18 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.7.3
+    working_directory: ~/covid-api
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: pip install -e .["deploy"]
+
+      - deploy:
+          name: master branch deployed to cdk stack
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              STAGE='prod' cdk deploy covid-api-lambda-prod
+            fi
