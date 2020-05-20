@@ -13,6 +13,12 @@ jobs:
             pip install -e .["deploy"] --user
             npm install -g cdk
 
+      - run:
+          name: create lambda package
+          command: |
+            docker build . -t lambda:latest -f Dockerfiles/lambda/Dockerfile
+            docker run --rm -v $PWD:/local/ lambda:latest /bin/sh -c 'cp /tmp/package.zip /local/package.zip'
+            ls
       - deploy:
           name: master branch deployed to cdk stack
           command: |
