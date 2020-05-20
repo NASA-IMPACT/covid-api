@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run:
           name: install dependencies
-          command: pip install -e .["deploy"]
+          command: pip install -e .["deploy"] --user
 
       - deploy:
           name: master branch deployed to cdk stack
