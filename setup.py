@@ -21,6 +21,7 @@ extra_reqs = {
     "server": ["uvicorn", "click==7.0"],
     "deploy": [
         "docker",
+        "attrs~=19.3.0",
         "aws-cdk.core",
         "aws-cdk.aws_lambda",
         "aws-cdk.aws_apigatewayv2",
