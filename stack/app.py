@@ -134,12 +134,16 @@ class covidApiLambdaStack(core.Stack):
 
     def create_package(self, code_dir: str) -> aws_lambda.Code:
         """Build docker image and create package."""
+        print('building lambda package via docker')
+        print(f'code dir: {code_dir}')
         client = docker.from_env()
+        print('docker client up')
         client.images.build(
             path=code_dir,
             dockerfile="Dockerfiles/lambda/Dockerfile",
             tag="lambda:latest",
         )
+        print('docker image built')
         client.containers.run(
             image="lambda:latest",
             command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
