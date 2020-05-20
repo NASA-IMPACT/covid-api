@@ -6,6 +6,7 @@ jobs:
     working_directory: ~/covid-api
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: install dependencies
           command: |
