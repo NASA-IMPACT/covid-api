@@ -2,17 +2,19 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.7.3
+      - image: nikolaik/python-nodejs:python3.7-nodejs12
     working_directory: ~/covid-api
     steps:
       - checkout
       - run:
           name: install dependencies
-          command: pip install -e .["deploy"] --user
+          command: |
+            pip install -e .["deploy"] --user
+            npm install -g cdk
 
       - deploy:
           name: master branch deployed to cdk stack
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              STAGE='prod' cdk deploy covid-api-lambda-prod
+              STAGE='prod' cdk deploy covid-api-lambda-prod --region us-east-1
             fi
