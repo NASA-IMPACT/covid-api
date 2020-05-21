@@ -1,5 +1,6 @@
 {
-    "id": "be",
-    "label": "Beijing",
-    "center": [39.9, 116.38]
+  "id": "be",
+  "label": "Beijing",
+  "center": [ 116.38, 39.9 ],
+  "bounding_box": [ 115.84, 39.62, 116.85, 40.22 ]
 }
