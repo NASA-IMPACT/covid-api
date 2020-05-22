@@ -1,8 +1,11 @@
 from datetime import date as d
 from typing import Dict, List, Tuple
 from pydantic import BaseModel
+from geojson_pydantic.features import Feature
+from geojson_pydantic.geometries import Polygon
 
-from .common import Feature
+class PolygonFeature(Feature):
+    geometry: Polygon
 
 class TimelapseValue(BaseModel):
     mean: float
@@ -10,4 +13,4 @@ class TimelapseValue(BaseModel):
 
 class TimelapseRequest(BaseModel):
     month: str
-    geojson: Feature
+    geojson: PolygonFeature

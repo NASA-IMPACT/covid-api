@@ -1,9 +1,7 @@
-from covid_api.models.common import Polygon
 from typing import Dict, List, Union
 from pydantic import BaseModel
 from pydantic.color import Color
-
-from .common import Polygon
+from geojson_pydantic.geometries import Polygon
 
 class Source(BaseModel):
     type: str
