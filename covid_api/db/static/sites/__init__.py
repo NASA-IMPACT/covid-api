@@ -4,6 +4,8 @@ from typing import List
 
 from covid_api.models.static import Site, Sites
 from covid_api.db.static.errors import InvalidIdentifier
+
+from covid_api.db.utils import s3_get, get_indicators
 data_dir = os.path.join(os.path.dirname(__file__))
 
 class SiteManager(object):
@@ -23,14 +25,16 @@ class SiteManager(object):
     def get(self, identifier: str) -> Site:
         """Fetch a Site."""
         try:
-            return self._data[identifier]
+            site = self._data[identifier]
+            site.indicators = get_indicators(identifier)
+            return site
         except KeyError:
             raise InvalidIdentifier(f"Invalid identifier: {identifier}")
 
     def get_all(self) -> Sites:
         """Fetch all Sites."""
         return Sites(
-            sites=[site.dict() for site in self._data.values()]
+            sites=[site.dict(exclude="indicators") for site in self._data.values()]
         )
 
     def list(self) -> List[str]:

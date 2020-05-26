@@ -1,5 +1,5 @@
 from covid_api.models.common import Polygon
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Any
 from pydantic import BaseModel
 from pydantic.color import Color
 
@@ -39,6 +39,7 @@ class Site(BaseModel):
     center: List[float]
     polygon: Union[Polygon, None] = None
     bounding_box: Union[List[float], None] = None
+    indicators: List[Any] = []
 
 class Sites(BaseModel):
     sites: List[Site]
