@@ -34,7 +34,7 @@ class SiteManager(object):
     def get_all(self) -> Sites:
         """Fetch all Sites."""
         return Sites(
-            sites=[site.dict(exclude="indicators") for site in self._data.values()]
+            sites=[site.dict(exclude={"indicators"}) for site in self._data.values()]
         )
 
     def list(self) -> List[str]:
