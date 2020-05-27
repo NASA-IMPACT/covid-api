@@ -1,9 +1,11 @@
-from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT
 import boto3
 import csv
 import json
 from datetime import datetime
 from typing import Dict
+
+from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT
+from covid_api.models.static import IndicatorObservation
 
 s3 = boto3.client('s3')
 
@@ -44,11 +46,19 @@ def get_indicators(identifier):
                     metadata_dict['date']['format']
                 ).strftime(DT_FORMAT)
 
-                indicator = float(row[metadata_dict['indicator']['column']])
+                other_fields = {
+                    k: row.get(v['column'], None)
+                    for k, v
+                    in metadata_dict.items()
+                    if type(v) is dict and v.get('column', None) and k is not 'date'
+                }
+
+                # validate and parse the row
+                i = IndicatorObservation(**other_fields)
 
                 data.append(dict(
                     date=date,
-                    indicator=indicator
+                    **i.dict(exclude_none=True)
                 ))
 
             indicators.append(
@@ -62,6 +72,7 @@ def get_indicators(identifier):
                 )
             )
         except Exception as e:
+            print(e)
             pass
 
     return indicators

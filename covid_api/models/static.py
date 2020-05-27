@@ -1,5 +1,5 @@
 
-from typing import Dict, List, Union, Any
+from typing import Dict, List, Union, Any, Optional
 from pydantic import BaseModel
 from pydantic.color import Color
 from geojson_pydantic.geometries import Polygon
@@ -42,3 +42,12 @@ class Site(BaseModel):
 
 class Sites(BaseModel):
     sites: List[Site]
+
+class IndicatorObservation(BaseModel):
+    indicator: float
+    indicator_conf_low: Optional[float] = None
+    indicator_conf_high: Optional[float] = None
+    baseline: Optional[float] = None
+    baseline_conf_low: Optional[float] = None
+    baseline_conf_high: Union[float, None] = None
+    anomaly: Optional[str] = None
