@@ -23,6 +23,12 @@ New raster files are added to the dashboard manually so the naming convention is
 - `YYYYMM` for monthly data
 - `YYYY_MM_DD` for sub-monthly data (anything with daily or semi-periodic data)
 
+If the file doesn't have global coverage, please use a portion of the file name to indicate the spotlight area it covers. We provide data for the following [spotlight areas](https://8ib71h0627.execute-api.us-east-1.amazonaws.com/v1/sites). For example:
+
+```sh
+my_tif_tk_2020_02_19.tif # Data for Tokyo on February 19th, 2020.
+```
+
 ## Delivery mechanism
 
 There are three mechanisms for making raster data available through this API:
