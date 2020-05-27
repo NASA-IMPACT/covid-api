@@ -32,6 +32,6 @@ my_tif_tk_2020_02_19.tif # Data for Tokyo on February 19th, 2020.
 ## Delivery mechanism
 
 There are three mechanisms for making raster data available through this API:
-- **publicly available**: any publicly available COG can be accessed through this COG. Because the API is run on Amazon Web Services in the `us-east-1` region, data hosted on S3 in this region will have faster response times to the API.
+- **publicly available**: any publicly available COG can be accessed through this API. Because the API is run on Amazon Web Services in the `us-east-1` region, data hosted on S3 in this region will have faster response times to the API.
 - **grant access**: if data is hosted on a private Amazon Web Services S3 bucket, you can contact the API maintainers, olaf@developmentseed.org or drew@developmentseed.org, to provide necessary roles to access the data.
 - **send to API maintainers**: if neither of these options work, please contact us, and we can discuss other hosting options for the data.
