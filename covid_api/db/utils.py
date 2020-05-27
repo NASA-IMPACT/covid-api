@@ -58,10 +58,11 @@ def get_indicators(identifier):
                         date=[min(data, key=_dt)['date'], max(data, key=_dt)['date']],
                         indicator=[min(data, key=_di)['indicator'], max(data, key=_di)['indicator']]
                     ),
+                    units=metadata_dict.get('units', None),
                     data=data,
                 )
             )
-        except Exception as e:
+        except Exception:
             pass
 
     return indicators
