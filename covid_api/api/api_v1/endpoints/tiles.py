@@ -121,7 +121,10 @@ async def tile(
         timings.append(("Post-process", t.elapsed))
 
         if color_map:
-            color_map = get_colormap(color_map)
+            if color_map.startswith("custom_"):
+                color_map = utils.get_custom_cmap(color_map)
+            else:
+                color_map = get_colormap(color_map)
 
         with utils.Timer() as t:
             if ext == ImageType.npy:
