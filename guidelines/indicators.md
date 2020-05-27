@@ -16,6 +16,15 @@ Expected format:
 - all columns indicated as relevant by the metadata should be numbers except for `date` and optionally `anomaly`
 - exactly one header row showing column names in the first row
 
+### Error / Fill values
+Don't include rows with error or fill values like `-999`.
+
+```
+27/01/2020,-999,7.21537286398442,-999,8.03568780281027,-999,-999
+```
+
+Omit these rows, the frontend is built to deal with missing data.
+
 ### Example
 
 ``` csv
