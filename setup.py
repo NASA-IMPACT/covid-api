@@ -15,6 +15,7 @@ inst_reqs = [
     "fiona",
     "shapely",
     "rasterstats",
+    "geojson-pydantic",
 ]
 extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit"],
