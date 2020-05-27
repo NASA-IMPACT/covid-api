@@ -29,6 +29,7 @@ In addition to the data itself, each indicator needs a metadata file with:
 
 ``` json
 {
+  "units": "mg / L"
   "date": {
     "column": "date_obs",
     "format": "%d/%m/%Y"
@@ -45,7 +46,7 @@ In addition to the data itself, each indicator needs a metadata file with:
 The date format should use options found in the [python `strptime` documentation](https://docs.python.org/3.7/library/datetime.html#strftime-and-strptime-behavior)
 
 ### Mandatory fields
-
+- `units`: units of the indicator values
 - `date`: the column where each observation date is shown and the format used to correctly parse it
 - `indicator` - the primary indicator column
 
