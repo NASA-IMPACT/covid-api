@@ -69,6 +69,6 @@ Data can be provided to a S3 bucket:
 ### NO2 15 day average
 
 [`/no2-omi/metadata.json`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/metadata.json)  
-[`/no2-omi/be.json`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/be.json)  
-[`/no2-omi/du.json`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/du.json)  
-[`/no2-omi/ls.json`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/ls.json)
+[`/no2-omi/be.csv`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/be.csv)  
+[`/no2-omi/du.csv`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/du.csv)  
+[`/no2-omi/ls.csv`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/ls.csv)
