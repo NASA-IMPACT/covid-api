@@ -67,7 +67,7 @@ async def tile(
         None, description="Coma (',') delimited Min,Max bounds"
     ),
     color_formula: Optional[str] = Query(None, title="rio-color formula"),
-    color_map: Optional[str] = Query(None, title="rio-tiler color map name"),
+    color_map: Optional[utils.ColorMapName] = Query(None, title="rio-tiler color map name"),
     cache_client: CacheLayer = Depends(utils.get_cache),
 ) -> TileResponse:
     """Handle /tiles requests."""
