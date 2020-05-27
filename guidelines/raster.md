@@ -39,5 +39,5 @@ When sending the data, please include the following information
 ## Delivery mechanism
 
 There are two mechanisms for making raster data available through this API:
-- **publicly available**: any publicly available COG can be accessed through this COG. Because the API is run on Amazon Web Services in the `us-east-1` region, data hosted on S3 in this region will have faster response times to the API.
+- **publicly available**: any publicly available COG can be accessed through this API. Because the API is run on Amazon Web Services in the `us-east-1` region, data hosted on S3 in this region will have faster response times to the API.
 - **send to API maintainers**: if you'd like to keep the source data stored privately, please contact olaf@developmentseed.org or drew@developmentseed.org, and we can discuss other hosting options for the data.
