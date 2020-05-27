@@ -57,11 +57,11 @@ Data can be provided to a S3 bucket:
 - name of the file: [area ID].csv
 - with each data update, the full file for the area needs to be replaced
 
-### Example 
-The contents of the bucket could look like:
+## Examples
 
-```
-s3://[bucket]/no2-15day/metadata.json
-s3://[bucket]/no2-15day/be.csv
-s3://[bucket]/no2-15day/la.csv
-```
+### NO2 15 day average
+
+[`/no2-omi/metadata.json`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/metadata.json)
+[`/no2-omi/be.json`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/be.json)
+[`/no2-omi/du.json`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/du.json)
+[`/no2-omi/ls.json`](https://covid-eo-example-data.s3.amazonaws.com/no2-omi/ls.json)
