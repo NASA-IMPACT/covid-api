@@ -667,4 +667,8 @@ COLOR_MAP_NAMES = [
     'ylorrd_r',
 ] + [f"custom_{c}" for c in COLOR_MAPS.keys()]
 
-ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])
+ColorMapName = Enum(
+    "ColorMapNames",
+    [(a, a) for a in COLOR_MAP_NAMES],
+    type=str
+)
