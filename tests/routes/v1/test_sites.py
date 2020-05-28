@@ -1,4 +1,5 @@
 """Test /v1/sites endpoints"""
+import os
 import boto3
 from moto import mock_s3
 from covid_api.core.config import INDICATOR_BUCKET
@@ -11,6 +12,11 @@ def test_sites(app):
 @mock_s3
 def test_site_id(app):
     """test /sites/{id} endpoint"""
+
+    # aws mocking
+    os.environ["AWS_ACCESS_KEY_ID"] = "test"
+    os.environ["AWS_SECRET_ACCESS_KEY"] = "test"
+
     s3 = boto3.client('s3')
     s3.create_bucket(Bucket=INDICATOR_BUCKET)
     s3.put_object(Bucket=INDICATOR_BUCKET, Key='indicators/test/super.csv', Body=b'test')
