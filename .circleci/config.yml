@@ -13,9 +13,7 @@ jobs:
           command: pip install tox codecov --user
       - run:
           name: test
-          command: |
-            touch ~/.aws/credentials
-            ~/.local/bin/tox
+          command: ~/.local/bin/tox
 
   build:
     docker:
