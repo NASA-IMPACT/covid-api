@@ -15,7 +15,7 @@ jobs:
           name: test
           command: ~/.local/bin/tox
 
-  build:
+  deploy:
     docker:
       - image: nikolaik/python-nodejs:python3.7-nodejs12
     working_directory: ~/covid-api
