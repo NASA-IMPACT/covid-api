@@ -32,14 +32,26 @@ def get_indicators(identifier):
     for folder in indicator_folders():
         try:
             data = []
+            # metadata for reading the data and converting to a consistent format
             metadata_json = s3_get(INDICATOR_BUCKET, f"indicators/{folder}/metadata.json")
             metadata_dict = json.loads(metadata_json.decode('utf-8'))
 
+            # read the actual indicator data
             indicator_csv = s3_get(INDICATOR_BUCKET, f"indicators/{folder}/{identifier}.csv")
             indicator_lines = indicator_csv.decode('utf-8').split()
             reader = csv.DictReader(
                 indicator_lines,
             )
+
+            # top level metadata is added directly to the response
+            top_level_fields = {
+                k: v
+                for k, v
+                in metadata_dict.items()
+                if type(v) is str
+            }
+
+            # for each row (observation), format the data correctly
             for row in reader:
                 date = datetime.strptime(
                     row[metadata_dict['date']['column']],
@@ -61,6 +73,7 @@ def get_indicators(identifier):
                     **i.dict(exclude_none=True)
                 ))
 
+            # construct the final indicator object
             indicators.append(
                 dict(
                     id=folder,
@@ -69,6 +82,7 @@ def get_indicators(identifier):
                         indicator=[min(data, key=_di)['indicator'], max(data, key=_di)['indicator']]
                     ),
                     data=data,
+                    **top_level_fields
                 )
             )
         except Exception as e:
