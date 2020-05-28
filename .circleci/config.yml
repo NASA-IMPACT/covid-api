@@ -1,5 +1,20 @@
 version: 2
 jobs:
+  test:
+    docker:
+      - image: circleci/python:3.7
+    environment:
+      - TOXENV: py37
+    working_directory: ~/covid-api
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: pip install tox codecov --user
+      - run:
+          name: test
+          command: ~/.local/bin/tox
+
   build:
     docker:
       - image: nikolaik/python-nodejs:python3.7-nodejs12
@@ -38,3 +53,15 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               STAGE='prod' cdk deploy covid-api-lambda-prod --region us-east-1 --require-approval never
             fi
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - test
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master

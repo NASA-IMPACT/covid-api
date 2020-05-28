@@ -16,6 +16,7 @@ inst_reqs = [
     "shapely",
     "rasterstats",
     "geojson-pydantic",
+    "boto3",
 ]
 extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit"],
@@ -33,7 +34,14 @@ extra_reqs = {
         "aws-cdk.aws_iam",
         "aws-cdk.aws_elasticache",
     ],
-    "test": ["mock", "pytest", "pytest-cov", "pytest-asyncio", "requests"],
+    "test": [
+        "moto",
+        "mock",
+        "pytest",
+        "pytest-cov",
+        "pytest-asyncio",
+        "requests"
+    ],
 }
 
 

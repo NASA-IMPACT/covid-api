@@ -1,9 +1,11 @@
-from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT
 import boto3
 import csv
 import json
 from datetime import datetime
 from typing import Dict
+
+from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT
+from covid_api.models.static import IndicatorObservation
 
 s3 = boto3.client('s3')
 
@@ -30,27 +32,48 @@ def get_indicators(identifier):
     for folder in indicator_folders():
         try:
             data = []
+            # metadata for reading the data and converting to a consistent format
             metadata_json = s3_get(INDICATOR_BUCKET, f"indicators/{folder}/metadata.json")
             metadata_dict = json.loads(metadata_json.decode('utf-8'))
 
+            # read the actual indicator data
             indicator_csv = s3_get(INDICATOR_BUCKET, f"indicators/{folder}/{identifier}.csv")
             indicator_lines = indicator_csv.decode('utf-8').split()
             reader = csv.DictReader(
                 indicator_lines,
             )
+
+            # top level metadata is added directly to the response
+            top_level_fields = {
+                k: v
+                for k, v
+                in metadata_dict.items()
+                if type(v) is str
+            }
+
+            # for each row (observation), format the data correctly
             for row in reader:
                 date = datetime.strptime(
                     row[metadata_dict['date']['column']],
                     metadata_dict['date']['format']
                 ).strftime(DT_FORMAT)
 
-                indicator = float(row[metadata_dict['indicator']['column']])
+                other_fields = {
+                    k: row.get(v['column'], None)
+                    for k, v
+                    in metadata_dict.items()
+                    if type(v) is dict and v.get('column', None) and k is not 'date'
+                }
+
+                # validate and parse the row
+                i = IndicatorObservation(**other_fields)
 
                 data.append(dict(
                     date=date,
-                    indicator=indicator
+                    **i.dict(exclude_none=True)
                 ))
 
+            # construct the final indicator object
             indicators.append(
                 dict(
                     id=folder,
@@ -59,9 +82,11 @@ def get_indicators(identifier):
                         indicator=[min(data, key=_di)['indicator'], max(data, key=_di)['indicator']]
                     ),
                     data=data,
+                    **top_level_fields
                 )
             )
         except Exception as e:
+            print(e)
             pass
 
     return indicators
