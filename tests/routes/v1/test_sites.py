@@ -11,7 +11,7 @@ def test_sites(app):
     assert response.status_code == 200
 
 @mock_s3
-def test_site_id(app, aws_credentials, s3):
+def test_site_id(app):
     """test /sites/{id} endpoint"""
 
     # aws mocked resources
