@@ -1,5 +1,7 @@
 # Contributing Indicator Data
-Timeseries indicator data is provided in CSV format. Each indicator requires:
+Timeseries indicator data is provided in CSV format. It's mostly used in the dashboard in charts that show [evolution over time](./data-usage.md)).
+
+Each indicator requires:
 
 - a metadata file describing the indicator
 - time-series data for each spotlight area
@@ -47,7 +49,13 @@ In addition to the data itself, each indicator needs a metadata file with:
   },
   "baseline": {
     "column": "baseline_median"
-  }
+  },
+  "highlight_bands": [
+    {
+      "label": "Lockdown",
+      "interval": ["2020-02-01", "2020-03-06"]
+    }
+  ]
 }
 ```
 
@@ -63,6 +71,7 @@ The date format should use options found in the [python `strptime` documentation
 - `indicator_conf_low` and `indicator_conf_high`: columns used for confidence intervals
 - `baseline`: columns used for a baseline value to compare with the primary indicator
 - `baseline_conf_low` and `baseline_conf_high`: columns used for confidence intervals for the baseline values
+- `highlight_bands`: used to highlight a time interval on the chart (eg. lockdown)
 - `anomaly`: column used to indicate if the value is anomalous, accepts any string
 
 ## Delivery mechanism

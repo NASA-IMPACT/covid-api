@@ -4,6 +4,8 @@ The API serves two types of data:
 - raster data in Cloud Optimized GeotTIFF (COG) format. This is primarily used to show layers on a map.
 - time-series indicator data by geographic area. This is mostly used to show evolution over time in graphs.
 
+See the [data usage](./data-usage.md) document for an overview of how the data may be displayed.
+
 These guidelines are written for contributors of data, and contain information on the input formats and delivery mechanisms:
 
 * [contributing raster data](raster.md)
