@@ -24,7 +24,7 @@ If available in the dataset, the chart will show the confidence region for both 
 
 ![Chart with indicator line and confidence](./images/chart-confidence.png)
 
-### Hihglight bands - optional
+### Highlight bands - optional
 The highlight bands are useful to call the user's attention to a specific time interval.  
 They're defined by providing an interval with a start and end dates and an optional label.
 
