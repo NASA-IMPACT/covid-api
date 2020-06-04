@@ -51,3 +51,12 @@ class IndicatorObservation(BaseModel):
     baseline_conf_low: Optional[float] = None
     baseline_conf_high: Union[float, None] = None
     anomaly: Optional[str] = None
+
+class IndicatorGroup(BaseModel):
+    id: str
+    label: str
+    prose: str
+    indicators: List[str]
+
+class IndicatorGroups(BaseModel):
+    groups: List[IndicatorGroup]

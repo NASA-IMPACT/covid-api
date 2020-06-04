@@ -1,0 +1,6 @@
+{
+    "id": "aq",
+    "label": "Air Quality",
+    "prose": "good air quality is important",
+    "indicators": ["no2"]
+}

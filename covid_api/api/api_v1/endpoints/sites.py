@@ -22,4 +22,3 @@ def get_sites():
 )
 def get_site(id: str):
     return sites.get(id)
-
