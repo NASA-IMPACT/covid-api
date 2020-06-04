@@ -74,6 +74,10 @@ The date format should use options found in the [python `strptime` documentation
 - `highlight_bands`: used to highlight a time interval on the chart (eg. lockdown)
 - `anomaly`: column used to indicate if the value is anomalous, accepts any string
 
+### Additional Notes
+
+For any commentary which is both indicator and site specific, additional `.txt` files can be added alongside the csv files. So for example, `be.csv` can have a `be.txt` file which adds contextual information for what is happening with a given indicator in Beijing.
+
 ## Delivery mechanism
 Data can be provided to a S3 bucket:
 
@@ -86,7 +90,7 @@ Data can be provided to a S3 bucket:
 
 ### NO2 15 day average
 
-[`/no2-omi/metadata.json`](https://covid-eo-example.s3.amazonaws.com/no2-omi/metadata.json)  
-[`/no2-omi/be.csv`](https://covid-eo-example.s3.amazonaws.com/no2-omi/be.csv)  
-[`/no2-omi/du.csv`](https://covid-eo-example.s3.amazonaws.com/no2-omi/du.csv)  
+[`/no2-omi/metadata.json`](https://covid-eo-example.s3.amazonaws.com/no2-omi/metadata.json)
+[`/no2-omi/be.csv`](https://covid-eo-example.s3.amazonaws.com/no2-omi/be.csv)
+[`/no2-omi/du.csv`](https://covid-eo-example.s3.amazonaws.com/no2-omi/du.csv)
 [`/no2-omi/ls.csv`](https://covid-eo-example.s3.amazonaws.com/no2-omi/ls.csv)
