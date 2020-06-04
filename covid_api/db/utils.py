@@ -2,7 +2,7 @@ import boto3
 import csv
 import json
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Union
 
 from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT
 from covid_api.models.static import IndicatorObservation
@@ -12,6 +12,13 @@ s3 = boto3.client('s3')
 def s3_get(bucket, key):
     response = s3.get_object(Bucket=bucket, Key=key)
     return response["Body"].read()
+
+def get_indicator_notes(identifier: str, folder:str) -> Union[str, None]:
+    try:
+        key = f"indicators/{folder}/{identifier}.txt"
+        return s3_get(INDICATOR_BUCKET, key).strip()
+    except Exception:
+        return None
 
 def indicator_folders():
     response = s3.list_objects_v2(
@@ -73,6 +80,8 @@ def get_indicators(identifier):
                     **i.dict(exclude_none=True)
                 ))
 
+            notes = get_indicator_notes(identifier, folder)
+
             # construct the final indicator object
             indicators.append(
                 dict(
@@ -82,6 +91,7 @@ def get_indicators(identifier):
                         indicator=[min(data, key=_di)['indicator'], max(data, key=_di)['indicator']]
                     ),
                     data=data,
+                    notes=notes,
                     **top_level_fields
                 )
             )
