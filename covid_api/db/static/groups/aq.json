@@ -1,6 +1,6 @@
 {
     "id": "aq",
     "label": "Air Quality",
-    "prose": "good air quality is important",
-    "indicators": ["no2-15day", "xch4", "xco2"]
+    "prose": "Tracking air quality",
+    "indicators": ["no2-15day", "xco2"]
 }
