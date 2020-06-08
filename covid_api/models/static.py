@@ -1,8 +1,8 @@
 
-from typing import Dict, List, Union, Any, Optional
+from typing import Dict, List, Union, Any, Optional, Tuple
 from pydantic import BaseModel
 from pydantic.color import Color
-from geojson_pydantic.geometries import Polygon
+# from geojson_pydantic.geometries import Polygon
 
 class Source(BaseModel):
     type: str
@@ -31,6 +31,10 @@ class Dataset(BaseModel):
 
 class Datasets(BaseModel):
     datasets: List[Dataset]
+
+class Polygon(BaseModel):
+    type: str = "Polygon"
+    coordinates: List[List[Tuple[float, float]]]
 
 class Site(BaseModel):
     id: str
