@@ -13,12 +13,12 @@ def s3_get(bucket, key):
     response = s3.get_object(Bucket=bucket, Key=key)
     return response["Body"].read()
 
-def get_indicator_site_metadata(identifier: str, folder:str) -> Union[Dict, None]:
+def get_indicator_site_metadata(identifier: str, folder:str) -> Dict:
     try:
         key = f"indicators/{folder}/{identifier}.json"
         return json.loads(s3_get(INDICATOR_BUCKET, key))
     except Exception:
-        return None
+        return {}
 
 def indicator_folders():
     response = s3.list_objects_v2(
