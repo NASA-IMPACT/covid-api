@@ -13,10 +13,10 @@ def s3_get(bucket, key):
     response = s3.get_object(Bucket=bucket, Key=key)
     return response["Body"].read()
 
-def get_indicator_notes(identifier: str, folder:str) -> Union[str, None]:
+def get_indicator_site_metadata(identifier: str, folder:str) -> Union[Dict, None]:
     try:
-        key = f"indicators/{folder}/{identifier}.txt"
-        return s3_get(INDICATOR_BUCKET, key).strip()
+        key = f"indicators/{folder}/{identifier}.json"
+        return json.loads(s3_get(INDICATOR_BUCKET, key))
     except Exception:
         return None
 
@@ -80,7 +80,7 @@ def get_indicators(identifier):
                     **i.dict(exclude_none=True)
                 ))
 
-            notes = get_indicator_notes(identifier, folder)
+            site_metadata = get_indicator_site_metadata(identifier, folder)
 
             # construct the final indicator object
             indicators.append(
@@ -91,7 +91,8 @@ def get_indicators(identifier):
                         indicator=[min(data, key=_di)['indicator'], max(data, key=_di)['indicator']]
                     ),
                     data=data,
-                    notes=notes,
+                    notes=site_metadata.get('notes', None),
+                    highlight_bands=site_metadata.get('highlight_bands', None),
                     **top_level_fields
                 )
             )
