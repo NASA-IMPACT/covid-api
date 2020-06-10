@@ -19,5 +19,5 @@ MEMCACHE_PORT = int(os.environ.get("MEMCACHE_PORT", 11211))
 MEMCACHE_USERNAME = os.environ.get("MEMCACHE_USERNAME")
 MEMCACHE_PASSWORD = os.environ.get("MEMCACHE_PASSWORD")
 
-INDICATOR_BUCKET = os.environ.get("INDICATOR_BUCKET", 'covid-eo-data')
-DT_FORMAT = '%Y-%m-%d'
+INDICATOR_BUCKET = os.environ.get("INDICATOR_BUCKET", "covid-eo-data")
+DT_FORMAT = "%Y-%m-%d"
