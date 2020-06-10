@@ -56,7 +56,7 @@ def get_indicators(identifier) -> List:
 
             # top level metadata is added directly to the response
             top_level_fields = {
-                k: v for k, v in metadata_dict.items() if type(v) is str
+                k: v for k, v in metadata_dict.items() if isinstance(v, str)
             }
 
             # for each row (observation), format the data correctly
@@ -69,7 +69,7 @@ def get_indicators(identifier) -> List:
                 other_fields = {
                     k: row.get(v["column"], None)
                     for k, v in metadata_dict.items()
-                    if isinstance(dict, v) and v.get("column") and k != "date"
+                    if isinstance(v, dict) and v.get("column") and k != "date"
                 }
 
                 # validate and parse the row
