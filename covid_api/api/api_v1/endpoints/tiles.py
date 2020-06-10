@@ -88,7 +88,7 @@ async def tile(
             nodata=nodata,
             rescale=rescale,
             color_formula=color_formula,
-            color_map=color_map,
+            color_map=color_map.value if color_map else "",
         )
     )
     tilesize = scale * 256
@@ -124,9 +124,9 @@ async def tile(
 
         if color_map:
             if color_map.value.startswith("custom_"):
-                color_map = utils.get_custom_cmap(color_map)  # type: ignore
+                color_map = utils.get_custom_cmap(color_map.value)  # type: ignore
             else:
-                color_map = get_colormap(color_map)  # type: ignore
+                color_map = get_colormap(color_map.value)  # type: ignore
 
         with utils.Timer() as t:
             if ext == ImageType.npy:
