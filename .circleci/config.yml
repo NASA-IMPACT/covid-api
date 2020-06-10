@@ -14,9 +14,9 @@ jobs:
       - run:
           name: test
           command: ~/.local/bin/tox
-    - run:
-        name: run pre-commit
-        command: ~/.local/bin/pre-commit run --all-files
+      - run:
+          name: run pre-commit
+          command: ~/.local/bin/pre-commit run --all-files
 
   deploy:
     docker:
