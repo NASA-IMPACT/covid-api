@@ -30,7 +30,7 @@ def get_indicator_notes(identifier: str, folder: str) -> Union[str, None]:
 def indicator_folders() -> List:
     """Get Indicator folders."""
     response = s3.list_objects_v2(
-        Bucket=INDICATOR_BUCKET, Prefix=f"indicators/", Delimiter="/",
+        Bucket=INDICATOR_BUCKET, Prefix="indicators/", Delimiter="/",
     )
     return [obj["Prefix"].split("/")[1] for obj in response["CommonPrefixes"]]
 
