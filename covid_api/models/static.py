@@ -3,6 +3,7 @@ from typing import Dict, List, Union, Any, Optional, Tuple
 from pydantic import BaseModel
 from pydantic.color import Color
 # from geojson_pydantic.geometries import Polygon
+from geojson_pydantic.features import FeatureCollection
 
 class Source(BaseModel):
     type: str
@@ -64,3 +65,6 @@ class IndicatorGroup(BaseModel):
 
 class IndicatorGroups(BaseModel):
     groups: List[IndicatorGroup]
+
+class Detection(FeatureCollection):
+    pass
