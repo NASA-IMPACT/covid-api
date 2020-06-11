@@ -4,7 +4,7 @@ import boto3
 import csv
 import json
 from datetime import datetime
-from typing import Union, List
+from typing import Dict, List
 
 from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT
 from covid_api.models.static import IndicatorObservation
@@ -18,13 +18,13 @@ def s3_get(bucket: str, key: str):
     return response["Body"].read()
 
 
-def get_indicator_notes(identifier: str, folder: str) -> Union[str, None]:
-    """Get Indicator notes."""
+def get_indicator_site_metadata(identifier: str, folder: str) -> Dict:
+    """Get Indicator metadata for a specific site."""
     try:
-        key = f"indicators/{folder}/{identifier}.txt"
-        return s3_get(INDICATOR_BUCKET, key).strip()
+        key = f"indicators/{folder}/{identifier}.json"
+        return json.loads(s3_get(INDICATOR_BUCKET, key))
     except Exception:
-        return None
+        return {}
 
 
 def indicator_folders() -> List:
@@ -77,7 +77,7 @@ def get_indicators(identifier) -> List:
 
                 data.append(dict(date=date, **i.dict(exclude_none=True)))
 
-            notes = get_indicator_notes(identifier, folder)
+            site_metadata = get_indicator_site_metadata(identifier, folder)
 
             # construct the final indicator object
             indicators.append(
@@ -100,7 +100,8 @@ def get_indicators(identifier) -> List:
                         ],
                     ),
                     data=data,
-                    notes=notes,
+                    notes=site_metadata.get("notes", None),
+                    highlight_bands=site_metadata.get("highlight_bands", None),
                     **top_level_fields,
                 )
             )
