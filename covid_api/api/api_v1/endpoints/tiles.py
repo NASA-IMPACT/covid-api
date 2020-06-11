@@ -67,7 +67,9 @@ async def tile(
         None, description="Coma (',') delimited Min,Max bounds"
     ),
     color_formula: Optional[str] = Query(None, title="rio-color formula"),
-    color_map: Optional[utils.ColorMapName] = Query(None, title="rio-tiler color map name"),
+    color_map: Optional[utils.ColorMapName] = Query(
+        None, title="rio-tiler color map name"
+    ),
     cache_client: CacheLayer = Depends(utils.get_cache),
 ) -> TileResponse:
     """Handle /tiles requests."""
@@ -86,7 +88,7 @@ async def tile(
             nodata=nodata,
             rescale=rescale,
             color_formula=color_formula,
-            color_map=color_map,
+            color_map=color_map.value if color_map else "",
         )
     )
     tilesize = scale * 256
@@ -121,10 +123,10 @@ async def tile(
         timings.append(("Post-process", t.elapsed))
 
         if color_map:
-            if color_map.startswith("custom_"):
-                color_map = utils.get_custom_cmap(color_map)
+            if color_map.value.startswith("custom_"):
+                color_map = utils.get_custom_cmap(color_map.value)  # type: ignore
             else:
-                color_map = get_colormap(color_map)
+                color_map = get_colormap(color_map.value)  # type: ignore
 
         with utils.Timer() as t:
             if ext == ImageType.npy:

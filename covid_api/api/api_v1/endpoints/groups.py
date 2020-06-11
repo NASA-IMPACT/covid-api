@@ -1,24 +1,30 @@
-from fastapi import APIRouter
-from glob import glob
+"""Groups endpoint."""
 
-from covid_api.core import config
+from fastapi import APIRouter
+
 from covid_api.models.static import IndicatorGroup, IndicatorGroups
 from covid_api.db.static.groups import groups
 
 router = APIRouter()
 
+
 @router.get(
     "/indicator_groups",
-    responses={200: dict(description="return a list of all available indicator groups")},
+    responses={
+        200: dict(description="return a list of all available indicator groups")
+    },
     response_model=IndicatorGroups,
 )
 def get_groups():
-   return groups.get_all()
+    """Return group list."""
+    return groups.get_all()
+
 
 @router.get(
     "/indicator_groups/{id}",
     responses={200: dict(description="return a group")},
     response_model=IndicatorGroup,
 )
-def get_groups(id: str):
+def get_group(id: str):
+    """Return group info."""
     return groups.get(id)
