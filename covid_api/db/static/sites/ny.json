@@ -1,7 +1,7 @@
 {
   "id": "ny",
   "label": "New York",
-  "center": [ 73.09, 41.0114 ],
+  "center": [ -73.09, 41.0114 ],
   "polygon":  {
     "type": "Polygon",
     "coordinates": [ [
