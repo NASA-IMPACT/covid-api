@@ -1,10 +1,9 @@
 """Static models."""
 
-from typing import List, Any, Optional, Tuple
+from typing import List, Any, Optional
 from pydantic import BaseModel
 from pydantic.color import Color
-
-# from geojson_pydantic.geometries import Polygon
+from geojson_pydantic.geometries import Polygon
 
 
 class Source(BaseModel):
@@ -48,13 +47,6 @@ class Datasets(BaseModel):
     """Dataset List Model."""
 
     datasets: List[Dataset]
-
-
-class Polygon(BaseModel):
-    """Polygon Model."""
-
-    type: str = "Polygon"
-    coordinates: List[List[Tuple[float, float]]]
 
 
 class Site(BaseModel):
