@@ -1,11 +1,12 @@
-from fastapi import APIRouter
-from glob import glob
+"""Dataset endpoints."""
 
-from covid_api.core import config
+from fastapi import APIRouter
+
 from covid_api.models.static import Dataset, Datasets
 from covid_api.db.static.datasets import datasets
 
 router = APIRouter()
+
 
 @router.get(
     "/datasets",
@@ -13,7 +14,9 @@ router = APIRouter()
     response_model=Datasets,
 )
 def get_datasets():
-   return datasets.get_all()
+    """Return a list of datasets."""
+    return datasets.get_all()
+
 
 @router.get(
     "/datasets/{id}",
@@ -21,5 +24,5 @@ def get_datasets():
     response_model=Dataset,
 )
 def get_dataset(id: str):
+    """Return dataset info."""
     return datasets.get(id)
-

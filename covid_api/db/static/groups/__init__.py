@@ -7,6 +7,7 @@ from covid_api.db.static.errors import InvalidIdentifier
 
 data_dir = os.path.join(os.path.dirname(__file__))
 
+
 class GroupManager(object):
     """Default Group holder."""
 
@@ -30,12 +31,11 @@ class GroupManager(object):
 
     def get_all(self) -> IndicatorGroups:
         """Fetch all Groups."""
-        return IndicatorGroups(
-            groups=[group.dict() for group in self._data.values()]
-        )
+        return IndicatorGroups(groups=[group.dict() for group in self._data.values()])
 
     def list(self) -> List[str]:
         """List all groups"""
         return list(self._data.keys())
+
 
 groups = GroupManager()

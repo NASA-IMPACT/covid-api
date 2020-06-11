@@ -5,8 +5,10 @@ from typing import List
 from covid_api.models.static import Site, Sites
 from covid_api.db.static.errors import InvalidIdentifier
 
-from covid_api.db.utils import s3_get, get_indicators
+from covid_api.db.utils import get_indicators
+
 data_dir = os.path.join(os.path.dirname(__file__))
+
 
 class SiteManager(object):
     """Default Site holder."""
@@ -40,5 +42,6 @@ class SiteManager(object):
     def list(self) -> List[str]:
         """List all sites"""
         return list(self._data.keys())
+
 
 sites = SiteManager()

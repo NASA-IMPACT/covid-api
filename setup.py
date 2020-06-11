@@ -34,14 +34,7 @@ extra_reqs = {
         "aws-cdk.aws_iam",
         "aws-cdk.aws_elasticache",
     ],
-    "test": [
-        "moto",
-        "mock",
-        "pytest",
-        "pytest-cov",
-        "pytest-asyncio",
-        "requests"
-    ],
+    "test": ["moto", "mock", "pytest", "pytest-cov", "pytest-asyncio", "requests"],
 }
 
 
@@ -65,7 +58,9 @@ setup(
     url="https://github.com/developmentseed/covid_api",
     license="MIT",
     packages=find_packages(exclude=["ez_setup", "examples", "tests"]),
-    package_data={"covid_api": ["templates/*.html", "templates/*.xml", "db/static/**/*.json"]},
+    package_data={
+        "covid_api": ["templates/*.html", "templates/*.xml", "db/static/**/*.json"]
+    },
     include_package_data=True,
     zip_safe=False,
     install_requires=inst_reqs,
