@@ -18,7 +18,7 @@ def s3_get(bucket: str, key: str):
     return response["Body"].read()
 
 
-def get_indicator_site_metadata(identifier: str, folder:str) -> Dict:
+def get_indicator_site_metadata(identifier: str, folder: str) -> Dict:
     """Get Indicator metadata for a specific site."""
     try:
         key = f"indicators/{folder}/{identifier}.json"
@@ -100,8 +100,8 @@ def get_indicators(identifier) -> List:
                         ],
                     ),
                     data=data,
-                    notes=site_metadata.get('notes', None),
-                    highlight_bands=site_metadata.get('highlight_bands', None),
+                    notes=site_metadata.get("notes", None),
+                    highlight_bands=site_metadata.get("highlight_bands", None),
                     **top_level_fields,
                 )
             )
