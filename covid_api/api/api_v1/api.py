@@ -3,13 +3,13 @@
 from fastapi import APIRouter
 
 from covid_api.api.api_v1.endpoints import (
-    tiles,
-    metadata,
     ogc,
     timelapse,
     datasets,
     sites,
     groups,
+    tiles,
+    metadata,
 )
 
 api_router = APIRouter()
