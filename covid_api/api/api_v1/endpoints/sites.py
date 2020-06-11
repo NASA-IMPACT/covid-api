@@ -1,11 +1,12 @@
-from fastapi import APIRouter
-from glob import glob
+"""sites endpoint."""
 
-from covid_api.core import config
+from fastapi import APIRouter
+
 from covid_api.models.static import Sites, Site
 from covid_api.db.static.sites import sites
 
 router = APIRouter()
+
 
 @router.get(
     "/sites",
@@ -13,7 +14,9 @@ router = APIRouter()
     response_model=Sites,
 )
 def get_sites():
-   return sites.get_all()
+    """Return list of sites."""
+    return sites.get_all()
+
 
 @router.get(
     "/sites/{id}",
@@ -21,4 +24,5 @@ def get_sites():
     response_model=Site,
 )
 def get_site(id: str):
+    """Return site info."""
     return sites.get(id)

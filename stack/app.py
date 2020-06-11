@@ -4,8 +4,6 @@ from typing import Any, Union
 
 import os
 
-import docker
-
 from aws_cdk import (
     core,
     aws_iam as iam,
@@ -67,14 +65,10 @@ class covidApiLambdaStack(core.Stack):
             self,
             f"{id}-subnet-group",
             description=f"{id} subnet group",
-            subnet_ids=[sb.subnet_id for sb in vpc.private_subnets]
+            subnet_ids=[sb.subnet_id for sb in vpc.private_subnets],
         )
 
-        sg = ec2.SecurityGroup(
-            self,
-            f"{id}-cache-sg",
-            vpc=vpc
-        )
+        sg = ec2.SecurityGroup(self, f"{id}-cache-sg", vpc=vpc)
         cache = escache.CfnCacheCluster(
             self,
             f"{id}-cache",
@@ -94,7 +88,7 @@ class covidApiLambdaStack(core.Stack):
                 "ec2:DescribeNetworkInterfaces",
                 "ec2:DeleteNetworkInterface",
             ],
-            resources=["*"]
+            resources=["*"],
         )
 
         lambda_env = DEFAULT_ENV.copy()
@@ -119,7 +113,7 @@ class covidApiLambdaStack(core.Stack):
             reserved_concurrent_executions=concurrent,
             timeout=core.Duration.seconds(timeout),
             environment=lambda_env,
-            vpc=vpc
+            vpc=vpc,
         )
         lambda_function.add_to_role_policy(iam_policy_statement)
         lambda_function.add_to_role_policy(vpc_access_policy_statement)
@@ -130,7 +124,6 @@ class covidApiLambdaStack(core.Stack):
             f"{id}-endpoint",
             default_integration=apigw.LambdaProxyIntegration(handler=lambda_function),
         )
-
 
     def create_package(self, code_dir: str) -> aws_lambda.Code:
         """Build docker image and create package."""

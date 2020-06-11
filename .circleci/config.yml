@@ -10,10 +10,13 @@ jobs:
       - checkout
       - run:
           name: install dependencies
-          command: pip install tox codecov --user
+          command: pip install tox codecov pre-commit --user
       - run:
           name: test
           command: ~/.local/bin/tox
+      - run:
+          name: run pre-commit
+          command: ~/.local/bin/pre-commit run --all-files
 
   deploy:
     docker:

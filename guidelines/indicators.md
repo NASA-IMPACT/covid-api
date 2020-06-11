@@ -71,12 +71,31 @@ The date format should use options found in the [python `strptime` documentation
 - `indicator_conf_low` and `indicator_conf_high`: columns used for confidence intervals
 - `baseline`: columns used for a baseline value to compare with the primary indicator
 - `baseline_conf_low` and `baseline_conf_high`: columns used for confidence intervals for the baseline values
-- `highlight_bands`: used to highlight a time interval on the chart (eg. lockdown)
 - `anomaly`: column used to indicate if the value is anomalous, accepts any string
 
-### Additional Notes
+### Additional Metadata
 
-For any commentary which is both indicator and site specific, additional `.txt` files can be added alongside the csv files. So for example, `be.csv` can have a `be.txt` file which adds contextual information for what is happening with a given indicator in Beijing.
+For any commentary which is both indicator and site specific, additional `.json` files can be added alongside the csv files. So for example, `be.csv` can have a `be.json` file which adds contextual information for what is happening with a given indicator in Beijing. This JSON object can have two properties:
+- `notes`: text field to be added below the chart
+- `highlight_bands`: used to highlight a time interval on the chart (eg. lockdown)
+
+An example metadata file looks like this:
+
+```json
+{
+    "notes": "description",
+    "highlight_bands": [
+        {
+          "label": "Detection",
+          "interval": ["2020-02-01", "2020-03-30"]
+        },
+        {
+          "label": "Emergency state",
+          "interval": ["2020-03-15", "2020-05-15"]
+        }
+      ]
+}
+```
 
 ## Delivery mechanism
 Data can be provided to a S3 bucket:

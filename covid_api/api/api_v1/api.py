@@ -2,7 +2,16 @@
 
 from fastapi import APIRouter
 
-from covid_api.api.api_v1.endpoints import tiles, metadata, ogc, timelapse, datasets, sites, groups, detections
+from covid_api.api.api_v1.endpoints import (
+    ogc,
+    detections,
+    timelapse,
+    datasets,
+    sites,
+    groups,
+    tiles,
+    metadata,
+)
 
 api_router = APIRouter()
 api_router.include_router(tiles.router, tags=["tiles"])

@@ -4,7 +4,9 @@ from typing import List
 
 from covid_api.models.static import Datasets, Dataset
 from covid_api.db.static.errors import InvalidIdentifier
+
 data_dir = os.path.join(os.path.dirname(__file__))
+
 
 class DatasetManager(object):
     """Default Dataset holder."""
@@ -29,12 +31,11 @@ class DatasetManager(object):
 
     def get_all(self) -> Datasets:
         """Fetch all Datasets."""
-        return Datasets(
-            datasets=[dataset.dict() for dataset in self._data.values()]
-        )
+        return Datasets(datasets=[dataset.dict() for dataset in self._data.values()])
 
     def list(self) -> List[str]:
         """List all datasets"""
         return list(self._data.keys())
+
 
 datasets = DatasetManager()
