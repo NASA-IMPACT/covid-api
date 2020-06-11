@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from covid_api.api.api_v1.endpoints import (
     ogc,
+    detections,
     timelapse,
     datasets,
     sites,
@@ -20,3 +21,4 @@ api_router.include_router(timelapse.router, tags=["timelapse"])
 api_router.include_router(datasets.router, tags=["datasets"])
 api_router.include_router(sites.router, tags=["sites"])
 api_router.include_router(groups.router, tags=["indicator groups"])
+api_router.include_router(detections.router, tags=["detections"])
