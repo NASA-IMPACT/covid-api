@@ -4,7 +4,7 @@ import boto3
 import csv
 import json
 from datetime import datetime
-from typing import Union, List
+from typing import Dict, List
 
 from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT
 from covid_api.models.static import IndicatorObservation
@@ -17,7 +17,7 @@ def s3_get(bucket: str, key: str):
     response = s3.get_object(Bucket=bucket, Key=key)
     return response["Body"].read()
 
-  
+
 def get_indicator_site_metadata(identifier: str, folder:str) -> Dict:
     """Get Indicator metadata for a specific site."""
     try:
