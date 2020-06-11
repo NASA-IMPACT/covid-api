@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 
 from covid_api.models.static import Sites, Site
-from covid_api.db.static.sites import sites
+from covid_api.db.static.sites import sites, SiteNames
 
 router = APIRouter()
 
@@ -23,6 +23,6 @@ def get_sites():
     responses={200: dict(description="return a site")},
     response_model=Site,
 )
-def get_site(id: str):
+def get_site(id: SiteNames):
     """Return site info."""
-    return sites.get(id)
+    return sites.get(id.value)
