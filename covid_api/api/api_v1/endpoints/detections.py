@@ -12,7 +12,6 @@ router = APIRouter()
 
 # TODO: unhardcoded types and dates
 MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple"]])  # type: ignore
-Dates = Enum("Dates", [(d, d) for d in ["2020_03_11"]])  # type: ignore
 
 
 @router.get(
@@ -20,12 +19,12 @@ Dates = Enum("Dates", [(d, d) for d in ["2020_03_11"]])  # type: ignore
     responses={200: dict(description="return a detection geojson")},
     response_model=Detection,
 )
-def get_detection(ml_type: MLTypes, site: SiteNames, date: Dates):
+def get_detection(ml_type: MLTypes, site: SiteNames, date: str):
     """ Handle /detections requests."""
     print(ml_type, site, date)
     return json.loads(
         s3_get(
             bucket=config.INDICATOR_BUCKET,
-            key=f"detections/{ml_type.value}/{site.value}/{date.value}.geojson",
+            key=f"detections/{ml_type.value}/{site.value}/{date}.geojson",
         )
     )
