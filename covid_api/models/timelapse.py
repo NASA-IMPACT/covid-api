@@ -23,3 +23,4 @@ class TimelapseRequest(BaseModel):
 
     month: str
     geojson: PolygonFeature
+    type: str
