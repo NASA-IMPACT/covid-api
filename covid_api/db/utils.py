@@ -35,6 +35,17 @@ def indicator_folders() -> List:
     return [obj["Prefix"].split("/")[1] for obj in response["CommonPrefixes"]]
 
 
+def indicator_exists(identifier: str, indicator: str):
+    """Check if an indicator exists for a site"""
+    try:
+        s3.head_object(
+            Bucket=INDICATOR_BUCKET, Key=f"indicators/{indicator}/{identifier}.csv",
+        )
+        return True
+    except Exception:
+        return False
+
+
 def get_indicators(identifier) -> List:
     """Return indicators info."""
     indicators = []

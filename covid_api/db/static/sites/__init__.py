@@ -6,7 +6,7 @@ from enum import Enum
 from covid_api.models.static import Site, Sites
 from covid_api.db.static.errors import InvalidIdentifier
 
-from covid_api.db.utils import get_indicators
+from covid_api.db.utils import get_indicators, indicator_folders, indicator_exists
 
 data_dir = os.path.join(os.path.dirname(__file__))
 
@@ -36,9 +36,14 @@ class SiteManager(object):
 
     def get_all(self) -> Sites:
         """Fetch all Sites."""
-        return Sites(
-            sites=[site.dict(exclude={"indicators"}) for site in self._data.values()]
-        )
+        all_sites = [site.dict() for site in self._data.values()]
+        indicators = indicator_folders()
+        # add indicator ids
+        for site in all_sites:
+            site["indicators"] = [
+                ind for ind in indicators if indicator_exists(site["id"], ind)
+            ]
+        return Sites(sites=all_sites)
 
     def list(self) -> List[str]:
         """List all sites"""
