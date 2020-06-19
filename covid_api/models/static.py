@@ -84,7 +84,7 @@ class IndicatorGroup(BaseModel):
 
     id: str
     label: str
-    prose: str
+    prose: Optional[str]
     indicators: List[str]
 
 

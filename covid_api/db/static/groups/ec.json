@@ -1,6 +1,6 @@
 {
     "id": "ec",
     "label": "Economic",
-    "prose": "Measuring the impact of COVID on economic activity",
-    "indicators": ["car-count"]
+    "prose": null,
+    "indicators": []
 }

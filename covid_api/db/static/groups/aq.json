@@ -1,6 +1,6 @@
 {
     "id": "aq",
     "label": "Air Quality",
-    "prose": "Tracking air quality",
-    "indicators": ["no2-15day", "xco2"]
+    "prose": null,
+    "indicators": ["no2-15day"]
 }
