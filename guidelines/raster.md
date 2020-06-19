@@ -41,3 +41,7 @@ When sending the data, please include the following information
 There are two mechanisms for making raster data available through this API:
 - **publicly available**: any publicly available COG can be accessed through this API. Because the API is run on Amazon Web Services in the `us-east-1` region, data hosted on S3 in this region will have faster response times to the API.
 - **send to API maintainers**: if you'd like to keep the source data stored privately, please contact olaf@developmentseed.org or drew@developmentseed.org, and we can discuss other hosting options for the data.
+
+## Visualization
+
+Once ingested or otherwise made accessible, the data is available as map tiles as detailed in the [API documentation](https://8ib71h0627.execute-api.us-east-1.amazonaws.com/docs). There are a variety of parameters that can be used to customize the visualization, in particular, a [number of colormaps.](https://github.com/cogeotiff/rio-tiler/blob/master/docs/colormap.md).
