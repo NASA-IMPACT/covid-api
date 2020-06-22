@@ -44,4 +44,4 @@ There are two mechanisms for making raster data available through this API:
 
 ## Visualization
 
-Once ingested or otherwise made accessible, the data is available as map tiles as detailed in the [API documentation](https://8ib71h0627.execute-api.us-east-1.amazonaws.com/docs). There are a variety of parameters that can be used to customize the visualization, in particular, a [number of colormaps.](https://github.com/cogeotiff/rio-tiler/blob/master/docs/colormap.md).
+Once ingested or otherwise made accessible, the data is available as map tiles as detailed in the [API documentation](https://8ib71h0627.execute-api.us-east-1.amazonaws.com/docs). There are a variety of parameters that can be used to customize the visualization, in particular, a [number of colormaps](https://github.com/cogeotiff/rio-tiler/blob/master/docs/colormap.md). The remaining parameter descriptions are shown [here](https://github.com/developmentseed/cogeo-tiler#tiles).
