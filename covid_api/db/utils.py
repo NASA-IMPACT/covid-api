@@ -43,81 +43,92 @@ def indicator_exists(identifier: str, indicator: str):
         )
         return True
     except Exception:
-        return False
+        try:
+            s3.head_object(
+                Bucket=INDICATOR_BUCKET,
+                Key=f"indicators/{indicator}/{identifier}.json",
+            )
+            return True
+        except Exception:
+            return False
 
 
 def get_indicators(identifier) -> List:
     """Return indicators info."""
     indicators = []
     for folder in indicator_folders():
-        try:
-            data = []
-            # metadata for reading the data and converting to a consistent format
-            metadata_json = s3_get(
-                INDICATOR_BUCKET, f"indicators/{folder}/metadata.json"
-            )
-            metadata_dict = json.loads(metadata_json.decode("utf-8"))
+        if indicator_exists(identifier, folder):
+            indicator = dict(id=folder)
+            try:
+                data = []
+                # metadata for reading the data and converting to a consistent format
+                metadata_json = s3_get(
+                    INDICATOR_BUCKET, f"indicators/{folder}/metadata.json"
+                )
+                metadata_dict = json.loads(metadata_json.decode("utf-8"))
 
-            # read the actual indicator data
-            indicator_csv = s3_get(
-                INDICATOR_BUCKET, f"indicators/{folder}/{identifier}.csv"
-            )
-            indicator_lines = indicator_csv.decode("utf-8").split()
-            reader = csv.DictReader(indicator_lines,)
+                # read the actual indicator data
+                indicator_csv = s3_get(
+                    INDICATOR_BUCKET, f"indicators/{folder}/{identifier}.csv"
+                )
+                indicator_lines = indicator_csv.decode("utf-8").split()
+                reader = csv.DictReader(indicator_lines,)
 
-            # top level metadata is added directly to the response
-            top_level_fields = {
-                k: v for k, v in metadata_dict.items() if isinstance(v, str)
-            }
-
-            # for each row (observation), format the data correctly
-            for row in reader:
-                date = datetime.strptime(
-                    row[metadata_dict["date"]["column"]],
-                    metadata_dict["date"]["format"],
-                ).strftime(DT_FORMAT)
-
-                other_fields = {
-                    k: row.get(v["column"], None)
-                    for k, v in metadata_dict.items()
-                    if isinstance(v, dict) and v.get("column") and k != "date"
+                # top level metadata is added directly to the response
+                top_level_fields = {
+                    k: v for k, v in metadata_dict.items() if isinstance(v, str)
                 }
 
-                # validate and parse the row
-                i = IndicatorObservation(**other_fields)
+                # for each row (observation), format the data correctly
+                for row in reader:
+                    date = datetime.strptime(
+                        row[metadata_dict["date"]["column"]],
+                        metadata_dict["date"]["format"],
+                    ).strftime(DT_FORMAT)
 
-                data.append(dict(date=date, **i.dict(exclude_none=True)))
+                    other_fields = {
+                        k: row.get(v["column"], None)
+                        for k, v in metadata_dict.items()
+                        if isinstance(v, dict) and v.get("column") and k != "date"
+                    }
 
-            site_metadata = get_indicator_site_metadata(identifier, folder)
+                    # validate and parse the row
+                    i = IndicatorObservation(**other_fields)
 
-            # construct the final indicator object
-            indicators.append(
-                dict(
-                    id=folder,
-                    domain=dict(
-                        date=[
-                            min(
-                                data,
-                                key=lambda x: datetime.strptime(x["date"], DT_FORMAT),
-                            )["date"],
-                            max(
-                                data,
-                                key=lambda x: datetime.strptime(x["date"], DT_FORMAT),
-                            )["date"],
-                        ],
-                        indicator=[
-                            min(data, key=lambda x: x["indicator"])["indicator"],
-                            max(data, key=lambda x: x["indicator"])["indicator"],
-                        ],
-                    ),
-                    data=data,
-                    notes=site_metadata.get("notes", None),
-                    highlight_bands=site_metadata.get("highlight_bands", None),
-                    **top_level_fields,
+                    data.append(dict(date=date, **i.dict(exclude_none=True)))
+
+                # add to the indicator dictionary
+                indicator["domain"] = dict(
+                    date=[
+                        min(
+                            data, key=lambda x: datetime.strptime(x["date"], DT_FORMAT),
+                        )["date"],
+                        max(
+                            data, key=lambda x: datetime.strptime(x["date"], DT_FORMAT),
+                        )["date"],
+                    ],
+                    indicator=[
+                        min(data, key=lambda x: x["indicator"])["indicator"],
+                        max(data, key=lambda x: x["indicator"])["indicator"],
+                    ],
                 )
-            )
-        except Exception as e:
-            print(e)
-            pass
+                indicator["data"] = data
+                indicator.update(top_level_fields)
+
+            except Exception as e:
+                print(e)
+                pass
+
+            try:
+                site_metadata = get_indicator_site_metadata(identifier, folder)
+                indicator["notes"] = site_metadata.get("notes", None)
+                indicator["highlight_bands"] = site_metadata.get(
+                    "highlight_bands", None
+                )
+            except Exception as e:
+                print(e)
+                pass
+
+            indicators.append(indicator)
 
     return indicators
