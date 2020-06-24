@@ -2,5 +2,5 @@
     "id": "ec",
     "label": "Economic",
     "prose": null,
-    "indicators": []
+    "indicators": ["nightlights", "ship-detections"]
 }
