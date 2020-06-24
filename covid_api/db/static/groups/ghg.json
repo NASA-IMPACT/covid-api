@@ -2,5 +2,5 @@
     "id": "ghg",
     "label": "Greenhouse Gas",
     "prose": null,
-    "indicators": ["co2"]
+    "indicators": ["xco2"]
 }
