@@ -71,7 +71,7 @@ def get_indicators(identifier) -> List:
                 indicator_csv = s3_get(
                     INDICATOR_BUCKET, f"indicators/{folder}/{identifier}.csv"
                 )
-                indicator_lines = indicator_csv.decode("utf-8").split()
+                indicator_lines = indicator_csv.decode("utf-8").split("\n")
                 reader = csv.DictReader(indicator_lines,)
 
                 # top level metadata is added directly to the response
