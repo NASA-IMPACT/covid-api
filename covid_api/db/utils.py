@@ -121,6 +121,8 @@ def get_indicators(identifier) -> List:
 
             try:
                 site_metadata = get_indicator_site_metadata(identifier, folder)
+                # this will, intentionally, overwrite the name from the data if present
+                indicator["name"] = site_metadata.get("name", None)
                 indicator["notes"] = site_metadata.get("notes", None)
                 indicator["highlight_bands"] = site_metadata.get(
                     "highlight_bands", None
