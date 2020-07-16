@@ -1,19 +1,21 @@
+"""processing script for ship detection data"""
 import os
 import json
-from shutil import copy2
 import subprocess
 from glob import glob
 import csv
 
-def get_location(l):
-    if d["location"] == "New York":
+def get_location(loc):
+    """get location id of detections"""
+    if loc == "New York":
         return "ny"
-    elif d["location"] == "San Francisco":
+    elif loc == "San Francisco":
         return "sf"
     else:
         return "la"
 
 def file_to_scene(f):
+    """convert filename of tif to scene"""
     b = (
         os.path.basename(f)
         .replace("reprojected_", "")
@@ -32,11 +34,12 @@ with open("ships.geojson") as f:
     data = json.load(f)
 
 with open("tifs.txt") as f:
-    tifs = [l.strip() for l in f.readlines()]
+    tifs = [line.strip() for line in f.readlines()]
 
 scene_to_file_dict = dict(zip([file_to_scene(t) for t in tifs], tifs))
 
 def scene_to_file(s):
+    """convert scene to file name"""
     file = scene_to_file_dict.get(s)
     if not file:
         possible = [t for t in tifs if s in t]
