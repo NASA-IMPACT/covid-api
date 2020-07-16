@@ -5,6 +5,7 @@ import subprocess
 from glob import glob
 import csv
 
+
 def get_location(loc):
     """get location id of detections"""
     if loc == "New York":
@@ -13,6 +14,7 @@ def get_location(loc):
         return "sf"
     else:
         return "la"
+
 
 def file_to_scene(f):
     """convert filename of tif to scene"""
@@ -30,6 +32,7 @@ def file_to_scene(f):
         b = f"{s[0]}_{s[1][:6]}_{s[1][6:]}_{s[2]}"
     return b
 
+
 with open("ships.geojson") as f:
     data = json.load(f)
 
@@ -37,6 +40,7 @@ with open("tifs.txt") as f:
     tifs = [line.strip() for line in f.readlines()]
 
 scene_to_file_dict = dict(zip([file_to_scene(t) for t in tifs], tifs))
+
 
 def scene_to_file(s):
     """convert scene to file name"""
@@ -46,8 +50,9 @@ def scene_to_file(s):
         if possible:
             file = possible[0]
         else:
-            print(f'no match for {s}')
+            print(f"no match for {s}")
     return file
+
 
 for d in data:
     if "features" in d["ship_detections"]:
@@ -79,13 +84,13 @@ for d in data:
         )
 
 # sort and add headers to the csvs
-for file in glob('ship_csvs/*'):
+for file in glob("ship_csvs/*"):
     with open(file) as csvfile:
         reader = csv.reader(csvfile)
         sortedlist = sorted(reader, key=lambda row: row[0])
 
-    with open(file, 'w') as f:
-        fieldnames = ['date', 'count']
+    with open(file, "w") as f:
+        fieldnames = ["date", "count"]
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for row in sortedlist:
