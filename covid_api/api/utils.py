@@ -483,8 +483,21 @@ no2_cmap = {
     255: [5, 3, 8, 255],
 }
 
-COLOR_MAPS = {"no2": no2_cmap.copy()}
+crop_monitor_cmap = {
+    1: [120, 120, 120, 255],
+    2: [130, 65, 0, 255],
+    3: [66, 207, 56, 255],
+    4: [245, 239, 0, 255],
+    5: [241, 89, 32, 255],
+    6: [168, 0, 0, 255],
+    7: [0, 143, 201, 255],
+}
 
+
+COLOR_MAPS = {
+    "no2": no2_cmap.copy(),
+    "cropmonitor": crop_monitor_cmap.copy(),
+}
 
 def get_custom_cmap(cname) -> Dict:
     """Return custom colormap."""
