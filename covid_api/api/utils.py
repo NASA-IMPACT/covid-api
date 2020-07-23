@@ -499,6 +499,7 @@ COLOR_MAPS = {
     "cropmonitor": crop_monitor_cmap.copy(),
 }
 
+
 def get_custom_cmap(cname) -> Dict:
     """Return custom colormap."""
     if not re.match(r"^custom_", cname):
