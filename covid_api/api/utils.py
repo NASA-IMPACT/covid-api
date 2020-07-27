@@ -180,7 +180,7 @@ def rasterize_pctcover(geom, atrans, shape):
     # Create percent cover grid as the difference between them
     # at this point all cells are known 100% coverage,
     # we'll update this array for exterior points
-    pctcover = (alltouched - exterior) * 100
+    pctcover = alltouched - exterior
 
     # loop through indicies of all exterior cells
     for r, c in zip(*np.where(exterior == 1)):
@@ -199,8 +199,7 @@ def rasterize_pctcover(geom, atrans, shape):
         cell_overlap = cell.intersection(geom)
 
         # update pctcover with percentage based on area proportion
-        coverage = cell_overlap.area / cell.area
-        pctcover[r, c] = int(coverage * 100)
+        pctcover[r, c] = cell_overlap.area / cell.area
 
     return pctcover
 
