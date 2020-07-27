@@ -1,0 +1,44 @@
+{
+    "id": "water-chlorophyll",
+    "name": "Chlorophyll",
+    "type": "raster-timeseries",
+    "description": "Chlorophyll is an indicator of algae growth. Redder colors indicate increases in chlorophyll-a and worse water quality. Bluer colors indicate decreases in chlorophyll-a and improved water quality. White areas indicate no change.",
+    "domain": [],
+    "time_unit": "day",
+    "source": {
+        "type": "raster",
+        "tiles": [
+            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/oc3_chla_anomaly/anomaly-chl-{spotlightId}-{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
+        ]
+    },
+    "exclusive_with": [
+        "no2",
+        "co2-diff",
+        "co2",
+        "gibs-population",
+        "car-count",
+        "nightlights-viirs",
+        "nightlights-hd",
+        "detection-ship",
+        "detection-multi",
+        "water-spm"
+    ],
+    "swatch": {
+        "color": "#154F8D",
+        "name": "Deep blue"
+    },
+    "legend": {
+        "type": "gradient",
+        "min": "less",
+        "max": "more",
+        "stops": [
+            "#3A88BD",
+            "#C9E0ED",
+            "#E4EEF3",
+            "#FDDCC9",
+            "#DE725B",
+            "#67001F"
+        ]
+    },
+    "info": "Chlorophyll is an indicator of algae growth. Redder colors indicate increases in chlorophyll-a and worse water quality. Bluer colors indicate decreases in chlorophyll-a and improved water quality. White areas indicate no change."
+}

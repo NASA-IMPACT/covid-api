@@ -1,0 +1,40 @@
+{
+    "id": "detection-ship",
+    "name": "Shipping",
+    "type": "inference-timeseries",
+    "description": "Ships detected each day in PlanetScope imagery are shown in red.",
+    "domain": [
+        "2020-03-11"
+    ],
+    "source": {
+        "vector": {
+            "type": "geojson",
+            "data": "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/detections/ship/{spotlightId}/{date}.geojson"
+        },
+        "raster": {
+            "type": "raster",
+            "tiles": [
+                "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/planet/{spotlightId}-{date}.tif&resampling_method=nearest&bidx=1,2,3"
+            ]
+        }
+    },
+    "exclusive_with": [
+        "no2",
+        "co2-diff",
+        "co2",
+        "gibs-population",
+        "car-count",
+        "nightlights-viirs",
+        "nightlights-hd",
+        "detection-multi",
+        "water-chlorophyll",
+        "water-spm"
+    ],
+    "enabled": false,
+    "swatch": {
+        "color": "#C0C0C0",
+        "name": "Grey"
+    },
+    "time_unit": "day",
+    "info": "Ships detected each day in PlanetScope imagery are shown in red."
+}

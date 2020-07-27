@@ -1,0 +1,44 @@
+{
+    "id": "water-spm",
+    "name": "Turbidity",
+    "type": "raster-timeseries",
+    "description": "Turbidity refers to the amount of sediment or particles suspended in water. Darker colors indicate more sediment and murkier water. Lighter colors indicate less sediment and clearer water.",
+    "domain": [],
+    "time_unit": "day",
+    "source": {
+        "type": "raster",
+        "tiles": [
+            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/spm_anomaly/anomaly-spm-{spotlightId}-{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
+        ]
+    },
+    "exclusive_with": [
+        "no2",
+        "co2-diff",
+        "co2",
+        "gibs-population",
+        "car-count",
+        "nightlights-viirs",
+        "nightlights-hd",
+        "detection-ship",
+        "detection-multi",
+        "water-chlorophyll"
+    ],
+    "swatch": {
+        "color": "#154F8D",
+        "name": "Deep blue"
+    },
+    "legend": {
+        "type": "gradient",
+        "min": "less",
+        "max": "more",
+        "stops": [
+            "#3A88BD",
+            "#C9E0ED",
+            "#E4EEF3",
+            "#FDDCC9",
+            "#DE725B",
+            "#67001F"
+        ]
+    },
+    "info": "Turbidity refers to the amount of sediment or particles suspended in water. Darker colors indicate more sediment and murkier water. Lighter colors indicate less sediment and clearer water."
+}
