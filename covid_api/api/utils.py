@@ -697,7 +697,6 @@ def planet_mosaic_tile(scenes, x, y, z):
         with MemoryFile(BytesIO(r.content)) as memfile:
             with memfile.open() as src:
                 data = src.read()
-                print(data.sum())
                 # any place we don't have data yet, add some
                 mosaic_tile = np.where(
                     mosaic_tile[3] == 0, mosaic_tile + data, mosaic_tile
