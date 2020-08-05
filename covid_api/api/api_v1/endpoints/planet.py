@@ -1,24 +1,18 @@
 """API planet mosaic tiles."""
 
-from typing import Any, Dict, Union, Optional
-
-import re
+from typing import Any, Dict
 
 from functools import partial
-
-import numpy as np
-import requests
 
 from fastapi import APIRouter, Depends, Query, Path
 from starlette.concurrency import run_in_threadpool
 
-from rio_tiler.profiles import img_profiles
 from rio_tiler.utils import render
 
 from covid_api.api import utils
 from covid_api.db.memcache import CacheLayer
 from covid_api.ressources.enums import ImageType
-from covid_api.ressources.common import drivers, mimetype
+from covid_api.ressources.common import mimetype
 from covid_api.ressources.responses import TileResponse
 
 
@@ -75,11 +69,13 @@ async def tile(
         timings.append(("Format", t.elapsed))
 
         if cache_client and content:
-            cache_client.set_image_cache(tile_hash, (content))
+            cache_client.set_image_cache(tile_hash, (content, ImageType.png))
 
     if timings:
         headers["X-Server-Timings"] = "; ".join(
             ["{} - {:0.2f}".format(name, time * 1000) for (name, time) in timings]
         )
 
-    return TileResponse(content, media_type=mimetype["png"], headers=headers)
+    return TileResponse(
+        content, media_type=mimetype[ImageType.png.value], headers=headers
+    )

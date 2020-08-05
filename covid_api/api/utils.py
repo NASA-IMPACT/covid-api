@@ -689,6 +689,7 @@ ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])  # type:
 
 
 def planet_mosaic_tile(scenes, x, y, z):
+    """return a mosaicked tile for a set of planet scenes"""
     mosaic_tile = np.zeros((4, 256, 256), dtype=np.uint8)
     for scene in scenes.split(","):
         api_num = math.floor(random.random() * 3) + 1
