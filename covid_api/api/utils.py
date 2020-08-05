@@ -7,10 +7,16 @@ import re
 import time
 import json
 import hashlib
+import math
+import random
+from io import BytesIO
+
 
 import numpy as np
 from shapely.geometry import shape, box
 from rasterstats.io import bounds_window
+from rasterio.io import MemoryFile
+import requests
 
 from starlette.requests import Request
 
@@ -28,6 +34,7 @@ from rio_tiler.utils import linear_rescale, _chunks
 
 from covid_api.db.memcache import CacheLayer
 from covid_api.models.timelapse import Feature
+from covid_api.core.config import PLANET_API_KEY
 
 
 def get_cache(request: Request) -> CacheLayer:
@@ -679,3 +686,31 @@ COLOR_MAP_NAMES = [
 
 
 ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])  # type: ignore
+
+
+def planet_mosaic_tile(scenes, x, y, z):
+    """return a mosaicked tile for a set of planet scenes"""
+    mosaic_tile = np.zeros((4, 256, 256), dtype=np.uint8)
+    for scene in scenes.split(","):
+        api_num = math.floor(random.random() * 3) + 1
+        url = f"https://tiles{api_num}.planet.com/data/v1/PSScene3Band/{scene}/{z}/{x}/{y}.png?api_key={PLANET_API_KEY}"
+        r = requests.get(url)
+        with MemoryFile(BytesIO(r.content)) as memfile:
+            with memfile.open() as src:
+                data = src.read()
+                # any place we don't have data yet, add some
+                mosaic_tile = np.where(
+                    mosaic_tile[3] == 0, mosaic_tile + data, mosaic_tile
+                )
+
+        # if the tile is full, stop
+        if np.count_nonzero(mosaic_tile[3]) == mosaic_tile[3].size:
+            break
+
+    # salt the resulting image
+    salt = np.random.randint(0, 3, (256, 256), dtype=np.uint8)
+    mosaic_tile[:3] = np.where(
+        mosaic_tile[:3] < 254, mosaic_tile[:3] + salt, mosaic_tile[:3]
+    )
+
+    return mosaic_tile[:3], mosaic_tile[3]
