@@ -1,6 +1,7 @@
 """Dataset endpoints."""
 
-from fastapi import APIRouter
+from covid_api.db.static.errors import InvalidIdentifier
+from fastapi import APIRouter, HTTPException
 
 from covid_api.models.static import Datasets
 from covid_api.db.static.datasets import datasets
@@ -28,4 +29,9 @@ def get_datasets():
 )
 def get_dataset(spotlight_id: str):
     """Return dataset info."""
-    return datasets.get(spotlight_id)
+    try:
+        return datasets.get(spotlight_id)
+    except InvalidIdentifier:
+        raise HTTPException(
+            status_code=404, detail=f"Invalid spotlight identifier: {spotlight_id}"
+        )

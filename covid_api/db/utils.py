@@ -73,13 +73,21 @@ def get_dataset_folders_by_spotlight(spotlight_id: str, spotlight_name: str):
     return folders_matched
 
 
-def get_dataset_domain(dataset_folder: str, time_unit: Optional[str] = None):
+def get_dataset_domain(
+    dataset_folder: str,
+    time_unit: Optional[str] = None,
+    spotlight: Optional[Dict] = None,
+):
     """
     Returns a domain for a given dataset as identified by a folder. If a
     time_unit is passed as a function parameter, the function will assume
     that the domain is periodic and only the min/max dates need to be returned
     """
-    keys = gather_s3_keys(prefix=dataset_folder)
+    s3_keys_args = dict(prefix=dataset_folder)
+    if spotlight:
+        s3_keys_args.update(spotlight)
+
+    keys = gather_s3_keys(**s3_keys_args)
     dates = []
     for key in keys:
         result = re.search(
