@@ -3,13 +3,105 @@
 import boto3
 import csv
 import json
+import re
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT
+from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT, MT_FORMAT
 from covid_api.models.static import IndicatorObservation
 
 s3 = boto3.client("s3")
+
+
+def gather_s3_keys(
+    spotlight_id: Optional[str] = None,
+    spotlight_name: Optional[str] = None,
+    prefix: Optional[str] = None,
+):
+    """Returns a set of keys. If spotlight_id and spotlight_name are NOT provided
+    the entirety of the S3 bucket's keys are returned, otherwise only the keys
+    containing either the spotlight name or id are returned.
+    TODO: review!
+    """
+    keys: set = set()
+
+    list_objects_args = dict(Bucket=INDICATOR_BUCKET)
+
+    if prefix:
+        list_objects_args["Prefix"] = prefix
+
+    response = s3.list_objects_v2(**list_objects_args)
+    keys.update({x["Key"] for x in response["Contents"]})
+
+    while response["IsTruncated"]:
+
+        list_objects_args["ContinuationToken"] = response["NextContinuationToken"]
+        response = s3.list_objects_v2(**list_objects_args)
+
+        keys.update({x["Key"] for x in response["Contents"]})
+
+    if not spotlight_id and not spotlight_name:
+        return keys
+
+    return {
+        key
+        for key in keys
+        if re.search(
+            rf"[^a-zA-Z0-9]({spotlight_id}|{spotlight_name.replace(' ', '')})[^a-zA-Z0-9]",
+            key,
+            re.IGNORECASE,
+        )
+    }
+
+
+def get_dataset_folders_by_spotlight(spotlight_id: str, spotlight_name: str):
+    """
+    TODO:  FILL THIS OUT!
+    """
+    folders_matched: set = set()
+
+    keys = gather_s3_keys(spotlight_id, spotlight_name)
+    itercount = 0
+    while len(keys):
+        itercount += 1
+        key = keys.pop()
+        if key.split("/")[0] not in folders_matched:
+            folders_matched.add(key.split("/")[0])
+            keys = {k for k in keys if not k.startswith(key.split("/")[0])}
+
+    return folders_matched
+
+
+def get_dataset_domain(dataset_folder: str, time_unit: Optional[str] = None):
+    keys = gather_s3_keys(prefix=dataset_folder)
+    dates = []
+    for key in keys:
+        result = re.search(
+            # matches either dates like: YYYYMM or YYYY-mm-dd (with any non-alphanumeric delimiter)
+            r"[^a-zA-Z0-9]((?P<MT_DATE>(\d{6}))|((?P<YEAR>\d{4})[^a-zA-Z0-9](?P<MONTH>\d{2})[^a-zA-Z0-9](?P<DAY>\d{2})))[^a-zA-Z0-9]",
+            key,
+            re.IGNORECASE,
+        )
+        if not result:
+            continue
+
+        date = None
+        try:
+            if result.group("MT_DATE"):
+                date = datetime.strptime(result.group("MT_DATE"), MT_FORMAT)
+            else:
+                datestring = f"{result.group('YEAR')}-{result.group('MONTH')}-{result.group('DAY')}"
+                date = datetime.strptime(datestring, DT_FORMAT)
+        except ValueError:
+            # Invalid date value matched
+            continue
+
+        dates.append(date)
+
+    if time_unit and len(dates):
+        return [min(dates), max(dates)]
+
+    return dates
 
 
 def s3_get(bucket: str, key: str):

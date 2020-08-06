@@ -1,6 +1,6 @@
 """Static models."""
 
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Union, Dict
 from pydantic import BaseModel
 from pydantic.color import Color
 from geojson_pydantic.features import FeatureCollection
@@ -14,6 +14,18 @@ class Source(BaseModel):
     tiles: List
 
 
+class Domain(BaseModel):
+    """Domain Model."""
+
+    start_date: Optional[str]
+    end_date: Optional[str]
+    time_unit: Optional[str]
+    dates: Optional[List[str]]
+    # TODO: add @validator to ensure one of:
+    # start_date+end_date+time_unit OR dates
+    # is present
+
+
 class Swatch(BaseModel):
     """Swatch Model."""
 
@@ -25,9 +37,9 @@ class Legend(BaseModel):
     """Legend Model."""
 
     type: str
-    min: str
-    max: str
-    stops: List[Color]
+    min: Optional[str]
+    max: Optional[str]
+    stops: Union[List[Color], List[Dict[str, str]]]
 
 
 class Dataset(BaseModel):
@@ -37,6 +49,7 @@ class Dataset(BaseModel):
     name: str
     description: str = ""
     type: str
+    time_unit: Optional[str]
     domain: List = []
     source: Source
     swatch: Swatch

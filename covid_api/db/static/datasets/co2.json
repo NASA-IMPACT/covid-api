@@ -4,10 +4,6 @@
     "type": "raster-timeseries",
     "time_unit": "day",
     "description": "This layer shows the average background concentration of carbon dioxide (CO₂) in our atmosphere for 2020. Redder colors indicate more CO₂. Whiter colors indicate less CO₂.",
-    "domain": [
-        "2020-01-01",
-        "2020-04-16"
-    ],
     "source": {
         "type": "raster",
         "tiles": [

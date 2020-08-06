@@ -3,7 +3,6 @@
     "name": "Turbidity",
     "type": "raster-timeseries",
     "description": "Turbidity refers to the amount of sediment or particles suspended in water. Darker colors indicate more sediment and murkier water. Lighter colors indicate less sediment and clearer water.",
-    "domain": [],
     "time_unit": "day",
     "source": {
         "type": "raster",

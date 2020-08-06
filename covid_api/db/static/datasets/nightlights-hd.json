@@ -4,10 +4,6 @@
     "type": "raster-timeseries",
     "description": "The High Definition Nightlights dataset is processed to eliminate light sources, including moonlight reflectance and other interferences. Darker colors indicate fewer night lights and less activity. Lighter colors indicate more night lights and more activity.",
     "time_unit": "month",
-    "domain": [
-        "2020-01-01",
-        "2020-05-01"
-    ],
     "source": {
         "type": "raster",
         "tiles": [

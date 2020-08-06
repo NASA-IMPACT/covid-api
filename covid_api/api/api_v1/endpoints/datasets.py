@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from covid_api.models.static import Dataset, Datasets
 from covid_api.db.static.datasets import datasets
 
+
 router = APIRouter()
 
 
@@ -19,10 +20,12 @@ def get_datasets():
 
 
 @router.get(
-    "/datasets/{id}",
-    responses={200: dict(description="return a dataset")},
-    response_model=Dataset,
+    "/datasets/{spotlight_id}",
+    responses={
+        200: dict(description="return datasets available for a given spotlight")
+    },
+    response_model=Datasets,
 )
-def get_dataset(id: str):
+def get_dataset(spotlight_id: str):
     """Return dataset info."""
-    return datasets.get(id)
+    return datasets.get(spotlight_id)

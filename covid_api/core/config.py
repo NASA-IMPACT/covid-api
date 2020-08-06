@@ -21,3 +21,4 @@ MEMCACHE_PASSWORD = os.environ.get("MEMCACHE_PASSWORD")
 
 INDICATOR_BUCKET = os.environ.get("INDICATOR_BUCKET", "covid-eo-data")
 DT_FORMAT = "%Y-%m-%d"
+MT_FORMAT = "%Y%m"
