@@ -11,7 +11,6 @@ from covid_api.api.api_v1.endpoints import (
     groups,
     tiles,
     metadata,
-    planet,
 )
 
 api_router = APIRouter()
@@ -23,4 +22,3 @@ api_router.include_router(datasets.router, tags=["datasets"])
 api_router.include_router(sites.router, tags=["sites"])
 api_router.include_router(groups.router, tags=["indicator groups"])
 api_router.include_router(detections.router, tags=["detections"])
-api_router.include_router(planet.router, tags=["planet"])
