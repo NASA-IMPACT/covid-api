@@ -47,7 +47,8 @@ def gather_s3_keys(
         key
         for key in keys
         if re.search(
-            rf"[^a-zA-Z0-9]({spotlight_id}|{spotlight_name.replace(' ', '')})[^a-zA-Z0-9]",
+            rf"""[^a-zA-Z0-9]({spotlight_id}|"""
+            rf"""{spotlight_name.replace(' ', '')})[^a-zA-Z0-9]""",
             key,
             re.IGNORECASE,
         )
@@ -73,12 +74,20 @@ def get_dataset_folders_by_spotlight(spotlight_id: str, spotlight_name: str):
 
 
 def get_dataset_domain(dataset_folder: str, time_unit: Optional[str] = None):
+    """
+    Returns a domain for a given dataset as identified by a folder. If a
+    time_unit is passed as a function parameter, the function will assume
+    that the domain is periodic and only the min/max dates need to be returned
+    """
     keys = gather_s3_keys(prefix=dataset_folder)
     dates = []
     for key in keys:
         result = re.search(
-            # matches either dates like: YYYYMM or YYYY-mm-dd (with any non-alphanumeric delimiter)
-            r"[^a-zA-Z0-9]((?P<MT_DATE>(\d{6}))|((?P<YEAR>\d{4})[^a-zA-Z0-9](?P<MONTH>\d{2})[^a-zA-Z0-9](?P<DAY>\d{2})))[^a-zA-Z0-9]",
+            # matches either dates like: YYYYMM or YYYY-mm-dd (with any
+            # non-alphanumeric delimiter)
+            r"""[^a-zA-Z0-9]((?P<MT_DATE>(\d{6}))|"""
+            r"""((?P<YEAR>\d{4})[^a-zA-Z0-9](?P<MONTH>\d{2})[^a-zA-Z0-9]"""
+            r"""(?P<DAY>\d{2})))[^a-zA-Z0-9]""",
             key,
             re.IGNORECASE,
         )
@@ -90,7 +99,10 @@ def get_dataset_domain(dataset_folder: str, time_unit: Optional[str] = None):
             if result.group("MT_DATE"):
                 date = datetime.strptime(result.group("MT_DATE"), MT_FORMAT)
             else:
-                datestring = f"{result.group('YEAR')}-{result.group('MONTH')}-{result.group('DAY')}"
+                datestring = (
+                    f"""{result.group('YEAR')}-{result.group('MONTH')}"""
+                    f"""-{result.group('DAY')}"""
+                )
                 date = datetime.strptime(datestring, DT_FORMAT)
         except ValueError:
             # Invalid date value matched

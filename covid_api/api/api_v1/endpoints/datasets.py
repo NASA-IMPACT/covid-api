@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from covid_api.models.static import Dataset, Datasets
+from covid_api.models.static import Datasets
 from covid_api.db.static.datasets import datasets
 
 

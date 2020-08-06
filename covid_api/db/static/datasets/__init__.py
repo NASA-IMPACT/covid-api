@@ -27,14 +27,16 @@ class DatasetManager(object):
             for dataset in datasets
         }
 
-        # loop through returned datasets, overloading "domain" with 
-        # data extracted from S3, if an accessible S3 folder is present 
+        # loop through returned datasets, overloading "domain" key with
+        # data extracted from S3, if an accessible S3 folder is present
         # (not the case for population data)
         for _, dataset in self._data.items():
 
-            if (dataset_folder := re.search(
-                    "s3://covid-eo-data/(.*)/", dataset.source.tiles[0]
-            )):
+            dataset_folder = re.search(
+                "s3://covid-eo-data/(.*)/", dataset.source.tiles[0]
+            )
+
+            if dataset_folder:
                 domain_args = [dataset_folder.group(1)]
                 if dataset.time_unit:
                     domain_args.append(dataset.time_unit)
