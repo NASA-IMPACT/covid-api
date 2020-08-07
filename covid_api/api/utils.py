@@ -11,6 +11,7 @@ import math
 import random
 import requests
 from io import BytesIO
+import csv
 
 import numpy as np
 from shapely.geometry import shape, box
@@ -32,7 +33,9 @@ from rio_color.utils import scale_dtype, to_math_type
 from rio_tiler.utils import linear_rescale, _chunks
 
 from covid_api.db.memcache import CacheLayer
+from covid_api.db.utils import s3_get
 from covid_api.models.timelapse import Feature
+from covid_api.core.config import PLANET_API_KEY, INDICATOR_BUCKET
 
 
 def get_cache(request: Request) -> CacheLayer:
@@ -685,6 +688,7 @@ COLOR_MAP_NAMES = [
 
 ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])  # type: ignore
 
+
 def planet_mosaic_tile(scenes, x, y, z):
     """return a mosaicked tile for a set of planet scenes"""
     mosaic_tile = np.zeros((4, 256, 256), dtype=np.uint8)
@@ -711,3 +715,20 @@ def planet_mosaic_tile(scenes, x, y, z):
     )
 
     return mosaic_tile[:3], mosaic_tile[3]
+
+
+# TODO: make this more generic
+site_date_to_scenes_csv = s3_get(
+    INDICATOR_BUCKET, "detections/plane/detection_scenes.csv"
+)
+site_date_lines = site_date_to_scenes_csv.decode("utf-8").split("\n")
+reader = csv.DictReader(site_date_lines)
+site_date_to_scenes_dict = dict()
+for row in reader:
+    site_date_to_scenes_dict[f'{row["aoi"]}-{row["date"]}'] = row["scene_id"].replace(
+        "'", '"'
+    )
+
+
+def site_date_to_scenes(site: str, date: str):
+    return json.loads(site_date_to_scenes_dict[f"{site}-{date}"])

@@ -1,6 +1,4 @@
 """API planet mosaic tiles."""
-import csv
-import json
 from typing import Any, Dict
 
 from functools import partial
@@ -13,7 +11,6 @@ from rio_tiler.utils import render
 from covid_api.api import utils
 from covid_api.core.config import INDICATOR_BUCKET
 from covid_api.db.memcache import CacheLayer
-from covid_api.db.utils import s3_get
 from covid_api.ressources.enums import ImageType
 from covid_api.ressources.common import mimetype
 from covid_api.ressources.responses import TileResponse
@@ -39,18 +36,6 @@ tile_routes_params: Dict[str, Any] = dict(
     responses=responses, tags=["planet"], response_class=TileResponse
 )
 
-# TODO: make this more generic
-site_date_to_scenes_csv = s3_get(
-    INDICATOR_BUCKET, "detections/plane/detection_scenes.csv"
-)
-site_date_lines = site_date_to_scenes_csv.decode("utf-8").split("\n")
-reader = csv.DictReader(site_date_lines)
-site_date_to_scenes = dict()
-for row in reader:
-    site_date_to_scenes[f'{row["aoi"]}-{row["date"]}'] = row["scene_id"].replace(
-        "'", '"'
-    )
-
 
 @router.get(r"/planet/{z}/{x}/{y}", **tile_routes_params)
 async def tile(
@@ -65,7 +50,7 @@ async def tile(
     timings = []
     headers: Dict[str, str] = {}
 
-    scenes = json.loads(site_date_to_scenes[f"{site}-{date}"])
+    scenes = utils.site_date_to_scenes(site, date)
 
     tile_hash = utils.get_hash(**dict(z=z, x=x, y=y, scenes=scenes, planet=True))
 
