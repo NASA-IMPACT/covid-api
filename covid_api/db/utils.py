@@ -31,14 +31,14 @@ def gather_s3_keys(
         list_objects_args["Prefix"] = prefix
 
     response = s3.list_objects_v2(**list_objects_args)
-    keys.update({x["Key"] for x in response["Contents"]})
+    keys.update({x["Key"] for x in response.get("Contents", [])})
 
     while response["IsTruncated"]:
 
         list_objects_args["ContinuationToken"] = response["NextContinuationToken"]
         response = s3.list_objects_v2(**list_objects_args)
 
-        keys.update({x["Key"] for x in response["Contents"]})
+        keys.update({x["Key"] for x in response.get("Contents", [])})
 
     if not spotlight_id and not spotlight_name:
         return keys

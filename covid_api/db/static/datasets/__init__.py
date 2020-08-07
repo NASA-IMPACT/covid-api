@@ -57,7 +57,7 @@ class DatasetManager(object):
         try:
             # Fetch site corresponding to the spotlight ID
             site = sites.get(spotlight_id)
-            # Extracts datasets folders that contain keys for the given spotlight
+            # Extracts dataset folders that contain keys for the given spotlight
             dataset_folders = get_dataset_folders_by_spotlight(site.id, site.label)
 
             # filter for datasets corresponding to the above folders
@@ -89,7 +89,7 @@ class DatasetManager(object):
             raise InvalidIdentifier(f"Invalid identifier: {spotlight_id}")
 
     def get_all(self) -> Datasets:
-        """Fetch all Datasets."""
+        """Fetch all Datasets. Overload domain with S3 scanned domain"""
         self._data = self._overload_domain(datasets=self._data)
         return Datasets(datasets=[dataset.dict() for dataset in self._data.values()])
 
