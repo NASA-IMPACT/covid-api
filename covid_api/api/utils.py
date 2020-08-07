@@ -717,18 +717,17 @@ def planet_mosaic_tile(scenes, x, y, z):
     return mosaic_tile[:3], mosaic_tile[3]
 
 
-# TODO: make this more generic
-site_date_to_scenes_csv = s3_get(
-    INDICATOR_BUCKET, "detections/plane/detection_scenes.csv"
-)
-site_date_lines = site_date_to_scenes_csv.decode("utf-8").split("\n")
-reader = csv.DictReader(site_date_lines)
-site_date_to_scenes_dict = dict()
-for row in reader:
-    site_date_to_scenes_dict[f'{row["aoi"]}-{row["date"]}'] = row["scene_id"].replace(
-        "'", '"'
-    )
-
-
 def site_date_to_scenes(site: str, date: str):
+    """get the scenes corresponding to detections for a given site and date"""
+    # TODO: make this more generic
+    site_date_to_scenes_csv = s3_get(
+        INDICATOR_BUCKET, "detections/plane/detection_scenes.csv"
+    )
+    site_date_lines = site_date_to_scenes_csv.decode("utf-8").split("\n")
+    reader = csv.DictReader(site_date_lines)
+    site_date_to_scenes_dict = dict()
+    for row in reader:
+        site_date_to_scenes_dict[f'{row["aoi"]}-{row["date"]}'] = row[
+            "scene_id"
+        ].replace("'", '"')
     return json.loads(site_date_to_scenes_dict[f"{site}-{date}"])
