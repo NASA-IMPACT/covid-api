@@ -705,7 +705,7 @@ def planet_mosaic_tile(scenes, x, y, z):
                 )
 
         # if the tile is full, stop
-        if np.count_nonzero(mosaic_tile[3]) == mosaic_tile[3].size:
+        if mosaic_tile[3].all():
             break
 
     # salt the resulting image

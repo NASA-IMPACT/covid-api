@@ -9,7 +9,6 @@ from starlette.concurrency import run_in_threadpool
 from rio_tiler.utils import render
 
 from covid_api.api import utils
-from covid_api.core.config import INDICATOR_BUCKET
 from covid_api.db.memcache import CacheLayer
 from covid_api.ressources.enums import ImageType
 from covid_api.ressources.common import mimetype
