@@ -28,7 +28,7 @@ def get_datasets():
     response_model=Datasets,
 )
 def get_dataset(spotlight_id: str):
-    """Return dataset info."""
+    """Return dataset info for all datasets available for a given spotlight"""
     try:
         return datasets.get(spotlight_id)
     except InvalidIdentifier:

@@ -18,10 +18,27 @@ def gather_s3_keys(
     spotlight_name: Optional[str] = None,
     prefix: Optional[str] = None,
 ):
-    """Returns a set of keys. If spotlight_id and spotlight_name are NOT provided
-    the entirety of the S3 bucket's keys are returned, otherwise only the keys
-    containing either the spotlight name or id are returned.
-    TODO: review!
+    """
+    Returns a set of S3 keys. If no args are provided, the keys will represent
+    the entire S3 bucket.
+    Params:
+    -------
+    spotlight_id (Optional[str]):
+        Id of a spotlight to filter keys by; must be used in conjunction with
+        `spotlight_name`
+    spotlight_name (Optional[str]):
+        Human readable label of a spotlight to filter keys by; must be used in
+        conjunction with `spotlight_id`. This field is necessary because some
+        datasts contain spotlight labels in their file nameing coventions
+        instead of spotlight ids (ex: BM_500M_DAILY)
+    prefix (Optional[str]):
+        S3 Prefix under which to gather keys, used to specifcy a specific
+        dataset folder to search within.
+
+    Returns:
+    -------
+    set(str)
+
     """
     keys: set = set()
 
@@ -57,7 +74,16 @@ def gather_s3_keys(
 
 def get_dataset_folders_by_spotlight(spotlight_id: str, spotlight_name: str):
     """
-    TODO:  FILL THIS OUT!
+    Returns the S3 prefix of datasets containing files for the given spotlight
+
+    Params:
+    ------
+    spotlight_id (str): id of spotlight to search for
+    spotlight_name (str): human readable label of spotlight to search for
+
+    Returns:
+    --------
+    set(str)
     """
     folders_matched: set = set()
 
@@ -68,6 +94,9 @@ def get_dataset_folders_by_spotlight(spotlight_id: str, spotlight_name: str):
         key = keys.pop()
         if key.split("/")[0] not in folders_matched:
             folders_matched.add(key.split("/")[0])
+
+            # Once a folder has been found to contain the given spotlight
+            # all other files for that folder no longer have to be searched
             keys = {k for k in keys if not k.startswith(key.split("/")[0])}
 
     return folders_matched
@@ -81,7 +110,21 @@ def get_dataset_domain(
     """
     Returns a domain for a given dataset as identified by a folder. If a
     time_unit is passed as a function parameter, the function will assume
-    that the domain is periodic and only the min/max dates need to be returned
+    that the domain is periodic and with only return the min/max dates,
+    otherwise ALL dates available for that dataset/spotlight will be returned.
+
+    Params:
+    ------
+    dataset_folder (str): dataset folder to search within
+    time_unit (Optional[str]): time_unit (hardcoded) with the dataset
+        metadata json files
+    spotlight (optional[Dict[str,str]]):
+        a dictionary containing the `spotlight_id` and `spotlight_name` of
+        a spotlight whose domain should be returned.
+
+    Return:
+    ------
+    List[datetime]
     """
     s3_keys_args = dict(prefix=dataset_folder)
     if spotlight:
