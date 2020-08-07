@@ -29,3 +29,12 @@ The highlight bands are useful to call the user's attention to a specific time i
 They're defined by providing an interval with a start and end dates and an optional label.
 
 ![Chart with indicator line and highlight bands](./images/chart-bands.png)
+
+## Bar chart
+The bar chart can be used to display discrete values on specific dates, where there's no linear correlation beteween time periods. It will show a bar for each date entry at monthly intervals.  
+The chart is interactive, allowing the user to view the values on hover.
+
+![Interactive chart gif](./images/bar-chart-interactive.gif)
+
+### Data
+The only required properties for the bar chart arre `date` and `indicator`.

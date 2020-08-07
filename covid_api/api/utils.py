@@ -7,6 +7,11 @@ import re
 import time
 import json
 import hashlib
+import math
+import random
+import requests
+from io import BytesIO
+import csv
 
 import numpy as np
 from shapely.geometry import shape, box
@@ -17,6 +22,7 @@ from starlette.requests import Request
 # Temporary
 import rasterio
 from rasterio import features
+from rasterio.io import MemoryFile
 from rasterio.warp import transform_bounds
 from rio_tiler import constants
 from rio_tiler.utils import has_alpha_band, has_mask_band
@@ -27,7 +33,9 @@ from rio_color.utils import scale_dtype, to_math_type
 from rio_tiler.utils import linear_rescale, _chunks
 
 from covid_api.db.memcache import CacheLayer
+from covid_api.db.utils import s3_get
 from covid_api.models.timelapse import Feature
+from covid_api.core.config import PLANET_API_KEY, INDICATOR_BUCKET
 
 
 def get_cache(request: Request) -> CacheLayer:
@@ -180,7 +188,7 @@ def rasterize_pctcover(geom, atrans, shape):
     # Create percent cover grid as the difference between them
     # at this point all cells are known 100% coverage,
     # we'll update this array for exterior points
-    pctcover = (alltouched - exterior) * 100
+    pctcover = alltouched - exterior
 
     # loop through indicies of all exterior cells
     for r, c in zip(*np.where(exterior == 1)):
@@ -199,8 +207,7 @@ def rasterize_pctcover(geom, atrans, shape):
         cell_overlap = cell.intersection(geom)
 
         # update pctcover with percentage based on area proportion
-        coverage = cell_overlap.area / cell.area
-        pctcover[r, c] = int(coverage * 100)
+        pctcover[r, c] = cell_overlap.area / cell.area
 
     return pctcover
 
@@ -680,3 +687,47 @@ COLOR_MAP_NAMES = [
 
 
 ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])  # type: ignore
+
+
+def planet_mosaic_tile(scenes, x, y, z):
+    """return a mosaicked tile for a set of planet scenes"""
+    mosaic_tile = np.zeros((4, 256, 256), dtype=np.uint8)
+    for scene in scenes:
+        api_num = math.floor(random.random() * 3) + 1
+        url = f"https://tiles{api_num}.planet.com/data/v1/PSScene3Band/{scene}/{z}/{x}/{y}.png?api_key={PLANET_API_KEY}"
+        r = requests.get(url)
+        with MemoryFile(BytesIO(r.content)) as memfile:
+            with memfile.open() as src:
+                data = src.read()
+                # any place we don't have data yet, add some
+                mosaic_tile = np.where(
+                    mosaic_tile[3] == 0, mosaic_tile + data, mosaic_tile
+                )
+
+        # if the tile is full, stop
+        if mosaic_tile[3].all():
+            break
+
+    # salt the resulting image
+    salt = np.random.randint(0, 3, (256, 256), dtype=np.uint8)
+    mosaic_tile[:3] = np.where(
+        mosaic_tile[:3] < 254, mosaic_tile[:3] + salt, mosaic_tile[:3]
+    )
+
+    return mosaic_tile[:3], mosaic_tile[3]
+
+
+def site_date_to_scenes(site: str, date: str):
+    """get the scenes corresponding to detections for a given site and date"""
+    # TODO: make this more generic
+    site_date_to_scenes_csv = s3_get(
+        INDICATOR_BUCKET, "detections/plane/detection_scenes.csv"
+    )
+    site_date_lines = site_date_to_scenes_csv.decode("utf-8").split("\n")
+    reader = csv.DictReader(site_date_lines)
+    site_date_to_scenes_dict = dict()
+    for row in reader:
+        site_date_to_scenes_dict[f'{row["aoi"]}-{row["date"]}'] = row[
+            "scene_id"
+        ].replace("'", '"')
+    return json.loads(site_date_to_scenes_dict[f"{site}-{date}"])
