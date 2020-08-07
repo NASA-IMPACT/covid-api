@@ -9,20 +9,19 @@ import json
 import hashlib
 import math
 import random
+import requests
 from io import BytesIO
-
 
 import numpy as np
 from shapely.geometry import shape, box
 from rasterstats.io import bounds_window
-from rasterio.io import MemoryFile
-import requests
 
 from starlette.requests import Request
 
 # Temporary
 import rasterio
 from rasterio import features
+from rasterio.io import MemoryFile
 from rasterio.warp import transform_bounds
 from rio_tiler import constants
 from rio_tiler.utils import has_alpha_band, has_mask_band
@@ -34,7 +33,6 @@ from rio_tiler.utils import linear_rescale, _chunks
 
 from covid_api.db.memcache import CacheLayer
 from covid_api.models.timelapse import Feature
-from covid_api.core.config import PLANET_API_KEY
 
 
 def get_cache(request: Request) -> CacheLayer:
@@ -686,7 +684,6 @@ COLOR_MAP_NAMES = [
 
 
 ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])  # type: ignore
-
 
 def planet_mosaic_tile(scenes, x, y, z):
     """return a mosaicked tile for a set of planet scenes"""
