@@ -40,13 +40,16 @@ tile_routes_params: Dict[str, Any] = dict(
 )
 
 # TODO: make this more generic
-site_date_to_scenes_csv = s3_get(INDICATOR_BUCKET, 'detections/plane/detection_scenes.csv')
+site_date_to_scenes_csv = s3_get(
+    INDICATOR_BUCKET, "detections/plane/detection_scenes.csv"
+)
 site_date_lines = site_date_to_scenes_csv.decode("utf-8").split("\n")
 reader = csv.DictReader(site_date_lines)
 site_date_to_scenes = dict()
 for row in reader:
-    site_date_to_scenes[f'{row["aoi"]}-{row["date"]}'] = row["scene_id"].replace("'","\"")
-
+    site_date_to_scenes[f'{row["aoi"]}-{row["date"]}'] = row["scene_id"].replace(
+        "'", '"'
+    )
 
 
 @router.get(r"/planet/{z}/{x}/{y}", **tile_routes_params)
@@ -62,7 +65,7 @@ async def tile(
     timings = []
     headers: Dict[str, str] = {}
 
-    scenes = json.loads(site_date_to_scenes[f'{site}-{date}'])
+    scenes = json.loads(site_date_to_scenes[f"{site}-{date}"])
 
     tile_hash = utils.get_hash(**dict(z=z, x=x, y=y, scenes=scenes, planet=True))
 
