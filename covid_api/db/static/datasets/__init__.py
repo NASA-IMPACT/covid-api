@@ -26,7 +26,6 @@ class DatasetManager(object):
             dataset: Dataset.parse_file(os.path.join(data_dir, f"{dataset}.json"))
             for dataset in datasets
         }
-        self._data = self._overload_domain(datasets=self._data)
 
     @staticmethod
     def _overload_domain(datasets: dict, spotlight: Optional[dict] = None):
@@ -91,6 +90,7 @@ class DatasetManager(object):
 
     def get_all(self) -> Datasets:
         """Fetch all Datasets."""
+        self._data = self._overload_domain(datasets=self._data)
         return Datasets(datasets=[dataset.dict() for dataset in self._data.values()])
 
     def list(self) -> List[str]:
