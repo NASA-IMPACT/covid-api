@@ -11,7 +11,7 @@ from covid_api.db.static.sites import SiteNames
 router = APIRouter()
 
 # TODO: unhardcoded types and dates
-MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple"]])  # type: ignore
+MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple", "plane"]])  # type: ignore
 
 
 @router.get(
