@@ -1,7 +1,7 @@
 """ covid_api static datasets """
 import os
 import re
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Set, Any
 
 from covid_api.models.static import Datasets, Dataset
 from covid_api.db.static.errors import InvalidIdentifier
@@ -51,42 +51,77 @@ class DatasetManager(object):
             dataset.domain = get_dataset_domain(**(domain_args))
         return datasets
 
+    def filter_datasets_by_folders(self, folders: Set[str]) -> Dict:
+        """
+        Returns all datasets corresponding to a set of folders.
+
+        Params:
+        -------
+        folders (Set[str]): folder's to filter datasets by (eg:
+            for folders {"BMHD_30M_MONTHLY", "xco2"} this method
+            would return the "Nightlights HD" and the CO2 datasets)
+
+        Returns:
+        --------
+        Dict : Metadata objects for the datasets corresponding to the
+            folders provided.
+        """
+        return {
+            k: v
+            for k, v in self._data.items()
+            if any(
+                [
+                    re.search(
+                        rf"s3://covid-eo-data/{folder}/",
+                        v.source.tiles[0],
+                        re.IGNORECASE,
+                    )
+                    for folder in folders
+                ]
+            )
+        }
+
+    def get_global_datasets(self):
+        """
+        Returns all datasets which do not reference a specific spotlight
+        """
+        return {
+            k: v
+            for k, v in self._data.items()
+            if not re.search(r"{spotlightId}|{spotlightName}", v.source.tiles[0])
+        }
+
     def get(self, spotlight_id: str) -> Datasets:
         """Fetches all the datasets avilable for a given Spotlight."""
 
-        try:
-            # Fetch site corresponding to the spotlight ID
-            site = sites.get(spotlight_id)
-            # Extracts dataset folders that contain keys for the given spotlight
-            dataset_folders = get_dataset_folders_by_spotlight(site.id, site.label)
+        if spotlight_id == "global":
+            spotlight_datasets = self.get_global_datasets()
 
-            # filter for datasets corresponding to the above folders
-            spotlight_datasets = {
-                k: v
-                for k, v in self._data.items()
-                if any(
-                    [
-                        re.search(
-                            rf"s3://covid-eo-data/{folder}/",
-                            v.source.tiles[0],
-                            re.IGNORECASE,
-                        )
-                        for folder in dataset_folders
-                    ]
-                )
-            }
-
-            spotlight_datasets = self._overload_domain(
-                datasets=spotlight_datasets,
-                spotlight={"spotlight_id": site.id, "spotlight_name": site.label},
-            )
-
+            spotlight_datasets = self._overload_domain(datasets=spotlight_datasets)
             return Datasets(
                 datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
             )
 
+        try:
+            # Fetch site corresponding to the spotlight ID
+            site = sites.get(spotlight_id)
         except InvalidIdentifier:
-            raise InvalidIdentifier(f"Invalid identifier: {spotlight_id}")
+            raise
+
+        spotlight_dataset_folders = get_dataset_folders_by_spotlight(
+            site.id, site.label
+        )
+
+        spotlight_datasets = self.filter_datasets_by_folders(spotlight_dataset_folders)
+
+        spotlight_datasets = self._overload_domain(
+            datasets=spotlight_datasets,
+            spotlight={"spotlight_id": site.id, "spotlight_name": site.label},
+        )
+
+        return Datasets(
+            datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
+        )
 
     def get_all(self) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
