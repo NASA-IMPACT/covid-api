@@ -22,6 +22,9 @@ def _setup_s3():
         "BM_500M_DAILY/VNP46A2_V011_Beijing_2020_01_01_cog.tif",
         "BM_500M_DAILY/VNP46A2_V011_Beijing_2020_02_29_cog.tif",
         "BM_500M_DAILY/VNP46A2_V011_Beijing_2020_03_20_cog.tif",
+        "OMNO2d_HRM/OMI_trno2_0.10x0.10_200401_Col3_V4.nc.tif",
+        "OMNO2d_HRM/OMI_trno2_0.10x0.10_200708_Col3_V4.nc.tif",
+        "OMNO2d_HRM/OMI_trno2_0.10x0.10_200901_Col3_V4.nc.tif",
         "indicators/test/super.csv",
     ]
     for key in s3_keys:
@@ -108,6 +111,23 @@ def test_datasets_spotlight_label(app):
     assert dataset_info["domain"][1] == datetime.strftime(
         datetime(2020, 3, 20), "%Y-%m-%dT%H:%M:%S"
     )
+
+
+@mock_s3
+def test_global_datasets(app):
+    """test /datasets endpoint"""
+
+    # aws mocked resources
+    _setup_s3()
+
+    response = app.get("/v1/datasets/global")
+    assert response.status_code == 200
+
+    content = json.loads(response.content)
+    assert "datasets" in content
+
+    dataset_info = [d for d in content["datasets"] if d["id"] == "no2"][0]
+    assert len(dataset_info["domain"]) > 2
 
 
 @mock_s3

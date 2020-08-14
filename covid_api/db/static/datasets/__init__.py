@@ -47,6 +47,12 @@ class DatasetManager(object):
 
         try:
             site = sites.get(spotlight_id)
+
+            # Dunkirk and Ghent data is labeled "EUPort"
+            # as both spotlights correspond to the same tile
+            if spotlight_id in ["du", "gh"]:
+                site.label = "EUPorts"
+
         except InvalidIdentifier:
             raise
 
