@@ -116,22 +116,22 @@ def get_dataset_domain(
     Params:
     ------
     dataset_folder (str): dataset folder to search within
-    time_unit (Optional[str]): time_unit (hardcoded) with the dataset
-        metadata json files
-    spotlight (optional[Dict[str,str]]):
-        a dictionary containing the `spotlight_id` and `spotlight_name` of
-        a spotlight whose domain should be returned.
+    time_unit (Optional[str]): time_unit from the dataset's metadata json file
+    spotlight (optional[Dict[str,str]]): a dictionary containing the
+        `spotlight_id` and `spotlight_name` of a spotlight to restrict the
+        domain search to.
 
     Return:
     ------
     List[datetime]
     """
-    s3_keys_args = dict(prefix=dataset_folder)
+    s3_keys_args = {"prefix": dataset_folder}
     if spotlight:
         s3_keys_args.update(spotlight)
 
     keys = gather_s3_keys(**s3_keys_args)
     dates = []
+
     for key in keys:
         result = re.search(
             # matches either dates like: YYYYMM or YYYY-mm-dd (with any

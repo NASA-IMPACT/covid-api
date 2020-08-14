@@ -27,11 +27,78 @@ class DatasetManager(object):
             for dataset in datasets
         }
 
+    def get(self, spotlight_id: str) -> Datasets:
+        """
+        Fetches all the datasets avilable for a given spotlight. If the
+        spotlight_id provided is "global" then this method will return
+        all datasets that are NOT spotlight specific. Raises an
+        `InvalidIdentifier` exception if the provided spotlight_id does
+        not exist.
+        """
+
+        if spotlight_id == "global":
+
+            spotlight_datasets = self.get_global_datasets()
+            spotlight_datasets = self._overload_domain(datasets=spotlight_datasets)
+
+            return Datasets(
+                datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
+            )
+
+        try:
+            site = sites.get(spotlight_id)
+        except InvalidIdentifier:
+            raise
+
+        # finds all "folders" in S3 containing keys for the given spotlight
+        # each "folder" corresponds to a dataset
+        spotlight_dataset_folders = get_dataset_folders_by_spotlight(
+            site.id, site.label
+        )
+
+        # filters the dataset items by those corresponding the folders above
+        spotlight_datasets = self.filter_datasets_by_folders(spotlight_dataset_folders)
+
+        spotlight_datasets = self._overload_domain(
+            datasets=spotlight_datasets,
+            spotlight={"spotlight_id": site.id, "spotlight_name": site.label},
+        )
+
+        return Datasets(
+            datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
+        )
+
+    def get_all(self) -> Datasets:
+        """Fetch all Datasets. Overload domain with S3 scanned domain"""
+        self._data = self._overload_domain(datasets=self._data)
+        return Datasets(datasets=[dataset.dict() for dataset in self._data.values()])
+
+    def list(self) -> List[str]:
+        """List all datasets"""
+        return list(self._data.keys())
+
     @staticmethod
     def _overload_domain(datasets: dict, spotlight: Optional[dict] = None):
-        """Loop through returned datasets, overloading "domain" key with
-        data extracted from S3, if an accessible S3 folder is present
-        (not the case for population data)"""
+        """
+        Returns the provided `datasets` object with an updated value for
+        each dataset's `domain` key.
+        The domain is extracted by listing keys in S3 belonging to that
+        dataset (and spotlight, if provided) and extracting the dates from
+        those keys.
+
+        Params:
+        ------
+        datasets (dict): dataset metadata objects for which to overload
+        `domain` keys.
+        spotlight (Optional[dict]): spotlight to further precise `domain`
+        search
+
+        Returns:
+        ------
+        dict: the `datasets` object, with an updated `domain` value for each
+        dataset in the `datasets` object.
+        """
+
         for _, dataset in datasets.items():
 
             dataset_folder = re.search(
@@ -40,26 +107,31 @@ class DatasetManager(object):
 
             if not dataset_folder:
                 continue
-            domain_args: Dict[str, Any] = dict(dataset_folder=dataset_folder.group(1))
+
+            domain_args: Dict[str, Any] = {"dataset_folder": dataset_folder.group(1)}
 
             if dataset.time_unit:
+                # if `time_unit` is present in the dataset metadata item, the
+                # dataset is considered to be periodic and only the start and
+                # end dates will be returned.
                 domain_args["time_unit"] = dataset.time_unit
 
             if spotlight:
                 domain_args["spotlight"] = spotlight
 
             dataset.domain = get_dataset_domain(**(domain_args))
+
         return datasets
 
     def filter_datasets_by_folders(self, folders: Set[str]) -> Dict:
         """
-        Returns all datasets corresponding to a set of folders.
+        Returns all datasets corresponding to a set of folders (eg: for
+        folders {"BMHD_30M_MONTHLY", "xco2"} this method would return the
+        "Nightlights HD" and the "CO2" dataset metadata objects)
 
         Params:
         -------
-        folders (Set[str]): folder's to filter datasets by (eg:
-            for folders {"BMHD_30M_MONTHLY", "xco2"} this method
-            would return the "Nightlights HD" and the CO2 datasets)
+        folders (Set[str]): folders to filter datasets
 
         Returns:
         --------
@@ -83,54 +155,15 @@ class DatasetManager(object):
 
     def get_global_datasets(self):
         """
-        Returns all datasets which do not reference a specific spotlight
+        Returns all datasets which do not reference a specific spotlight, by
+        filtering out datasets where the "source.tiles" value contains either
+        `spotlightId` or `spotlightName`.
         """
         return {
             k: v
             for k, v in self._data.items()
             if not re.search(r"{spotlightId}|{spotlightName}", v.source.tiles[0])
         }
-
-    def get(self, spotlight_id: str) -> Datasets:
-        """Fetches all the datasets avilable for a given Spotlight."""
-
-        if spotlight_id == "global":
-            spotlight_datasets = self.get_global_datasets()
-
-            spotlight_datasets = self._overload_domain(datasets=spotlight_datasets)
-            return Datasets(
-                datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
-            )
-
-        try:
-            # Fetch site corresponding to the spotlight ID
-            site = sites.get(spotlight_id)
-        except InvalidIdentifier:
-            raise
-
-        spotlight_dataset_folders = get_dataset_folders_by_spotlight(
-            site.id, site.label
-        )
-
-        spotlight_datasets = self.filter_datasets_by_folders(spotlight_dataset_folders)
-
-        spotlight_datasets = self._overload_domain(
-            datasets=spotlight_datasets,
-            spotlight={"spotlight_id": site.id, "spotlight_name": site.label},
-        )
-
-        return Datasets(
-            datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
-        )
-
-    def get_all(self) -> Datasets:
-        """Fetch all Datasets. Overload domain with S3 scanned domain"""
-        self._data = self._overload_domain(datasets=self._data)
-        return Datasets(datasets=[dataset.dict() for dataset in self._data.values()])
-
-    def list(self) -> List[str]:
-        """List all datasets"""
-        return list(self._data.keys())
 
 
 datasets = DatasetManager()
