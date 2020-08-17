@@ -92,28 +92,6 @@ def test_datasets_daily(app):
 
 
 @mock_s3
-def test_datasets_spotlight_label(app):
-    """test /datasets endpoint"""
-
-    # aws mocked resources
-    _setup_s3()
-
-    response = app.get("/v1/datasets/be")
-    assert response.status_code == 200
-
-    content = json.loads(response.content)
-    assert "datasets" in content
-
-    dataset_info = [d for d in content["datasets"] if d["id"] == "nightlights-viirs"][0]
-    assert dataset_info["domain"][0] == datetime.strftime(
-        datetime(2020, 1, 1), "%Y-%m-%dT%H:%M:%S"
-    )
-    assert dataset_info["domain"][1] == datetime.strftime(
-        datetime(2020, 3, 20), "%Y-%m-%dT%H:%M:%S"
-    )
-
-
-@mock_s3
 def test_global_datasets(app):
     """test /datasets endpoint"""
 

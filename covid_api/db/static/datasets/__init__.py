@@ -1,7 +1,7 @@
 """ covid_api static datasets """
 import os
 import re
-from typing import List, Optional, Dict, Set, Any
+from typing import List, Dict, Set, Any
 
 from covid_api.models.static import Datasets, Dataset
 from covid_api.db.static.errors import InvalidIdentifier
@@ -45,29 +45,25 @@ class DatasetManager(object):
                 datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
             )
 
+        # Verify that the requested spotlight exists
         try:
             site = sites.get(spotlight_id)
-
-            # Dunkirk and Ghent data is labeled "EUPort"
-            # as both spotlights correspond to the same tile
-            if spotlight_id in ["du", "gh"]:
-                site.label = "EUPorts"
-
         except InvalidIdentifier:
             raise
 
-        # finds all "folders" in S3 containing keys for the given spotlight
+        # find all "folders" in S3 containing keys for the given spotlight
         # each "folder" corresponds to a dataset
         spotlight_dataset_folders = get_dataset_folders_by_spotlight(
-            site.id, site.label
+            spotlight_id=site.id
         )
 
-        # filters the dataset items by those corresponding the folders above
-        spotlight_datasets = self.filter_datasets_by_folders(spotlight_dataset_folders)
+        # filter the dataset items by those corresponding the folders above
+        spotlight_datasets = self.filter_datasets_by_folders(
+            folders=spotlight_dataset_folders
+        )
 
         spotlight_datasets = self._overload_domain(
-            datasets=spotlight_datasets,
-            spotlight={"spotlight_id": site.id, "spotlight_name": site.label},
+            datasets=spotlight_datasets, spotlight_id=site.id
         )
 
         return Datasets(
@@ -84,7 +80,7 @@ class DatasetManager(object):
         return list(self._data.keys())
 
     @staticmethod
-    def _overload_domain(datasets: dict, spotlight: Optional[dict] = None):
+    def _overload_domain(datasets: dict, spotlight_id: str = None):
         """
         Returns the provided `datasets` object with an updated value for
         each dataset's `domain` key.
@@ -122,8 +118,8 @@ class DatasetManager(object):
                 # end dates will be returned.
                 domain_args["time_unit"] = dataset.time_unit
 
-            if spotlight:
-                domain_args["spotlight"] = spotlight
+            if spotlight_id:
+                domain_args["spotlight_id"] = spotlight_id
 
             dataset.domain = get_dataset_domain(**(domain_args))
 
@@ -163,12 +159,12 @@ class DatasetManager(object):
         """
         Returns all datasets which do not reference a specific spotlight, by
         filtering out datasets where the "source.tiles" value contains either
-        `spotlightId` or `spotlightName`.
+        `spotlightId`.
         """
         return {
             k: v
             for k, v in self._data.items()
-            if not re.search(r"{spotlightId}|{spotlightName}", v.source.tiles[0])
+            if not re.search(r"{spotlightId}", v.source.tiles[0])
         }
 
 

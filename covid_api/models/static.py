@@ -14,18 +14,6 @@ class Source(BaseModel):
     tiles: List
 
 
-class Domain(BaseModel):
-    """Domain Model."""
-
-    start_date: Optional[str]
-    end_date: Optional[str]
-    time_unit: Optional[str]
-    dates: Optional[List[str]]
-    # TODO: add @validator to ensure one of:
-    # start_date+end_date+time_unit OR dates
-    # is present
-
-
 class Swatch(BaseModel):
     """Swatch Model."""
 

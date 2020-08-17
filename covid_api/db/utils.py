@@ -5,7 +5,7 @@ import csv
 import json
 import re
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT, MT_FORMAT
 from covid_api.models.static import IndicatorObservation
@@ -14,23 +14,15 @@ s3 = boto3.client("s3")
 
 
 def gather_s3_keys(
-    spotlight_id: Optional[str] = None,
-    spotlight_name: Optional[str] = None,
-    prefix: Optional[str] = None,
-):
+    spotlight_id: Optional[str] = None, prefix: Optional[str] = None,
+) -> Set[str]:
     """
     Returns a set of S3 keys. If no args are provided, the keys will represent
     the entire S3 bucket.
     Params:
     -------
     spotlight_id (Optional[str]):
-        Id of a spotlight to filter keys by; must be used in conjunction with
-        `spotlight_name`
-    spotlight_name (Optional[str]):
-        Human readable label of a spotlight to filter keys by; must be used in
-        conjunction with `spotlight_id`. This field is necessary because some
-        datasts contain spotlight labels in their file nameing coventions
-        instead of spotlight ids (ex: BM_500M_DAILY)
+        Id of a spotlight to filter keys by
     prefix (Optional[str]):
         S3 Prefix under which to gather keys, used to specifcy a specific
         dataset folder to search within.
@@ -57,55 +49,36 @@ def gather_s3_keys(
 
         keys.update({x["Key"] for x in response.get("Contents", [])})
 
-    if not spotlight_id and not spotlight_name:
+    if not spotlight_id:
         return keys
 
     return {
         key
         for key in keys
         if re.search(
-            rf"""[^a-zA-Z0-9]({spotlight_id}|"""
-            rf"""{spotlight_name.replace(' ', '')})[^a-zA-Z0-9]""",
-            key,
-            re.IGNORECASE,
+            rf"""[^a-zA-Z0-9]({spotlight_id})[^a-zA-Z0-9]""", key, re.IGNORECASE,
         )
     }
 
 
-def get_dataset_folders_by_spotlight(spotlight_id: str, spotlight_name: str):
+def get_dataset_folders_by_spotlight(spotlight_id: str) -> Set[str]:
     """
     Returns the S3 prefix of datasets containing files for the given spotlight
 
     Params:
     ------
     spotlight_id (str): id of spotlight to search for
-    spotlight_name (str): human readable label of spotlight to search for
 
     Returns:
     --------
     set(str)
     """
-    folders_matched: set = set()
-
-    keys = gather_s3_keys(spotlight_id, spotlight_name)
-    itercount = 0
-    while len(keys):
-        itercount += 1
-        key = keys.pop()
-        if key.split("/")[0] not in folders_matched:
-            folders_matched.add(key.split("/")[0])
-
-            # Once a folder has been found to contain the given spotlight
-            # all other files for that folder no longer have to be searched
-            keys = {k for k in keys if not k.startswith(key.split("/")[0])}
-
-    return folders_matched
+    keys = gather_s3_keys(spotlight_id=spotlight_id)
+    return {k.split("/")[0] for k in keys}
 
 
 def get_dataset_domain(
-    dataset_folder: str,
-    time_unit: Optional[str] = None,
-    spotlight: Optional[Dict] = None,
+    dataset_folder: str, time_unit: str = None, spotlight_id: str = None,
 ):
     """
     Returns a domain for a given dataset as identified by a folder. If a
@@ -118,7 +91,7 @@ def get_dataset_domain(
     dataset_folder (str): dataset folder to search within
     time_unit (Optional[str]): time_unit from the dataset's metadata json file
     spotlight (optional[Dict[str,str]]): a dictionary containing the
-        `spotlight_id` and `spotlight_name` of a spotlight to restrict the
+        `spotlight_id` of a spotlight to restrict the
         domain search to.
 
     Return:
@@ -126,19 +99,16 @@ def get_dataset_domain(
     List[datetime]
     """
     s3_keys_args = {"prefix": dataset_folder}
-    if spotlight:
-        s3_keys_args.update(spotlight)
+    if spotlight_id:
+        s3_keys_args["spotlight_id"] = spotlight_id
 
     keys = gather_s3_keys(**s3_keys_args)
     dates = []
 
     for key in keys:
         result = re.search(
-            # matches either dates like: YYYYMM or YYYY-mm-dd (with any
-            # non-alphanumeric delimiter)
-            r"""[^a-zA-Z0-9]((?P<MT_DATE>(\d{6}))|"""
-            r"""((?P<YEAR>\d{4})[^a-zA-Z0-9](?P<MONTH>\d{2})[^a-zA-Z0-9]"""
-            r"""(?P<DAY>\d{2})))[^a-zA-Z0-9]""",
+            # matches either dates like: YYYYMM or YYYY_MM_DD
+            r"""[^a-zA-Z0-9]((?P<MT_DATE>(\d{6}))|((?P<YEAR>\d{4})_(?P<MONTH>\d{2})_(?P<DAY>\d{2})))[^a-zA-Z0-9]""",
             key,
             re.IGNORECASE,
         )
@@ -151,8 +121,8 @@ def get_dataset_domain(
                 date = datetime.strptime(result.group("MT_DATE"), MT_FORMAT)
             else:
                 datestring = (
-                    f"""{result.group('YEAR')}-{result.group('MONTH')}"""
-                    f"""-{result.group('DAY')}"""
+                    f"""{result.group("YEAR")}-{result.group("MONTH")}"""
+                    f"""-{result.group("DAY")}"""
                 )
                 date = datetime.strptime(datestring, DT_FORMAT)
         except ValueError:
