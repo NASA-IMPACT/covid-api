@@ -25,6 +25,12 @@ def _setup_s3():
         "OMNO2d_HRM/OMI_trno2_0.10x0.10_200401_Col3_V4.nc.tif",
         "OMNO2d_HRM/OMI_trno2_0.10x0.10_200708_Col3_V4.nc.tif",
         "OMNO2d_HRM/OMI_trno2_0.10x0.10_200901_Col3_V4.nc.tif",
+        "detections-plane/ny/2020_01_09.geojson",
+        "detections-plane/ny/2020_01_21.geojson",
+        "detections-plane/ny/2020_02_02.geoson",
+        "detections-ship/ny/2020_01_09.geojson",
+        "detections-ship/ny/2020_01_21.geojson",
+        "detections-ship/ny/2020_02_02.geoson",
         "indicators/test/super.csv",
     ]
     for key in s3_keys:
@@ -67,6 +73,25 @@ def test_datasets_monthly(app):
     assert dataset_info["domain"][1] == datetime.strftime(
         datetime(2019, 6, 1), "%Y-%m-%dT%H:%M:%S"
     )
+
+
+@mock_s3
+def test_detections_datasets(app):
+    """test /datasets endpoint"""
+
+    # aws mocked resources
+    _setup_s3()
+
+    response = app.get("v1/datasets/ny")
+    assert response.status_code == 200
+
+    content = json.loads(response.content)
+    assert "datasets" in content
+
+    dataset_info = [d for d in content["datasets"] if d["id"] == "detections-plane"][0]
+    assert len(dataset_info["domain"]) > 2
+
+    assert False
 
 
 @mock_s3

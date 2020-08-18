@@ -720,6 +720,7 @@ def planet_mosaic_tile(scenes, x, y, z):
 def site_date_to_scenes(site: str, date: str):
     """get the scenes corresponding to detections for a given site and date"""
     # TODO: make this more generic
+    # NOTE: detections folder has been broken up into `detections-plane` and `detections-ship`
     site_date_to_scenes_csv = s3_get(
         INDICATOR_BUCKET, "detections/plane/detection_scenes.csv"
     )

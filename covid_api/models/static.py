@@ -40,8 +40,9 @@ class Dataset(BaseModel):
     time_unit: Optional[str]
     domain: List = []
     source: Source
+    background_source: Optional[Source]
     swatch: Swatch
-    legend: Legend
+    legend: Optional[Legend]
     info: str = ""
 
 

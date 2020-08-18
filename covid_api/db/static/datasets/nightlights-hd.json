@@ -17,10 +17,11 @@
         "gibs-population",
         "car-count",
         "nightlights-viirs",
-        "detection-ship",
         "detection-multi",
         "water-chlorophyll",
-        "water-spm"
+        "water-spm",
+        "detections-ship",
+        "detections-plane"
     ],
     "swatch": {
         "color": "#C0C0C0",

@@ -34,7 +34,7 @@ def gather_s3_keys(
     """
     keys: set = set()
 
-    list_objects_args = dict(Bucket=INDICATOR_BUCKET)
+    list_objects_args = {"Bucket": INDICATOR_BUCKET}
 
     if prefix:
         list_objects_args["Prefix"] = prefix

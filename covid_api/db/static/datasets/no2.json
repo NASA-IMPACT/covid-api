@@ -16,10 +16,11 @@
     "car-count",
     "nightlights-viirs",
     "nightlights-hd",
-    "detection-ship",
     "detection-multi",
     "water-chlorophyll",
-    "water-spm"
+    "water-spm",
+    "detections-ship",
+    "detections-plane"
   ],
   "enabled": true,
   "compare": {
