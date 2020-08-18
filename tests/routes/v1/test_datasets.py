@@ -22,6 +22,12 @@ def _setup_s3():
         "BM_500M_DAILY/VNP46A2_V011_Beijing_2020_01_01_cog.tif",
         "BM_500M_DAILY/VNP46A2_V011_Beijing_2020_02_29_cog.tif",
         "BM_500M_DAILY/VNP46A2_V011_Beijing_2020_03_20_cog.tif",
+        "BM_500M_DAILY/VNP46A2_V011_EUPorts_2020_01_01_cog.tif",
+        "BM_500M_DAILY/VNP46A2_V011_EUPorts_2020_02_29_cog.tif",
+        "BM_500M_DAILY/VNP46A2_V011_EUPorts_2020_03_20_cog.tif",
+        "BMHD_30M_MONTHLY/BMHD_VNP46A2_du_202005_cog.tif",
+        "BMHD_30M_MONTHLY/BMHD_VNP46A2_du_202006_cog.tif",
+        "BMHD_30M_MONTHLY/BMHD_VNP46A2_du_202007_cog.tif",
         "OMNO2d_HRM/OMI_trno2_0.10x0.10_200401_Col3_V4.nc.tif",
         "OMNO2d_HRM/OMI_trno2_0.10x0.10_200708_Col3_V4.nc.tif",
         "OMNO2d_HRM/OMI_trno2_0.10x0.10_200901_Col3_V4.nc.tif",
@@ -76,6 +82,26 @@ def test_datasets_monthly(app):
 
 
 @mock_s3
+def test_euports_dataset(app):
+
+    _setup_s3()
+
+    response = app.get("/v1/datasets/du")
+    assert response.status_code == 200
+
+    content = json.loads(response.content)
+    assert "datasets" in content
+
+    dataset_info = [d for d in content["datasets"] if d["id"] == "nightlights-hd"][0]
+    assert dataset_info["domain"][0] == datetime.strftime(
+        datetime(2020, 5, 1), "%Y-%m-%dT%H:%M:%S"
+    )
+    assert dataset_info["domain"][1] == datetime.strftime(
+        datetime(2020, 7, 1), "%Y-%m-%dT%H:%M:%S"
+    )
+
+
+@mock_s3
 def test_detections_datasets(app):
     """test /datasets endpoint"""
 
@@ -90,8 +116,6 @@ def test_detections_datasets(app):
 
     dataset_info = [d for d in content["datasets"] if d["id"] == "detections-plane"][0]
     assert len(dataset_info["domain"]) > 2
-
-    assert False
 
 
 @mock_s3

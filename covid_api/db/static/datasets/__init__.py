@@ -50,6 +50,9 @@ class DatasetManager(object):
         except InvalidIdentifier:
             raise
 
+        if site.id in ["du", "gh"]:
+            site.id = f"{site.id}|EUPorts"
+
         # find all "folders" in S3 containing keys for the given spotlight
         # each "folder" corresponds to a dataset
         spotlight_dataset_folders = get_dataset_folders_by_spotlight(
