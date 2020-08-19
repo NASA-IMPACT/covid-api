@@ -2,6 +2,7 @@
     "id": "agriculture",
     "name": "Agriculture",
     "type": "raster-timeseries",
+    "s3_location": "agriculture",
     "source": {
         "type": "raster",
         "tiles": [

@@ -37,6 +37,23 @@ class Dataset(BaseModel):
     name: str
     description: str = ""
     type: str
+    s3_location: Optional[str]
+    time_unit: Optional[str]
+    domain: List = []
+    source: Source
+    background_source: Optional[Source]
+    swatch: Swatch
+    legend: Optional[Legend]
+    info: str = ""
+
+
+class OutputDataset(BaseModel):
+    """Dataset Model."""
+
+    id: str
+    name: str
+    description: str = ""
+    type: str
     time_unit: Optional[str]
     domain: List = []
     source: Source
@@ -49,7 +66,7 @@ class Dataset(BaseModel):
 class Datasets(BaseModel):
     """Dataset List Model."""
 
-    datasets: List[Dataset]
+    datasets: List[OutputDataset]
 
 
 class Site(BaseModel):

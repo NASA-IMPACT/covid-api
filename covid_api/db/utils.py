@@ -108,7 +108,8 @@ def get_dataset_domain(
     for key in keys:
         result = re.search(
             # matches either dates like: YYYYMM or YYYY_MM_DD
-            r"""[^a-zA-Z0-9]((?P<MT_DATE>(\d{6}))|((?P<YEAR>\d{4})_(?P<MONTH>\d{2})_(?P<DAY>\d{2})))[^a-zA-Z0-9]""",
+            r"""[^a-zA-Z0-9]((?P<MT_DATE>(\d{6}))|"""
+            r"""((?P<YEAR>\d{4})_(?P<MONTH>\d{2})_(?P<DAY>\d{2})))[^a-zA-Z0-9]""",
             key,
             re.IGNORECASE,
         )

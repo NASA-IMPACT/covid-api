@@ -3,6 +3,7 @@
     "name": "Plane",
     "type": "inference-timeseries",
     "description": "Planes detected each day in PlanetScope imagery are shown in red.",
+    "s3_location": "detections-plane",
     "source": {
         "type": "geojson",
         "tiles": [

@@ -2,6 +2,7 @@
   "id": "no2",
   "name": "NO\u2082",
   "type": "raster-timeseries",
+  "s3_location": "OMNO2d_HRM",
   "source": {
     "type": "raster",
     "tiles": [

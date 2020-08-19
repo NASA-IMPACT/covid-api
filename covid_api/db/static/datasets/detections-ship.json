@@ -3,6 +3,7 @@
     "name": "Shipping",
     "type": "inference-timeseries",
     "description": "Ships detected each day in PlanetScope imagery are shown in red.",
+    "s3_location": "detections-ship",
     "source": {
         "type": "geojson",
         "tiles": [

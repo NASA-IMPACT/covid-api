@@ -3,6 +3,7 @@
     "name": "Nightlights HD",
     "type": "raster-timeseries",
     "description": "The High Definition Nightlights dataset is processed to eliminate light sources, including moonlight reflectance and other interferences. Darker colors indicate fewer night lights and less activity. Lighter colors indicate more night lights and more activity.",
+    "s3_location": "BMHD_30M_MONTHLY",
     "time_unit": "month",
     "source": {
         "type": "raster",

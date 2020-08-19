@@ -103,28 +103,13 @@ class DatasetManager(object):
         dataset in the `datasets` object.
         """
 
-        for key, dataset in datasets.items():
+        for _, dataset in datasets.items():
 
-            regexp = r"s3://covid-eo-data/(.*)/"
-
-            if key in ["detections-plane", "detections-ship"]:
-                regexp = r"/(detections/[^/]*)/"
-
-            dataset_folder_search = re.search(regexp, dataset.source.tiles[0])
-
-            if not dataset_folder_search:
+            # No point in searching for files in S3 if the dataset isn't stored there!
+            if not dataset.s3_location:
                 continue
 
-            dataset_folder = dataset_folder_search.group(1)
-
-            # if the dataset folder is for `detection-ships` or `detection-plane`
-            # the returned regexp match will contain a `/` character that should
-            # be replaced with a `-` character in order to find the correct
-            # s3 folder
-            if key in ["detections-plane", "detections-ship"]:
-                dataset_folder = dataset_folder.replace("/", "-")
-
-            domain_args: Dict[str, Any] = {"dataset_folder": dataset_folder}
+            domain_args: Dict[str, Any] = {"dataset_folder": dataset.s3_location}
 
             if dataset.time_unit:
                 # if `time_unit` is present in the dataset metadata item, the
@@ -154,21 +139,8 @@ class DatasetManager(object):
         Dict : Metadata objects for the datasets corresponding to the
             folders provided.
         """
-        folders = {
-            f.replace("-", "/") if f in ["detections-ship", "detections-plane"] else f
-            for f in folders
-        }
 
-        return {
-            k: v
-            for k, v in self._data.items()
-            if any(
-                [
-                    re.search(rf"/{folder}/", v.source.tiles[0], re.IGNORECASE,)
-                    for folder in folders
-                ]
-            )
-        }
+        return {k: v for k, v in self._data.items() if v.s3_location in folders}
 
     def get_global_datasets(self):
         """
