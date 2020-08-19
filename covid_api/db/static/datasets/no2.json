@@ -3,6 +3,7 @@
   "name": "NO\u2082",
   "type": "raster-timeseries",
   "s3_location": "OMNO2d_HRM",
+  "time_unit": "month",
   "source": {
     "type": "raster",
     "tiles": [
@@ -29,7 +30,7 @@
     "help": "Compare with baseline (5 previous years)",
     "map_label": "{date}: Base vs Mean",
     "year_Diff": 2,
-    "time_Unit": "monthOnly",
+    "time_unit": "month_only",
     "source": {
       "type": "raster",
       "tiles": [
