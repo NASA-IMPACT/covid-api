@@ -4,7 +4,7 @@
     "description": "This layer shows changes in carbon dioxide (CO₂) levels during coronavirus lockdowns versus previous years. Redder colors indicate increases in CO₂. Bluer colors indicate lower levels of CO₂.",
     "type": "raster-timeseries",
     "time_unit": "day",
-    "s3_location": "xco2",
+    "s3_location": "xco2-diff",
     "source": {
         "type": "raster",
         "tiles": [
