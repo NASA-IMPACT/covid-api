@@ -109,13 +109,10 @@ class DatasetManager(object):
             if not dataset.s3_location:
                 continue
 
-            domain_args: Dict[str, Any] = {"dataset_folder": dataset.s3_location}
-
-            if dataset.time_unit:
-                # if `time_unit` is present in the dataset metadata item, the
-                # dataset is considered to be periodic and only the start and
-                # end dates will be returned.
-                domain_args["time_unit"] = dataset.time_unit
+            domain_args: Dict[str, Any] = {
+                "dataset_folder": dataset.s3_location,
+                "is_periodic": dataset.is_periodic,
+            }
 
             if spotlight_id:
                 domain_args["spotlight_id"] = spotlight_id

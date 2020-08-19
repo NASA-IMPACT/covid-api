@@ -3,6 +3,7 @@
     "name": "Agriculture",
     "type": "raster-timeseries",
     "s3_location": "agriculture",
+    "time_unit": "day",
     "source": {
         "type": "raster",
         "tiles": [

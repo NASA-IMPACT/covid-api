@@ -38,6 +38,7 @@ class Dataset(BaseModel):
     description: str = ""
     type: str
     s3_location: Optional[str]
+    is_periodic: bool = True
     time_unit: Optional[str]
     domain: List = []
     source: Source
@@ -54,6 +55,7 @@ class OutputDataset(BaseModel):
     name: str
     description: str = ""
     type: str
+    is_periodic: bool = True
     time_unit: Optional[str]
     domain: List = []
     source: Source
