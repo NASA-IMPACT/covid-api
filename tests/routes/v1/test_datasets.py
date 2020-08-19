@@ -13,15 +13,15 @@ def _setup_s3():
     s3.create_bucket(Bucket=INDICATOR_BUCKET)
 
     s3_keys = [
-        "xco2/GOSAT_XCO2_201901_be_BG_circle_cog.tif",
-        "xco2/GOSAT_XCO2_201904_be_BG_circle_cog.tif",
-        "xco2/GOSAT_XCO2_201906_be_BG_circle_cog.tif",
+        "xco2-mean/GOSAT_XCO2_201901_be_BG_circle_cog.tif",
+        "xco2-mean/GOSAT_XCO2_201904_be_BG_circle_cog.tif",
+        "xco2-mean/GOSAT_XCO2_201906_be_BG_circle_cog.tif",
         "oc3_chla_anomaly/anomaly-chl-tk-2020_01_29.tif",
         "oc3_chla_anomaly/anomaly-chl-tk-2020_02_05.tif",
         "oc3_chla_anomaly/anomaly-chl-tk-2020_03_02.tif",
-        "BM_500M_DAILY/VNP46A2_V011_Beijing_2020_01_01_cog.tif",
-        "BM_500M_DAILY/VNP46A2_V011_Beijing_2020_02_29_cog.tif",
-        "BM_500M_DAILY/VNP46A2_V011_Beijing_2020_03_20_cog.tif",
+        "BM_500M_DAILY/VNP46A2_V011_be_2020_01_01_cog.tif",
+        "BM_500M_DAILY/VNP46A2_V011_be_2020_02_29_cog.tif",
+        "BM_500M_DAILY/VNP46A2_V011_be_2020_03_20_cog.tif",
         "BM_500M_DAILY/VNP46A2_V011_EUPorts_2020_01_01_cog.tif",
         "BM_500M_DAILY/VNP46A2_V011_EUPorts_2020_02_29_cog.tif",
         "BM_500M_DAILY/VNP46A2_V011_EUPorts_2020_03_20_cog.tif",
@@ -71,6 +71,8 @@ def test_datasets_monthly(app):
 
     content = json.loads(response.content)
     assert "datasets" in content
+
+    print(content["datasets"])
 
     dataset_info = [d for d in content["datasets"] if d["id"] == "co2"][0]
     assert dataset_info["domain"][0] == datetime.strftime(
@@ -154,7 +156,7 @@ def test_global_datasets(app):
     assert "datasets" in content
 
     dataset_info = [d for d in content["datasets"] if d["id"] == "no2"][0]
-    assert len(dataset_info["domain"]) > 2
+    assert len(dataset_info["domain"]) == 2
 
 
 @mock_s3
