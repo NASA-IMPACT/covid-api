@@ -1,0 +1,38 @@
+{
+    "id": "detections-plane",
+    "name": "Plane",
+    "type": "inference-timeseries",
+    "description": "Planes detected each day in PlanetScope imagery are shown in red.",
+    "s3_location": "detections-plane",
+    "source": {
+        "type": "geojson",
+        "tiles": [
+            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/detections/plane/{spotlightId}/{date}.geojson"
+        ]
+    },
+    "background_source": {
+        "type": "raster",
+        "tiles": [
+            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/planet/{spotlightId}-{date}.tif&resampling_method=nearest&bidx=1,2,3"
+        ]
+    },
+    "exclusive_with": [
+        "no2",
+        "co2-diff",
+        "co2",
+        "gibs-population",
+        "car-count",
+        "nightlights-viirs",
+        "nightlights-hd",
+        "detection-multi",
+        "water-chlorophyll",
+        "water-spm",
+        "detections-ship"
+    ],
+    "enabled": false,
+    "swatch": {
+        "color": "#C0C0C0",
+        "name": "Grey"
+    },
+    "info": "Planes detected each day in PlanetScope imagery are shown in red."
+}

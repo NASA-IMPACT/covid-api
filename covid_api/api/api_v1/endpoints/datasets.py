@@ -1,9 +1,11 @@
 """Dataset endpoints."""
 
-from fastapi import APIRouter
+from covid_api.db.static.errors import InvalidIdentifier
+from fastapi import APIRouter, HTTPException
 
-from covid_api.models.static import Dataset, Datasets
+from covid_api.models.static import Datasets
 from covid_api.db.static.datasets import datasets
+
 
 router = APIRouter()
 
@@ -19,10 +21,17 @@ def get_datasets():
 
 
 @router.get(
-    "/datasets/{id}",
-    responses={200: dict(description="return a dataset")},
-    response_model=Dataset,
+    "/datasets/{spotlight_id}",
+    responses={
+        200: dict(description="return datasets available for a given spotlight")
+    },
+    response_model=Datasets,
 )
-def get_dataset(id: str):
-    """Return dataset info."""
-    return datasets.get(id)
+def get_dataset(spotlight_id: str):
+    """Return dataset info for all datasets available for a given spotlight"""
+    try:
+        return datasets.get(spotlight_id)
+    except InvalidIdentifier:
+        raise HTTPException(
+            status_code=404, detail=f"Invalid spotlight identifier: {spotlight_id}"
+        )

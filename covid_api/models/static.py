@@ -1,6 +1,6 @@
 """Static models."""
 
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Union, Dict
 from pydantic import BaseModel
 from pydantic.color import Color
 from geojson_pydantic.features import FeatureCollection
@@ -25,9 +25,9 @@ class Legend(BaseModel):
     """Legend Model."""
 
     type: str
-    min: str
-    max: str
-    stops: List[Color]
+    min: Optional[str]
+    max: Optional[str]
+    stops: Union[List[Color], List[Dict[str, str]]]
 
 
 class Dataset(BaseModel):
@@ -37,17 +37,36 @@ class Dataset(BaseModel):
     name: str
     description: str = ""
     type: str
+    s3_location: Optional[str]
+    time_unit: Optional[str]
     domain: List = []
     source: Source
+    background_source: Optional[Source]
     swatch: Swatch
-    legend: Legend
+    legend: Optional[Legend]
+    info: str = ""
+
+
+class OutputDataset(BaseModel):
+    """Dataset Model."""
+
+    id: str
+    name: str
+    description: str = ""
+    type: str
+    time_unit: Optional[str]
+    domain: List = []
+    source: Source
+    background_source: Optional[Source]
+    swatch: Swatch
+    legend: Optional[Legend]
     info: str = ""
 
 
 class Datasets(BaseModel):
     """Dataset List Model."""
 
-    datasets: List[Dataset]
+    datasets: List[OutputDataset]
 
 
 class Site(BaseModel):

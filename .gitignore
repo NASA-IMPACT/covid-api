@@ -102,3 +102,6 @@ ENV/
 
 cdk.out/package.zip
 *.tif
+
+# vscode
+.vscode

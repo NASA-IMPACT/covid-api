@@ -28,7 +28,7 @@ def get_detection(ml_type: MLTypes, site: SiteNames, date: str):
         return json.loads(
             s3_get(
                 bucket=config.INDICATOR_BUCKET,
-                key=f"detections/{ml_type.value}/{site.value}/{date}.geojson",
+                key=f"detections-{ml_type.value}/{site.value}/{date}.geojson",
             )
         )
     except Exception:
