@@ -4,12 +4,13 @@
 All raster data for the site is stored as [Cloud Optimized GeoTIFF](https://www.cogeo.org/) (COG). One way to validate that data is in the proper format is using [rio-cogeo](https://github.com/cogeotiff/rio-cogeo):
 
 - First, check that it passes validation with `rio cogeo validate my_raster.tif`
-- Then ensure that it has a `nodata` value set. You can see the nodata value like so:
+- Then ensure that it has a `nodata` value set and that it matches the value which represents non-valid pixels within your GeoTIFF. You can see the `nodata` value like so:
 
 ```sh
-rio insp my_raster.tif
->>> print(src.meta)
+rio info my_raster.tif --nodata
 ```
+
+*note: `nan` values in the data will not be treated as non-valid pixels unless the `nodata` tag is `nan`.*
 
 This same library can also create a Cloud Optimized GeoTIFF with the following command:
 
