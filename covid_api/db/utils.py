@@ -135,7 +135,7 @@ def get_dataset_domain(
     if is_periodic and len(dates):
         return [min(dates), max(dates)]
 
-    return dates
+    return sorted(dates)
 
 
 def s3_get(bucket: str, key: str):

@@ -117,7 +117,7 @@ class DatasetManager(object):
             if spotlight_id:
                 domain_args["spotlight_id"] = spotlight_id
 
-            dataset.domain = get_dataset_domain(**(domain_args))
+            dataset.domain = get_dataset_domain(**domain_args)
 
         return datasets
 
