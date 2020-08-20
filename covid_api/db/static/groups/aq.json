@@ -2,5 +2,5 @@
     "id": "aq",
     "label": "Air Quality",
     "prose": null,
-    "indicators": ["no2-15day"]
+    "indicators": ["no2-15day", "xco2"]
 }
