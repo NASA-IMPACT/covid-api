@@ -8,9 +8,12 @@ from covid_api.core.config import INDICATOR_BUCKET
 
 
 @mock_s3
-def _setup_s3():
+def _setup_s3(empty=False):
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket=INDICATOR_BUCKET)
+
+    if empty:
+        return s3
 
     s3_keys = [
         "xco2-mean/GOSAT_XCO2_201901_be_BG_circle_cog.tif",
@@ -162,5 +165,6 @@ def test_global_datasets(app):
 
 @mock_s3
 def test_incorrect_dataset_id(app):
+    _setup_s3(empty=True)
     response = app.get("/v1/datasets/NOT_A_VALID_DATASET")
     assert response.status_code == 404
