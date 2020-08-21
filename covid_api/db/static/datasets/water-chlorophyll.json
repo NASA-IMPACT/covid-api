@@ -4,6 +4,7 @@
     "type": "raster-timeseries",
     "description": "Chlorophyll is an indicator of algae growth. Redder colors indicate increases in chlorophyll-a and worse water quality. Bluer colors indicate decreases in chlorophyll-a and improved water quality. White areas indicate no change.",
     "time_unit": "day",
+    "is_periodic": false,
     "s3_location": "oc3_chla_anomaly",
     "source": {
         "type": "raster",

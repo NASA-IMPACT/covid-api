@@ -722,7 +722,7 @@ def site_date_to_scenes(site: str, date: str):
     # TODO: make this more generic
     # NOTE: detections folder has been broken up into `detections-plane` and `detections-ship`
     site_date_to_scenes_csv = s3_get(
-        INDICATOR_BUCKET, "detections/plane/detection_scenes.csv"
+        INDICATOR_BUCKET, "detections-plane/detection_scenes.csv"
     )
     site_date_lines = site_date_to_scenes_csv.decode("utf-8").split("\n")
     reader = csv.DictReader(site_date_lines)

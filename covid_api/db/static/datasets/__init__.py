@@ -35,13 +35,14 @@ class DatasetManager(object):
         `InvalidIdentifier` exception if the provided spotlight_id does
         not exist.
         """
+
+        global_datasets = self.get_global_datasets()
+        global_datasets = self._overload_domain(datasets=global_datasets)
+
         if spotlight_id == "global":
 
-            spotlight_datasets = self.get_global_datasets()
-            spotlight_datasets = self._overload_domain(datasets=spotlight_datasets)
-
             return Datasets(
-                datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
+                datasets=[dataset.dict() for dataset in global_datasets.values()]
             )
 
         # Verify that the requested spotlight exists
@@ -50,23 +51,29 @@ class DatasetManager(object):
         except InvalidIdentifier:
             raise
 
+        # Append EUPorts to the spotlight ID using a pipe character so that
+        # the regexp will filter for either value, since certain datasets
+        # contain data for both the `du` and `gh` spotlights under `EUPorts`
         if site.id in ["du", "gh"]:
             site.id = f"{site.id}|EUPorts"
 
         # find all "folders" in S3 containing keys for the given spotlight
-        # each "folder" corresponds to a dataset
+        # each "folder" corresponds to a dataset.
         spotlight_dataset_folders = get_dataset_folders_by_spotlight(
             spotlight_id=site.id
         )
 
         # filter the dataset items by those corresponding the folders above
+        # and add the datasets to the previously filtered `global` datasets
         spotlight_datasets = self.filter_datasets_by_folders(
             folders=spotlight_dataset_folders
         )
-
         spotlight_datasets = self._overload_domain(
             datasets=spotlight_datasets, spotlight_id=site.id
         )
+
+        # global datasets are returned for all spotlights
+        spotlight_datasets.update(global_datasets)
 
         return Datasets(
             datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
@@ -109,18 +116,15 @@ class DatasetManager(object):
             if not dataset.s3_location:
                 continue
 
-            domain_args: Dict[str, Any] = {"dataset_folder": dataset.s3_location}
-
-            if dataset.time_unit:
-                # if `time_unit` is present in the dataset metadata item, the
-                # dataset is considered to be periodic and only the start and
-                # end dates will be returned.
-                domain_args["time_unit"] = dataset.time_unit
+            domain_args: Dict[str, Any] = {
+                "dataset_folder": dataset.s3_location,
+                "is_periodic": dataset.is_periodic,
+            }
 
             if spotlight_id:
                 domain_args["spotlight_id"] = spotlight_id
 
-            dataset.domain = get_dataset_domain(**(domain_args))
+            dataset.domain = get_dataset_domain(**domain_args)
 
         return datasets
 

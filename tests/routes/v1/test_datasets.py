@@ -8,9 +8,12 @@ from covid_api.core.config import INDICATOR_BUCKET
 
 
 @mock_s3
-def _setup_s3():
+def _setup_s3(empty=False):
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket=INDICATOR_BUCKET)
+
+    if empty:
+        return s3
 
     s3_keys = [
         "xco2-mean/GOSAT_XCO2_201901_be_BG_circle_cog.tif",
@@ -117,7 +120,7 @@ def test_detections_datasets(app):
     assert "datasets" in content
 
     dataset_info = [d for d in content["datasets"] if d["id"] == "detections-plane"][0]
-    assert len(dataset_info["domain"]) > 2
+    assert len(dataset_info["domain"]) == 2
 
 
 @mock_s3
@@ -134,10 +137,11 @@ def test_datasets_daily(app):
     assert "datasets" in content
 
     dataset_info = [d for d in content["datasets"] if d["id"] == "water-chlorophyll"][0]
+    assert len(dataset_info["domain"]) > 2
     assert dataset_info["domain"][0] == datetime.strftime(
         datetime(2020, 1, 29), "%Y-%m-%dT%H:%M:%S"
     )
-    assert dataset_info["domain"][1] == datetime.strftime(
+    assert dataset_info["domain"][-1] == datetime.strftime(
         datetime(2020, 3, 2), "%Y-%m-%dT%H:%M:%S"
     )
 
@@ -161,5 +165,6 @@ def test_global_datasets(app):
 
 @mock_s3
 def test_incorrect_dataset_id(app):
+    _setup_s3(empty=True)
     response = app.get("/v1/datasets/NOT_A_VALID_DATASET")
     assert response.status_code == 404
