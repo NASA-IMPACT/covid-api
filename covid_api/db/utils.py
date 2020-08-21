@@ -78,7 +78,7 @@ def get_dataset_folders_by_spotlight(spotlight_id: str) -> Set[str]:
 
 
 def get_dataset_domain(
-    dataset_folder: str, time_unit: str = None, spotlight_id: str = None,
+    dataset_folder: str, is_periodic: bool, spotlight_id: str = None,
 ):
     """
     Returns a domain for a given dataset as identified by a folder. If a
@@ -132,10 +132,10 @@ def get_dataset_domain(
 
         dates.append(date)
 
-    if time_unit and len(dates):
+    if is_periodic and len(dates):
         return [min(dates), max(dates)]
 
-    return dates
+    return sorted(dates)
 
 
 def s3_get(bucket: str, key: str):
