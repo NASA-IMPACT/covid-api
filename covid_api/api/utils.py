@@ -44,7 +44,7 @@ def get_cache(request: Request) -> CacheLayer:
 
 
 def get_hash(**kwargs: Any) -> str:
-    """Create hash from a dict."""
+    """Create hash from kwargs."""
     return hashlib.sha224(json.dumps(kwargs, sort_keys=True).encode()).hexdigest()
 
 
