@@ -62,7 +62,7 @@ class CacheLayer(object):
         except Exception:
             return False
 
-    def get_dataset_from_cache(self, ds_hash: str ) -> Dict:
+    def get_dataset_from_cache(self, ds_hash: str) -> Dict:
         """Get dataset response from cache layer"""
         return self.client.get(ds_hash)
 
