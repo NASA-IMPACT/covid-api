@@ -1,6 +1,6 @@
 """covid_api.cache.memcache: memcached layer."""
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict
 
 from bmemcached import Client
 
@@ -59,5 +59,16 @@ class CacheLayer(object):
         """
         try:
             return self.client.set(img_hash, body, time=timeout)
+        except Exception:
+            return False
+
+    def get_dataset_from_cache(self, ds_hash: str) -> Dict:
+        """Get dataset response from cache layer"""
+        return self.client.get(ds_hash)
+
+    def set_dataset_cache(self, ds_hash: str, body: Dict, timeout: int = 3600) -> bool:
+        """Set dataset response in cache layer"""
+        try:
+            return self.client.set(ds_hash, body, time=timeout)
         except Exception:
             return False
