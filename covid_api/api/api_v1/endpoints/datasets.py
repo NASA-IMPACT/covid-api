@@ -23,11 +23,10 @@ def get_datasets(
     content = None
 
     if cache_client:
-        try:
-            content = cache_client.get_image_from_cache(dataset_hash)
+        content = cache_client.get_dataset_from_cache(dataset_hash)
+        if content:
+            content = Datasets.parse_raw(content)
             response.headers["X-Cache"] = "HIT"
-        except Exception:
-            content = None
     if not content:
         content = datasets.get_all()
         if cache_client and content:
@@ -54,11 +53,10 @@ def get_dataset(
         content = None
 
         if cache_client:
-            try:
-                content = cache_client.get_image_from_cache(dataset_hash)
+            content = cache_client.get_dataset_from_cache(dataset_hash)
+            if content:
+                content = Datasets.parse_raw(content)
                 response.headers["X-Cache"] = "HIT"
-            except Exception:
-                content = None
         if not content:
             content = datasets.get(spotlight_id)
             if cache_client and content:
