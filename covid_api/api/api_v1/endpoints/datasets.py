@@ -16,7 +16,8 @@ router = APIRouter()
     response_model=Datasets,
 )
 def get_datasets(
-    response: Response, cache_client: CacheLayer = Depends(utils.get_cache),
+    response: Response,
+    cache_client: CacheLayer = Depends(utils.get_cache),
 ):
     """Return a list of datasets."""
     dataset_hash = utils.get_hash(spotlight_id="all")

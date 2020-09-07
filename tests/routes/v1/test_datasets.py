@@ -44,7 +44,9 @@ def _setup_s3(empty=False):
     ]
     for key in s3_keys:
         s3.put_object(
-            Bucket=INDICATOR_BUCKET, Key=key, Body=b"test",
+            Bucket=INDICATOR_BUCKET,
+            Key=key,
+            Body=b"test",
         )
 
     return s3
