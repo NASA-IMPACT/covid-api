@@ -1,10 +1,11 @@
 """covid_api.cache.memcache: memcached layer."""
 
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple, Dict, Union
 
 from bmemcached import Client
 
 from covid_api.ressources.enums import ImageType
+from covid_api.models.static import Datasets
 
 
 class CacheLayer(object):
@@ -62,13 +63,15 @@ class CacheLayer(object):
         except Exception:
             return False
 
-    def get_dataset_from_cache(self, ds_hash: str) -> Dict:
+    def get_dataset_from_cache(self, ds_hash: str) -> Union[Dict, bool]:
         """Get dataset response from cache layer"""
         return self.client.get(ds_hash)
 
-    def set_dataset_cache(self, ds_hash: str, body: Dict, timeout: int = 3600) -> bool:
+    def set_dataset_cache(
+        self, ds_hash: str, body: Datasets, timeout: int = 3600
+    ) -> bool:
         """Set dataset response in cache layer"""
         try:
-            return self.client.set(ds_hash, body, time=timeout)
+            return self.client.set(ds_hash, body.json(), time=timeout)
         except Exception:
             return False

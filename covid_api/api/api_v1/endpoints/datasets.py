@@ -16,18 +16,18 @@ router = APIRouter()
     response_model=Datasets,
 )
 def get_datasets(
-    response: Response, cache_client: CacheLayer = Depends(utils.get_cache),
+    response: Response,
+    cache_client: CacheLayer = Depends(utils.get_cache),
 ):
     """Return a list of datasets."""
     dataset_hash = utils.get_hash(spotlight_id="all")
     content = None
 
     if cache_client:
-        try:
-            content = cache_client.get_image_from_cache(dataset_hash)
+        content = cache_client.get_dataset_from_cache(dataset_hash)
+        if content:
+            content = Datasets.parse_raw(content)
             response.headers["X-Cache"] = "HIT"
-        except Exception:
-            content = None
     if not content:
         content = datasets.get_all()
         if cache_client and content:
@@ -54,11 +54,10 @@ def get_dataset(
         content = None
 
         if cache_client:
-            try:
-                content = cache_client.get_image_from_cache(dataset_hash)
+            content = cache_client.get_dataset_from_cache(dataset_hash)
+            if content:
+                content = Datasets.parse_raw(content)
                 response.headers["X-Cache"] = "HIT"
-            except Exception:
-                content = None
         if not content:
             content = datasets.get(spotlight_id)
             if cache_client and content:

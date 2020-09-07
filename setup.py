@@ -35,7 +35,7 @@ extra_reqs = {
         "aws-cdk.aws_iam",
         "aws-cdk.aws_elasticache",
     ],
-    "test": ["moto", "mock", "pytest", "pytest-cov", "pytest-asyncio", "requests"],
+    "test": ["moto[iam]", "mock", "pytest", "pytest-cov", "pytest-asyncio", "requests"],
 }
 
 
