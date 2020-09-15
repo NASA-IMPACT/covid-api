@@ -20,6 +20,7 @@ services:
       - MEMCACHE_HOST=memcached
       - MEMCACHE_USERNAME=myuser
       - MEMCACHE_PASSWORD=mypassword
+      - PLANET_API_KEY=${PLANET_API_KEY}
       - PORT=8000
       - PYTHONWARNINGS=ignore
       - VARIABLE_NAME=app
