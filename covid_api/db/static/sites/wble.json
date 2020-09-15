@@ -1,0 +1,16 @@
+{
+  "id": "wble",
+  "label": "Great Lakes",
+  "center": [ -84, 45 ],
+  "polygon":  {
+    "type": "Polygon",
+    "coordinates": [ [
+      [ -93, 40 ],
+      [ -93, 50 ],
+      [ -75, 50 ],
+      [ -75, 40 ],
+      [ -93, 40 ]
+    ] ]
+  },
+  "bounding_box": [ -93, 50, -75, 40 ]
+}
