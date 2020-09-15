@@ -6,6 +6,9 @@ A lightweight tile server for COVID data, based on [titiler](https://github.com/
 More information for data contributors like expected input format and delivery mechanisms, can be found in the [data guidelines](guidelines/README.md).
 
 ## Local environment
+
+First, add your AWS and Planet credentials to a new file called `.env`. You can see an example of this file at `.env.example`.
+
 To run the API locally:
 
 ```
@@ -13,7 +16,6 @@ $ docker-compose up --build
 ```
 
 The API should be running on `http://localhost:8000`.
-
 
 ## Contribution & Development
 
