@@ -41,7 +41,7 @@ extra_reqs = {
 
 setup(
     name="covid_api",
-    version="0.1.1",
+    version="0.2.1",
     description=u"",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -54,8 +54,8 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     keywords="",
-    author=u"Vincent Sarago",
-    author_email="vincent@developmentseed.org",
+    author=u"Development Seed",
+    author_email="info@developmentseed.org",
     url="https://github.com/developmentseed/covid_api",
     license="MIT",
     packages=find_packages(exclude=["ez_setup", "examples", "tests"]),
