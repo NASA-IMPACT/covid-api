@@ -15,6 +15,14 @@ To run the API locally:
 $ docker-compose up --build
 ```
 
+or:
+
+```bash
+unset GDAL_DATA
+export AWS_PROFILE=account-for-data
+uvicorn covid_api.main:app --reload
+```
+
 The API should be running on `http://localhost:8000`.
 
 ## Contribution & Development

@@ -6,7 +6,7 @@ PROJECT_NAME = "covid-api"
 STAGE = os.environ.get("STAGE", "dev")
 
 # primary bucket
-BUCKET = "covid-eo-data"
+BUCKET = "cumulus-map-internal"
 
 # Additional environement variable to set in the task/lambda
 ENV: dict = dict()

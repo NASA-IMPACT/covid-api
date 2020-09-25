@@ -23,3 +23,6 @@ INDICATOR_BUCKET = os.environ.get("INDICATOR_BUCKET", "covid-eo-data")
 DT_FORMAT = "%Y-%m-%d"
 MT_FORMAT = "%Y%m"
 PLANET_API_KEY = os.environ.get("PLANET_API_KEY")
+
+# primary bucket
+BUCKET = "cumulus-map-internal"
