@@ -1,13 +1,13 @@
 {
-  "id": "no2",
-  "name": "NO\u2082",
+  "id": "imerg",
+  "name": "IMERG",
   "type": "raster-timeseries",
-  "s3_location": "OMNO2d_HRM",
-  "time_unit": "month",
+  "s3_location": "cloud-optimized/GPM_3IMERGDF",
+  "time_unit": "day",
   "source": {
     "type": "raster",
     "tiles": [
-      "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/OMNO2d_HRM/OMI_trno2_0.10x0.10_{date}_Col3_V4.nc.tif&resampling_method=bilinear&bidx=1&rescale=0%2C1.5e16&color_map=custom_no2&color_formula=gamma r {gamma}"
+      "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://cumulus-map-internal/cloud-optimized/GPM_3IMERGDF/3B-DAY.MS.MRG.3IMERG.{date}-S000000-E235959.V06.tif&resampling_method=bilinear&bidx=1&rescale=0%2C1.5e16&color_map=custom_no2&color_formula=gamma r {gamma}"
     ]
   },
   "exclusive_with": [
@@ -26,15 +26,15 @@
   ],
   "enabled": true,
   "compare": {
-    "enabled": true,
+    "enabled": false,
     "help": "Compare with baseline (5 previous years)",
     "map_label": "{date}: Base vs Mean",
     "year_Diff": 2,
-    "time_unit": "month_only",
+    "time_unit": "day",
     "source": {
       "type": "raster",
       "tiles": [
-        "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/OMNO2d_HRMBaseline/OMI_trno2_0.10x0.10_Baseline_{date}_Col3_V4.nc.tif&esampling_method=bilinear&bidx=1&rescale=0%2C1.5e16&color_map=custom_no2&color_formula=gamma r {gamma}"
+        "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://cumulus-map-internal/cloud-optimized/GPM_3IMERGDF/3B-DAY.MS.MRG.3IMERG.{date}-S000000-E235959.V06.tif&esampling_method=bilinear&bidx=1&rescale=0%2C4&color_map=custom_no2&color_formula=gamma r {gamma}"
       ]
     }
   },
