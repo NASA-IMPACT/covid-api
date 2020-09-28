@@ -5,7 +5,7 @@ import os
 
 API_VERSION_STR = "/v1"
 
-PROJECT_NAME = "covid_api"
+PROJECT_NAME = "maap_api"
 
 SERVER_NAME = os.getenv("SERVER_NAME")
 SERVER_HOST = os.getenv("SERVER_HOST")
@@ -19,7 +19,7 @@ MEMCACHE_PORT = int(os.environ.get("MEMCACHE_PORT", 11211))
 MEMCACHE_USERNAME = os.environ.get("MEMCACHE_USERNAME")
 MEMCACHE_PASSWORD = os.environ.get("MEMCACHE_PASSWORD")
 
-INDICATOR_BUCKET = os.environ.get("INDICATOR_BUCKET", "covid-eo-data")
+INDICATOR_BUCKET = os.environ.get("INDICATOR_BUCKET", "cumulus-map-internal")
 DT_FORMAT = "%Y-%m-%d"
 MT_FORMAT = "%Y%m"
 PLANET_API_KEY = os.environ.get("PLANET_API_KEY")

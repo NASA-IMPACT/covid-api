@@ -29,7 +29,7 @@ class SiteManager(object):
         """Fetch a Site."""
         try:
             site = self._data[identifier]
-            site.indicators = get_indicators(identifier)
+            site.indicators = [] #get_indicators(identifier)
             return site
         except KeyError:
             raise InvalidIdentifier(f"Invalid identifier: {identifier}")
@@ -37,7 +37,7 @@ class SiteManager(object):
     def get_all(self) -> Sites:
         """Fetch all Sites."""
         all_sites = [site.dict() for site in self._data.values()]
-        indicators = indicator_folders()
+        indicators = []
         # add indicator ids
         for site in all_sites:
             site["indicators"] = [

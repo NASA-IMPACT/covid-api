@@ -2,7 +2,7 @@
 
 import os
 
-PROJECT_NAME = "covid-api"
+PROJECT_NAME = "maap-api"
 STAGE = os.environ.get("STAGE", "dev")
 
 # primary bucket

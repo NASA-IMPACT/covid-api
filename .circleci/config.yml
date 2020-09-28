@@ -54,7 +54,7 @@ jobs:
           name: master branch deployed to cdk stack
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              STAGE='prod' cdk deploy covid-api-lambda-prod --region us-east-1 --require-approval never
+              STAGE='prod' cdk deploy maap-api-lambda-prod --region us-east-1 --require-approval never
             fi
 
 workflows:

@@ -1,6 +1,6 @@
-# covid-api
+# Cloud-Optimized Data API
 
-A lightweight tile server for COVID data, based on [titiler](https://github.com/developmentseed/titiler).
+A lightweight tile server for cloud-optimized data, based on [titiler](https://github.com/developmentseed/titiler).
 
 ## Contributing data
 More information for data contributors like expected input format and delivery mechanisms, can be found in the [data guidelines](guidelines/README.md).
@@ -18,8 +18,8 @@ $ docker-compose up --build
 or:
 
 ```bash
-unset GDAL_DATA
 export AWS_PROFILE=account-for-data
+unset GDAL_DATA
 uvicorn covid_api.main:app --reload
 ```
 
@@ -52,3 +52,19 @@ Verifying PEP257 Compliance..............................................Passed
 mypy.....................................................................Passed
 [precommit cc12c5a] fix a really important thing
  ```
+
+## Deployment
+
+See `.circleci/config.yml`, but also the following steps can be followed:
+
+```bash
+npm install -g aws-cdk
+pip install -e .["deploy"] --user
+```
+
+Run the `create lambda package` steps.
+
+```bash
+cdk bootstrap aws://aws_account_id/aws_region
+STAGE='prod' cdk deploy maap-api-lambda-prod --region us-east-1 --require-approval never
+```
