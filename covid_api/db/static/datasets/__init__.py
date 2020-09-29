@@ -8,24 +8,33 @@ from covid_api.db.static.errors import InvalidIdentifier
 
 from covid_api.db.static.sites import sites
 
-from covid_api.db.utils import get_dataset_folders_by_spotlight, get_dataset_domain
+from covid_api.db.utils import s3_get, get_dataset_folders_by_spotlight, get_dataset_domain
+import boto3
+import json
+s3 = boto3.client("s3")
 
 data_dir = os.path.join(os.path.dirname(__file__))
-
+from covid_api.core.config import BUCKET, DATA_DIR
 
 class DatasetManager(object):
     """Default Dataset holder."""
 
     def __init__(self):
         """Load all datasets in a dict."""
-        datasets = [
-            os.path.splitext(f)[0] for f in os.listdir(data_dir) if f.endswith(".json")
-        ]
-
-        self._data = {
-            dataset: Dataset.parse_file(os.path.join(data_dir, f"{dataset}.json"))
-            for dataset in datasets
+        list_objects_args = {
+            "Bucket": BUCKET,
+            "Prefix": f"{DATA_DIR}/collections/"
         }
+        dataset_files = s3.list_objects_v2(**list_objects_args)['Contents']
+        datasets = {}
+        for file in dataset_files:
+            if file.get('Size') > 0:
+                key = file.get('Key')
+                dataset_json = s3_get(bucket=BUCKET, key=file.get('Key'))
+                dataset_name = key.split('/')[-1].replace('.json', '')
+                datasets[dataset_name] = json.loads(dataset_json)
+        # print(json.dumps(datasets, indent=2))
+        self._data = datasets
 
     def get(self, spotlight_id: str) -> Datasets:
         """

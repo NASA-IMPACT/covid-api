@@ -26,3 +26,4 @@ PLANET_API_KEY = os.environ.get("PLANET_API_KEY")
 
 # primary bucket
 BUCKET = "cumulus-map-internal"
+DATA_DIR = "cloud-optimized"
