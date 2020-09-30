@@ -33,7 +33,6 @@ class DatasetManager(object):
                 dataset_json = s3_get(bucket=BUCKET, key=file.get('Key'))
                 dataset_name = key.split('/')[-1].replace('.json', '')
                 datasets[dataset_name] = json.loads(dataset_json)
-        # print(json.dumps(datasets, indent=2))
         self._data = datasets
 
     def get(self, spotlight_id: str) -> Datasets:
@@ -90,8 +89,8 @@ class DatasetManager(object):
 
     def get_all(self) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
-        self._data = self._overload_domain(datasets=self._data)
-        return Datasets(datasets=[dataset.dict() for dataset in self._data.values()])
+        # self._data = self._overload_domain(datasets=self._data)
+        return Datasets(datasets=[dataset for dataset in self._data.values()])
 
     def list(self) -> List[str]:
         """List all datasets"""
@@ -118,11 +117,10 @@ class DatasetManager(object):
         dict: the `datasets` object, with an updated `domain` value for each
         dataset in the `datasets` object.
         """
-
         for _, dataset in datasets.items():
 
             # No point in searching for files in S3 if the dataset isn't stored there!
-            if not dataset.s3_location:
+            if not dataset.get("s3_location"):
                 continue
 
             domain_args: Dict[str, Any] = {
