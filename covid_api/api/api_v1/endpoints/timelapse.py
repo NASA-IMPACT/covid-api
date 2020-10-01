@@ -17,6 +17,7 @@ router = APIRouter()
 def timelapse(query: TimelapseRequest):
     """Handle /timelapse requests."""
     dataset = datasets._data[query.type]
-    url = f"s3://{config.BUCKET}/{dataset.s3_location}/3B-DAY.MS.MRG.3IMERG.{query.month}-S000000-E235959.V06.tif"
+    print(query)
+    url = f"s3://{config.BUCKET}/cloud-optimized/GPM_3IMERGM/3B-MO.MS.MRG.3IMERG.{query.month}-S000000-E235959.tif"
     mean, median = get_zonal_stat(query.geojson, url)
     return dict(mean=mean, median=median)

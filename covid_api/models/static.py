@@ -56,7 +56,7 @@ class OutputDataset(BaseModel):
     description: str = ""
     type: str
     is_periodic: bool = True
-    time_unit: Optional[str]
+    timeUnit: Optional[str]
     domain: List = []
     source: Source
     background_source: Optional[Source]
