@@ -222,11 +222,12 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
         window_affine = src.window_transform(window)
         data = src.read(window=window)
 
+        # calculate the coverage of pixels for weighting
         pctcover = rasterize_pctcover(geom, atrans=window_affine, shape=data.shape[1:])
 
         return (
-            np.nanmean(data * pctcover),
-            np.nanmedian(data * pctcover),
+            np.average(data[0], weights=pctcover),
+            np.nanmedian(data),
         )
 
 
