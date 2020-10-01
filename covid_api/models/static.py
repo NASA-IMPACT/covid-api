@@ -6,12 +6,16 @@ from pydantic.color import Color
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import Polygon
 
+class Vector(BaseModel):
+    type: str
+    data: str
 
 class Source(BaseModel):
     """Source Model."""
 
     type: str
-    tiles: List
+    tiles: Optional[List]
+    vector: Optional[Vector]
 
 
 class Swatch(BaseModel):
