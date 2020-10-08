@@ -1,15 +1,13 @@
 """ covid_api static datasets """
 import os
 import re
-from typing import List, Dict, Set, Any
 from copy import deepcopy
+from typing import Any, Dict, List, Set
 
-from covid_api.models.static import Datasets, Dataset
 from covid_api.db.static.errors import InvalidIdentifier
-
 from covid_api.db.static.sites import sites
-
-from covid_api.db.utils import get_dataset_folders_by_spotlight, get_dataset_domain
+from covid_api.db.utils import get_dataset_domain, get_dataset_folders_by_spotlight
+from covid_api.models.static import Dataset, Datasets
 
 data_dir = os.path.join(os.path.dirname(__file__))
 

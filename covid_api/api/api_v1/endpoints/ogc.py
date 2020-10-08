@@ -2,20 +2,21 @@
 
 from urllib.parse import urlencode
 
+import rasterio
+from rasterio import warp
+from rio_tiler import constants
+from rio_tiler.mercator import get_zooms
+
+from covid_api.core import config
+from covid_api.ressources.common import mimetype
+from covid_api.ressources.enums import ImageType
+from covid_api.ressources.responses import XMLResponse
+
 from fastapi import APIRouter, Query
+
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
-
-import rasterio
-from rasterio import warp
-from rio_tiler.mercator import get_zooms
-from rio_tiler import constants
-
-from covid_api.core import config
-from covid_api.ressources.enums import ImageType
-from covid_api.ressources.common import mimetype
-from covid_api.ressources.responses import XMLResponse
 
 router = APIRouter()
 templates = Jinja2Templates(directory="covid_api/templates")

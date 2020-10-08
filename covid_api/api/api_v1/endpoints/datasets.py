@@ -1,11 +1,11 @@
 """Dataset endpoints."""
-from covid_api.db.static.errors import InvalidIdentifier
-from fastapi import APIRouter, HTTPException, Depends, Response
-
-from covid_api.models.static import Datasets
-from covid_api.db.static.datasets import datasets
-from covid_api.db.memcache import CacheLayer
 from covid_api.api import utils
+from covid_api.db.memcache import CacheLayer
+from covid_api.db.static.datasets import datasets
+from covid_api.db.static.errors import InvalidIdentifier
+from covid_api.models.static import Datasets
+
+from fastapi import APIRouter, Depends, HTTPException, Response
 
 router = APIRouter()
 
@@ -16,8 +16,7 @@ router = APIRouter()
     response_model=Datasets,
 )
 def get_datasets(
-    response: Response,
-    cache_client: CacheLayer = Depends(utils.get_cache),
+    response: Response, cache_client: CacheLayer = Depends(utils.get_cache),
 ):
     """Return a list of datasets."""
     dataset_hash = utils.get_hash(spotlight_id="all")

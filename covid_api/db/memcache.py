@@ -1,11 +1,11 @@
 """covid_api.cache.memcache: memcached layer."""
 
-from typing import Optional, Tuple, Dict, Union
+from typing import Dict, Optional, Tuple, Union
 
 from bmemcached import Client
 
-from covid_api.ressources.enums import ImageType
 from covid_api.models.static import Datasets
+from covid_api.ressources.enums import ImageType
 
 
 class CacheLayer(object):

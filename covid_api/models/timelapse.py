@@ -1,8 +1,8 @@
 """Tilelapse models."""
 
-from pydantic import BaseModel
 from geojson_pydantic.features import Feature
 from geojson_pydantic.geometries import Polygon
+from pydantic import BaseModel
 
 
 class PolygonFeature(Feature):

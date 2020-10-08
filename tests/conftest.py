@@ -1,12 +1,12 @@
 """``pytest`` configuration."""
 
 import os
+
 import pytest
-
-from starlette.testclient import TestClient
-
 import rasterio
 from rasterio.io import DatasetReader
+
+from starlette.testclient import TestClient
 
 
 @pytest.fixture(autouse=True)
