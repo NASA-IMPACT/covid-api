@@ -1,9 +1,9 @@
 """Groups endpoint."""
 
-from fastapi import APIRouter
-
-from covid_api.models.static import IndicatorGroup, IndicatorGroups
 from covid_api.db.static.groups import groups
+from covid_api.models.static import IndicatorGroup, IndicatorGroups
+
+from fastapi import APIRouter
 
 router = APIRouter()
 

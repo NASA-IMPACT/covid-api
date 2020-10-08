@@ -1,18 +1,18 @@
 """covid_api app."""
 from typing import Any, Dict
 
+from covid_api import version
+from covid_api.api.api_v1.api import api_router
+from covid_api.core import config
+from covid_api.db.memcache import CacheLayer
+
 from fastapi import FastAPI
+
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
-from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.gzip import GZipMiddleware
-
-
-from covid_api import version
-from covid_api.core import config
-from covid_api.db.memcache import CacheLayer
-from covid_api.api.api_v1.api import api_router
 
 templates = Jinja2Templates(directory="covid_api/templates")
 

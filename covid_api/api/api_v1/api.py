@@ -1,18 +1,18 @@
 """covid_api api."""
 
-from fastapi import APIRouter
-
 from covid_api.api.api_v1.endpoints import (
-    ogc,
-    detections,
-    timelapse,
     datasets,
-    sites,
+    detections,
     groups,
-    tiles,
     metadata,
+    ogc,
     planet,
+    sites,
+    tiles,
+    timelapse,
 )
+
+from fastapi import APIRouter
 
 api_router = APIRouter()
 api_router.include_router(tiles.router, tags=["tiles"])

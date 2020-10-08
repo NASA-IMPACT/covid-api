@@ -1,10 +1,11 @@
 """Static models."""
 
-from typing import List, Any, Optional, Union, Dict
-from pydantic import BaseModel
-from pydantic.color import Color
+from typing import Any, Dict, List, Optional, Union
+
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import Polygon
+from pydantic import BaseModel
+from pydantic.color import Color
 
 
 class Source(BaseModel):

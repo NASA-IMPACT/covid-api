@@ -1,19 +1,18 @@
 """API planet mosaic tiles."""
-from typing import Any, Dict
-
 from functools import partial
-
-from fastapi import APIRouter, Depends, Query, Path
-from starlette.concurrency import run_in_threadpool
+from typing import Any, Dict
 
 from rio_tiler.utils import render
 
 from covid_api.api import utils
 from covid_api.db.memcache import CacheLayer
-from covid_api.ressources.enums import ImageType
 from covid_api.ressources.common import mimetype
+from covid_api.ressources.enums import ImageType
 from covid_api.ressources.responses import TileResponse
 
+from fastapi import APIRouter, Depends, Path, Query
+
+from starlette.concurrency import run_in_threadpool
 
 _render = partial(run_in_threadpool, render)
 _tile = partial(run_in_threadpool, utils.planet_mosaic_tile)

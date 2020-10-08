@@ -2,7 +2,6 @@
 
 import os
 
-
 API_VERSION_STR = "/v1"
 
 PROJECT_NAME = "covid_api"

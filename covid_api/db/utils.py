@@ -1,13 +1,14 @@
 """Db tools."""
 
-import boto3
 import csv
 import json
 import re
 from datetime import datetime
 from typing import Dict, List, Optional, Set
 
-from covid_api.core.config import INDICATOR_BUCKET, DT_FORMAT, MT_FORMAT
+import boto3
+
+from covid_api.core.config import DT_FORMAT, INDICATOR_BUCKET, MT_FORMAT
 from covid_api.models.static import IndicatorObservation
 
 s3 = boto3.client("s3")
