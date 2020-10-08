@@ -14,8 +14,7 @@ s3 = boto3.client("s3")
 
 
 def gather_s3_keys(
-    spotlight_id: Optional[str] = None,
-    prefix: Optional[str] = None,
+    spotlight_id: Optional[str] = None, prefix: Optional[str] = None,
 ) -> Set[str]:
     """
     Returns a set of S3 keys. If no args are provided, the keys will represent
@@ -57,9 +56,7 @@ def gather_s3_keys(
         key
         for key in keys
         if re.search(
-            rf"""[^a-zA-Z0-9]({spotlight_id})[^a-zA-Z0-9]""",
-            key,
-            re.IGNORECASE,
+            rf"""[^a-zA-Z0-9]({spotlight_id})[^a-zA-Z0-9]""", key, re.IGNORECASE,
         )
     }
 
@@ -81,9 +78,7 @@ def get_dataset_folders_by_spotlight(spotlight_id: str) -> Set[str]:
 
 
 def get_dataset_domain(
-    dataset_folder: str,
-    is_periodic: bool,
-    spotlight_id: str = None,
+    dataset_folder: str, is_periodic: bool, spotlight_id: str = None,
 ):
     """
     Returns a domain for a given dataset as identified by a folder. If a
@@ -95,7 +90,7 @@ def get_dataset_domain(
     ------
     dataset_folder (str): dataset folder to search within
     time_unit (Optional[str]): time_unit from the dataset's metadata json file
-    spotlight (optional[Dict[str,str]]): a dictionary containing the
+    spotlight_id (Optional[str]): a dictionary containing the
         `spotlight_id` of a spotlight to restrict the
         domain search to.
 
@@ -161,9 +156,7 @@ def get_indicator_site_metadata(identifier: str, folder: str) -> Dict:
 def indicator_folders() -> List:
     """Get Indicator folders."""
     response = s3.list_objects_v2(
-        Bucket=INDICATOR_BUCKET,
-        Prefix="indicators/",
-        Delimiter="/",
+        Bucket=INDICATOR_BUCKET, Prefix="indicators/", Delimiter="/",
     )
     return [obj["Prefix"].split("/")[1] for obj in response["CommonPrefixes"]]
 
@@ -172,8 +165,7 @@ def indicator_exists(identifier: str, indicator: str):
     """Check if an indicator exists for a site"""
     try:
         s3.head_object(
-            Bucket=INDICATOR_BUCKET,
-            Key=f"indicators/{indicator}/{identifier}.csv",
+            Bucket=INDICATOR_BUCKET, Key=f"indicators/{indicator}/{identifier}.csv",
         )
         return True
     except Exception:
@@ -206,9 +198,7 @@ def get_indicators(identifier) -> List:
                     INDICATOR_BUCKET, f"indicators/{folder}/{identifier}.csv"
                 )
                 indicator_lines = indicator_csv.decode("utf-8").split("\n")
-                reader = csv.DictReader(
-                    indicator_lines,
-                )
+                reader = csv.DictReader(indicator_lines,)
 
                 # top level metadata is added directly to the response
                 top_level_fields = {
@@ -237,12 +227,10 @@ def get_indicators(identifier) -> List:
                 indicator["domain"] = dict(
                     date=[
                         min(
-                            data,
-                            key=lambda x: datetime.strptime(x["date"], DT_FORMAT),
+                            data, key=lambda x: datetime.strptime(x["date"], DT_FORMAT),
                         )["date"],
                         max(
-                            data,
-                            key=lambda x: datetime.strptime(x["date"], DT_FORMAT),
+                            data, key=lambda x: datetime.strptime(x["date"], DT_FORMAT),
                         )["date"],
                     ],
                     indicator=[

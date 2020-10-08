@@ -44,9 +44,7 @@ def _setup_s3(empty=False):
     ]
     for key in s3_keys:
         s3.put_object(
-            Bucket=INDICATOR_BUCKET,
-            Key=key,
-            Body=b"test",
+            Bucket=INDICATOR_BUCKET, Key=key, Body=b"test",
         )
 
     return s3
@@ -77,8 +75,6 @@ def test_datasets_monthly(app):
     content = json.loads(response.content)
     assert "datasets" in content
 
-    print(content["datasets"])
-
     dataset_info = [d for d in content["datasets"] if d["id"] == "co2"][0]
     assert dataset_info["domain"][0] == datetime.strftime(
         datetime(2019, 1, 1), "%Y-%m-%dT%H:%M:%S"
@@ -106,6 +102,14 @@ def test_euports_dataset(app):
     assert dataset_info["domain"][1] == datetime.strftime(
         datetime(2020, 7, 1), "%Y-%m-%dT%H:%M:%S"
     )
+
+    assert "_du_" in dataset_info["source"]["tiles"][0]
+
+    # Dunkirk has two different datasets under two different spotlight names:
+    # "du" and "EUports" - both need to be tested individually
+
+    dataset_info = [d for d in content["datasets"] if d["id"] == "nightlights-viirs"][0]
+    assert "_EUPorts_" in dataset_info["source"]["tiles"][0]
 
 
 @mock_s3

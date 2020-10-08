@@ -2,6 +2,7 @@
 import os
 import re
 from typing import List, Dict, Set, Any
+from copy import deepcopy
 
 from covid_api.models.static import Datasets, Dataset
 from covid_api.db.static.errors import InvalidIdentifier
@@ -35,7 +36,6 @@ class DatasetManager(object):
         `InvalidIdentifier` exception if the provided spotlight_id does
         not exist.
         """
-
         global_datasets = self.get_global_datasets()
         global_datasets = self._overload_domain(datasets=global_datasets)
 
@@ -51,26 +51,37 @@ class DatasetManager(object):
         except InvalidIdentifier:
             raise
 
-        # Append EUPorts to the spotlight ID using a pipe character so that
-        # the regexp will filter for either value, since certain datasets
-        # contain data for both the `du` and `gh` spotlights under `EUPorts`
+        # Append "EUPorts" to the spotlight ID's if the requested spotlight id
+        # was one of "du" or "gh", since certain datasets group both spotlights
+        # under a single value: "EUPorts". It's then necessary to search,
+        # and extract domain for each option ("du"/"gh" and "EUPorts") separately
+
+        spotlight_ids = [site.id]
         if site.id in ["du", "gh"]:
-            site.id = f"{site.id}|EUPorts"
+            spotlight_ids.append("EUPorts")
 
-        # find all "folders" in S3 containing keys for the given spotlight
-        # each "folder" corresponds to a dataset.
-        spotlight_dataset_folders = get_dataset_folders_by_spotlight(
-            spotlight_id=site.id
-        )
+        spotlight_datasets = {}
 
-        # filter the dataset items by those corresponding the folders above
-        # and add the datasets to the previously filtered `global` datasets
-        spotlight_datasets = self.filter_datasets_by_folders(
-            folders=spotlight_dataset_folders
-        )
-        spotlight_datasets = self._overload_domain(
-            datasets=spotlight_datasets, spotlight_id=site.id
-        )
+        for spotlight_id in spotlight_ids:
+            # find all "folders" in S3 containing keys for the given spotlight
+            # each "folder" corresponds to a dataset.
+            spotlight_dataset_folders = get_dataset_folders_by_spotlight(
+                spotlight_id=spotlight_id
+            )
+            # filter the dataset items by those corresponding the folders above
+            # and add the datasets to the previously filtered `global` datasets
+            datasets = self.filter_datasets_by_folders(
+                folders=spotlight_dataset_folders
+            )
+
+            datasets = self._overload_spotlight_id(
+                datasets=datasets, spotlight_id=spotlight_id
+            )
+
+            datasets = self._overload_domain(
+                datasets=datasets, spotlight_id=spotlight_id
+            )
+            spotlight_datasets.update(datasets)
 
         # global datasets are returned for all spotlights
         spotlight_datasets.update(global_datasets)
@@ -89,6 +100,40 @@ class DatasetManager(object):
         return list(self._data.keys())
 
     @staticmethod
+    def _overload_spotlight_id(datasets: dict, spotlight_id: str):
+        """
+        Returns the provided `datasets` objects with an updated value for
+        each dataset's `source.tiles` and `background_source.tiles` keys.
+        The string "{spotlightId}" in the `tiles` URL(s) is replaced with the
+        actual value of the spotlightId (eg: "ny", "sf", "tk")
+        Params:
+        ------
+        datasets (dict): dataset metadata objects for which to overload
+        `source.tiles` and `background_source.tiles` keys.
+        spotlight_id ([dict]): spotlight id value with which to replace
+        "{spotlightId}"
+
+        Returns:
+        ------
+        dict: the `datasets` object, with an updated `source.tiles` and
+        `background_source.tiles` values for each dataset in the `datasets` object.
+        """
+        for _, dataset in datasets.items():
+            dataset.source.tiles = [
+                url.replace("{spotlightId}", spotlight_id)
+                for url in dataset.source.tiles
+            ]
+
+            if not dataset.background_source:
+                continue
+
+            dataset.background_source.tiles = [
+                url.replace("{spotlightId}", spotlight_id)
+                for url in dataset.background_source.tiles
+            ]
+        return datasets
+
+    @staticmethod
     def _overload_domain(datasets: dict, spotlight_id: str = None):
         """
         Returns the provided `datasets` object with an updated value for
@@ -101,7 +146,7 @@ class DatasetManager(object):
         ------
         datasets (dict): dataset metadata objects for which to overload
         `domain` keys.
-        spotlight (Optional[dict]): spotlight to further precise `domain`
+        spotlight_id (Optional[str]): spotlight_id to further precise `domain`
         search
 
         Returns:
@@ -143,8 +188,12 @@ class DatasetManager(object):
         Dict : Metadata objects for the datasets corresponding to the
             folders provided.
         """
-
-        return {k: v for k, v in self._data.items() if v.s3_location in folders}
+        # deepcopy is necessary because the spotlight and domain overriding was
+        # affecting the original dataset metadata items and returning the same values
+        # in subsequent API requests for different spotlights
+        return {
+            k: v for k, v in deepcopy(self._data).items() if v.s3_location in folders
+        }
 
     def get_global_datasets(self):
         """
