@@ -83,6 +83,12 @@ class DatasetManager(object):
             )
             spotlight_datasets.update(datasets)
 
+        if spotlight_id == "tk":
+            spotlight_datasets["water-chlorophyll"].source.tiles = [
+                tile.replace("&rescale=-100%2C100", "")
+                for tile in spotlight_datasets["water-chlorophyll"].source.tiles
+            ]
+
         # global datasets are returned for all spotlights
         spotlight_datasets.update(global_datasets)
 

@@ -151,6 +151,8 @@ def test_datasets_daily(app):
         datetime(2020, 3, 2), "%Y-%m-%dT%H:%M:%S"
     )
 
+    assert "&rescale=-100%2C100" not in dataset_info["source"]["tiles"][0]
+
 
 @mock_s3
 def test_global_datasets(app):
