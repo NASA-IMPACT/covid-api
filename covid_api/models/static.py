@@ -56,11 +56,11 @@ class OutputDataset(BaseModel):
     name: str
     description: str = ""
     type: str
-    is_periodic: bool = True
-    time_unit: Optional[str]
+    isPeriodic: bool = True
+    timeUnit: Optional[str]
     domain: List = []
     source: Source
-    background_source: Optional[Source]
+    backgroundSource: Optional[Source]
     swatch: Swatch
     legend: Optional[Legend]
     info: str = ""
