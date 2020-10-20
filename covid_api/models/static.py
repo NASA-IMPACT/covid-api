@@ -8,6 +8,11 @@ from pydantic import BaseModel
 from pydantic.color import Color
 
 
+def to_camel(snake_str):
+    first, *others = snake_str.split("_")
+    return "".join([first.lower(), *map(str.title, others)])
+
+
 class Source(BaseModel):
     """Source Model."""
 
@@ -38,9 +43,8 @@ class Dataset(BaseModel):
     name: str
     description: str = ""
     type: str
-    s3_location: Optional[str]
     is_periodic: bool = True
-    time_unit: Optional[str]
+    time_unit: str
     domain: List = []
     source: Source
     background_source: Optional[Source]
@@ -49,27 +53,24 @@ class Dataset(BaseModel):
     info: str = ""
 
 
-class OutputDataset(BaseModel):
-    """Dataset Model."""
+class DatasetExternal(Dataset):
+    """ Public facing dataset model (uses camelCase fieldnames) """
 
-    id: str
-    name: str
-    description: str = ""
-    type: str
-    isPeriodic: bool = True
-    timeUnit: Optional[str]
-    domain: List = []
-    source: Source
-    backgroundSource: Optional[Source]
-    swatch: Swatch
-    legend: Optional[Legend]
-    info: str = ""
+    class Config:
+        alias_generator = to_camel
+        allow_population_by_field_name = True
+
+
+class DatasetInternal(Dataset):
+    """ Private dataset model (includes the dataset's location in s3) """
+
+    s3_location: Optional[str]
 
 
 class Datasets(BaseModel):
     """Dataset List Model."""
 
-    datasets: List[OutputDataset]
+    datasets: List[DatasetExternal]
 
 
 class Site(BaseModel):

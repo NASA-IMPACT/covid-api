@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Set
 from covid_api.db.static.errors import InvalidIdentifier
 from covid_api.db.static.sites import sites
 from covid_api.db.utils import get_dataset_domain, get_dataset_folders_by_spotlight
-from covid_api.models.static import Dataset, Datasets
+from covid_api.models.static import DatasetInternal, Datasets
 
 data_dir = os.path.join(os.path.dirname(__file__))
 
@@ -22,7 +22,9 @@ class DatasetManager(object):
         ]
 
         self._data = {
-            dataset: Dataset.parse_file(os.path.join(data_dir, f"{dataset}.json"))
+            dataset: DatasetInternal.parse_file(
+                os.path.join(data_dir, f"{dataset}.json")
+            )
             for dataset in datasets
         }
 
@@ -40,7 +42,10 @@ class DatasetManager(object):
         if spotlight_id == "global":
 
             return Datasets(
-                datasets=[dataset.dict() for dataset in global_datasets.values()]
+                datasets=[
+                    dataset.dict(exclude={"s3_location"})
+                    for dataset in global_datasets.values()
+                ]
             )
 
         # Verify that the requested spotlight exists
@@ -91,13 +96,20 @@ class DatasetManager(object):
         spotlight_datasets.update(global_datasets)
 
         return Datasets(
-            datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
+            datasets=[
+                dataset.dict(exclude={"s3_location"})
+                for dataset in spotlight_datasets.values()
+            ]
         )
 
     def get_all(self) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
         self._data = self._overload_domain(datasets=self._data)
-        return Datasets(datasets=[dataset.dict() for dataset in self._data.values()])
+        return Datasets(
+            datasets=[
+                dataset.dict(exclude={"s3_location"}) for dataset in self._data.values()
+            ]
+        )
 
     def list(self) -> List[str]:
         """List all datasets"""

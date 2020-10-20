@@ -2,6 +2,7 @@
   "id": "population",
   "name": "Population",
   "type": "raster",
+  "time_unit": "day",
   "source": {
     "type": "raster",
     "tiles": [
