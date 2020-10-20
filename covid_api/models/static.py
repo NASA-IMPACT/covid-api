@@ -8,16 +8,30 @@ from pydantic import BaseModel
 from pydantic.color import Color
 
 
-def to_camel(snake_str):
+def to_camel(snake_str: str) -> str:
+    """
+    Converts snake_case_string to camelCaseString
+    """
     first, *others = snake_str.split("_")
     return "".join([first.lower(), *map(str.title, others)])
 
 
 class Source(BaseModel):
-    """Source Model."""
+    """Base Source Model"""
 
     type: str
-    tiles: List
+
+
+class NonGeoJsonSource(Source):
+    """Source Model for all non-geojson data types"""
+
+    tiles: List[str]
+
+
+class GeoJsonSource(Source):
+    """Source Model for geojson data types"""
+
+    data: str
 
 
 class Swatch(BaseModel):
@@ -46,8 +60,8 @@ class Dataset(BaseModel):
     is_periodic: bool = True
     time_unit: str
     domain: List = []
-    source: Source
-    background_source: Optional[Source]
+    source: Union[NonGeoJsonSource, GeoJsonSource]
+    background_source: Optional[Union[NonGeoJsonSource, GeoJsonSource]]
     swatch: Swatch
     legend: Optional[Legend]
     info: str = ""
@@ -57,6 +71,8 @@ class DatasetExternal(Dataset):
     """ Public facing dataset model (uses camelCase fieldnames) """
 
     class Config:
+        """Generates alias to convert all fieldnames from snake_case to camelCase"""
+
         alias_generator = to_camel
         allow_population_by_field_name = True
 

@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Set
 from covid_api.db.static.errors import InvalidIdentifier
 from covid_api.db.static.sites import sites
 from covid_api.db.utils import get_dataset_domain, get_dataset_folders_by_spotlight
-from covid_api.models.static import DatasetInternal, Datasets
+from covid_api.models.static import DatasetInternal, Datasets, GeoJsonSource
 
 data_dir = os.path.join(os.path.dirname(__file__))
 
@@ -28,6 +28,19 @@ class DatasetManager(object):
             for dataset in datasets
         }
 
+    def _prep_output(self, output_datasets: dict):
+        """TODO: fill out this doctring!"""
+        output_datasets = deepcopy(output_datasets)
+        for dataset in output_datasets.values():
+            if dataset.id in ["detections-ship", "detections-plane"]:
+                dataset.source = GeoJsonSource(
+                    type=dataset.source.type, data=dataset.source.tiles[0]
+                )
+
+        return Datasets(
+            datasets=[dataset.dict() for dataset in output_datasets.values()]
+        )
+
     def get(self, spotlight_id: str) -> Datasets:
         """
         Fetches all the datasets avilable for a given spotlight. If the
@@ -36,17 +49,15 @@ class DatasetManager(object):
         `InvalidIdentifier` exception if the provided spotlight_id does
         not exist.
         """
-        global_datasets = self.get_global_datasets()
+        global_datasets = self._get_global_datasets()
         global_datasets = self._overload_domain(datasets=global_datasets)
 
         if spotlight_id == "global":
 
-            return Datasets(
-                datasets=[
-                    dataset.dict(exclude={"s3_location"})
-                    for dataset in global_datasets.values()
-                ]
-            )
+            # return Datasets(
+            #     datasets=[dataset.dict() for dataset in global_datasets.values()]
+            # )
+            return self._prep_output(global_datasets)
 
         # Verify that the requested spotlight exists
         try:
@@ -73,7 +84,7 @@ class DatasetManager(object):
             )
             # filter the dataset items by those corresponding the folders above
             # and add the datasets to the previously filtered `global` datasets
-            datasets = self.filter_datasets_by_folders(
+            datasets = self._filter_datasets_by_folders(
                 folders=spotlight_dataset_folders
             )
 
@@ -95,21 +106,16 @@ class DatasetManager(object):
         # global datasets are returned for all spotlights
         spotlight_datasets.update(global_datasets)
 
-        return Datasets(
-            datasets=[
-                dataset.dict(exclude={"s3_location"})
-                for dataset in spotlight_datasets.values()
-            ]
-        )
+        return self._prep_output(spotlight_datasets)
+        # return Datasets(
+        #     datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
+        # )
 
     def get_all(self) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
         self._data = self._overload_domain(datasets=self._data)
-        return Datasets(
-            datasets=[
-                dataset.dict(exclude={"s3_location"}) for dataset in self._data.values()
-            ]
-        )
+        return self._prep_output(self._data)
+        # return Datasets(datasets=[dataset.dict() for dataset in self._data.values()])
 
     def list(self) -> List[str]:
         """List all datasets"""
@@ -189,7 +195,7 @@ class DatasetManager(object):
 
         return datasets
 
-    def filter_datasets_by_folders(self, folders: Set[str]) -> Dict:
+    def _filter_datasets_by_folders(self, folders: Set[str]) -> Dict:
         """
         Returns all datasets corresponding to a set of folders (eg: for
         folders {"BMHD_30M_MONTHLY", "xco2"} this method would return the
@@ -211,7 +217,7 @@ class DatasetManager(object):
             k: v for k, v in deepcopy(self._data).items() if v.s3_location in folders
         }
 
-    def get_global_datasets(self):
+    def _get_global_datasets(self):
         """
         Returns all datasets which do not reference a specific spotlight, by
         filtering out datasets where the "source.tiles" value contains either
