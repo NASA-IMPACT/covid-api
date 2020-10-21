@@ -57,8 +57,8 @@ class Dataset(BaseModel):
     name: str
     description: str = ""
     type: str
-    is_periodic: bool = True
-    time_unit: str
+    is_periodic: bool = False
+    time_unit: str = ""
     domain: List = []
     source: Union[NonGeoJsonSource, GeoJsonSource]
     background_source: Optional[Union[NonGeoJsonSource, GeoJsonSource]]

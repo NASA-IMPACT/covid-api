@@ -1,0 +1,33 @@
+{
+    "id": "water-wq-gl-chl",
+    "name": "Chlorophyll",
+    "type": "raster-timeseries",
+    "time_unit": "day",
+    "source": {
+        "type": "raster",
+        "tiles": [
+            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/wq-greatlakes-chl/chl_anomaly_greatlakes_{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
+        ]
+    },
+    "exclusive_with": [
+        "water-wq-gl-spm"
+    ],
+    "swatch": {
+        "color": "#154F8D",
+        "name": "Deep blue"
+    },
+    "legend": {
+        "type": "gradient",
+        "min": "less",
+        "max": "more",
+        "stops": [
+            "#3A88BD",
+            "#C9E0ED",
+            "#E4EEF3",
+            "#FDDCC9",
+            "#DE725B",
+            "#67001F"
+        ]
+    },
+    "info": "Chlorophyll is an indicator of algae growth. Redder colors indicate increases in chlorophyll-a and worse water quality. Bluer colors indicate decreases in chlorophyll-a and improved water quality. White areas indicate no change."
+}
