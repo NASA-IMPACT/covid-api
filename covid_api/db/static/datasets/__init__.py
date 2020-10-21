@@ -28,19 +28,6 @@ class DatasetManager(object):
             for dataset in datasets
         }
 
-    def _prep_output(self, output_datasets: dict):
-        """TODO: fill out this doctring!"""
-        output_datasets = deepcopy(output_datasets)
-        for dataset in output_datasets.values():
-            if dataset.id in ["detections-ship", "detections-plane"]:
-                dataset.source = GeoJsonSource(
-                    type=dataset.source.type, data=dataset.source.tiles[0]
-                )
-
-        return Datasets(
-            datasets=[dataset.dict() for dataset in output_datasets.values()]
-        )
-
     def get(self, spotlight_id: str) -> Datasets:
         """
         Fetches all the datasets avilable for a given spotlight. If the
@@ -53,10 +40,6 @@ class DatasetManager(object):
         global_datasets = self._overload_domain(datasets=global_datasets)
 
         if spotlight_id == "global":
-
-            # return Datasets(
-            #     datasets=[dataset.dict() for dataset in global_datasets.values()]
-            # )
             return self._prep_output(global_datasets)
 
         # Verify that the requested spotlight exists
@@ -107,9 +90,6 @@ class DatasetManager(object):
         spotlight_datasets.update(global_datasets)
 
         return self._prep_output(spotlight_datasets)
-        # return Datasets(
-        #     datasets=[dataset.dict() for dataset in spotlight_datasets.values()]
-        # )
 
     def get_all(self) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
@@ -120,6 +100,24 @@ class DatasetManager(object):
     def list(self) -> List[str]:
         """List all datasets"""
         return list(self._data.keys())
+
+    def _prep_output(self, output_datasets: dict):
+        """
+        Replaces the `source` of datasets with geojson data types and builds the
+        object to return to the API consumer. The deepcopy of the the data to output
+        is necessary to avoid modifying the underlying objects, which would affect
+        the result of following API calls.
+        """
+        output_datasets = deepcopy(output_datasets)
+        for dataset in output_datasets.values():
+            if dataset.id in ["detections-ship", "detections-plane"]:
+                dataset.source = GeoJsonSource(
+                    type=dataset.source.type, data=dataset.source.tiles[0]
+                )
+
+        return Datasets(
+            datasets=[dataset.dict() for dataset in output_datasets.values()]
+        )
 
     @staticmethod
     def _overload_spotlight_id(datasets: dict, spotlight_id: str):
