@@ -131,12 +131,12 @@ def get_dataset_domain(
             # Invalid date value matched
             continue
 
-        dates.append(date)
+        dates.append(date.strftime("%Y-%m-%dT%H:%M:%SZ"))
 
     if is_periodic and len(dates):
         return [min(dates), max(dates)]
 
-    return sorted(dates)
+    return sorted(set(dates))
 
 
 def s3_get(bucket: str, key: str):
