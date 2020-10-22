@@ -14,7 +14,7 @@
     "background_source": {
         "type": "raster",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/planet/{spotlightId}-{date}.tif&resampling_method=nearest&bidx=1,2,3"
+            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
         ]
     },
     "exclusive_with": [
