@@ -3,7 +3,9 @@
     "name": "Agriculture",
     "type": "raster-timeseries",
     "s3_location": "agriculture-cropmonitor",
+    "info": "",
     "time_unit": "month",
+    "is_periodic": true,
     "source": {
         "type": "raster",
         "tiles": [
