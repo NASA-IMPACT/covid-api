@@ -8,13 +8,13 @@
     "source": {
         "type": "geojson",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/detections/plane/{spotlightId}/{date}.geojson"
+            "{api_url}/detections/plane/{spotlightId}/{date}.geojson"
         ]
     },
     "background_source": {
         "type": "raster",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
+            "{api_url}/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
         ]
     },
     "exclusive_with": [

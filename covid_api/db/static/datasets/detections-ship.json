@@ -8,13 +8,13 @@
     "source": {
         "type": "geojson",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/detections/ship/{spotlightId}/{date}.geojson"
+            "{api_url}/detections/ship/{spotlightId}/{date}.geojson"
         ]
     },
     "background_source": {
         "type": "raster",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/planet/{spotlightId}-{date}.tif&resampling_method=nearest&bidx=1,2,3"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/planet/{spotlightId}-{date}.tif&resampling_method=nearest&bidx=1,2,3"
         ]
     },
     "exclusive_with": [

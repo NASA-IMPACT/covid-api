@@ -8,7 +8,7 @@
     "source": {
         "type": "raster",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-mean/xco2_15day_mean.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-mean/xco2_15day_mean.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
         ]
     },
     "exclusive_with": [
@@ -33,7 +33,7 @@
         "source": {
             "type": "raster",
             "tiles": [
-                "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1//{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2/xco2_15day_base.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
+                "{api_url}//{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2/xco2_15day_base.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
             ]
         }
     },

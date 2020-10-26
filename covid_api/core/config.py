@@ -22,3 +22,7 @@ INDICATOR_BUCKET = os.environ.get("INDICATOR_BUCKET", "covid-eo-data")
 DT_FORMAT = "%Y-%m-%d"
 MT_FORMAT = "%Y%m"
 PLANET_API_KEY = os.environ.get("PLANET_API_KEY")
+
+API_URL_BASE = os.environ.get(
+    "API_URL_BASE", "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com"
+)
