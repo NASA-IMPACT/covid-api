@@ -1,8 +1,7 @@
 """covid_api api."""
 
+from covid_api.api.api_v1.endpoints import detections, datasets  # isort:skip
 from covid_api.api.api_v1.endpoints import (
-    detections,
-    datasets,
     groups,
     metadata,
     ogc,
