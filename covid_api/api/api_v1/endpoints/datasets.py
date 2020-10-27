@@ -1,11 +1,14 @@
 """Dataset endpoints."""
 from covid_api.api import utils
+from covid_api.core import config
 from covid_api.db.memcache import CacheLayer
 from covid_api.db.static.datasets import datasets
 from covid_api.db.static.errors import InvalidIdentifier
 from covid_api.models.static import Datasets
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+
+from starlette.requests import Request
 
 router = APIRouter()
 
@@ -16,7 +19,9 @@ router = APIRouter()
     response_model=Datasets,
 )
 def get_datasets(
-    response: Response, cache_client: CacheLayer = Depends(utils.get_cache),
+    request: Request,
+    response: Response,
+    cache_client: CacheLayer = Depends(utils.get_cache),
 ):
     """Return a list of datasets."""
     dataset_hash = utils.get_hash(spotlight_id="all")
@@ -28,7 +33,13 @@ def get_datasets(
             content = Datasets.parse_raw(content)
             response.headers["X-Cache"] = "HIT"
     if not content:
-        content = datasets.get_all()
+        scheme = request.url.scheme
+        host = request.headers["host"]
+        if config.API_VERSION_STR:
+            host += config.API_VERSION_STR
+
+        content = datasets.get_all(api_url=f"{scheme}://{host}")
+
         if cache_client and content:
             cache_client.set_dataset_cache(dataset_hash, content)
 
@@ -43,6 +54,7 @@ def get_datasets(
     response_model=Datasets,
 )
 def get_dataset(
+    request: Request,
     spotlight_id: str,
     response: Response,
     cache_client: CacheLayer = Depends(utils.get_cache),
@@ -58,7 +70,13 @@ def get_dataset(
                 content = Datasets.parse_raw(content)
                 response.headers["X-Cache"] = "HIT"
         if not content:
-            content = datasets.get(spotlight_id)
+            scheme = request.url.scheme
+            host = request.headers["host"]
+            if config.API_VERSION_STR:
+                host += config.API_VERSION_STR
+
+            content = datasets.get(spotlight_id, api_url=f"{scheme}://{host}")
+
             if cache_client and content:
                 cache_client.set_dataset_cache(dataset_hash, content)
 

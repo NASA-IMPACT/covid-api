@@ -4,9 +4,7 @@ from typing import Any, List, Optional, Union
 
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import Polygon
-from pydantic import BaseModel, validator
-
-from covid_api.core import config
+from pydantic import BaseModel  # , validator
 
 # from pydantic.color import Color
 
@@ -30,13 +28,13 @@ class NonGeoJsonSource(Source):
 
     tiles: List[str]
 
-    @validator("tiles", pre=True, always=True)
-    def set_url_base(cls, v):
-        """Prepends the api url and version string from the config to the tile url"""
-        return [
-            tile.replace("{api_url}", f"{config.API_URL_BASE}{config.API_VERSION_STR}")
-            for tile in v
-        ]
+    # @validator("tiles", pre=True, always=True)
+    # def set_url_base(cls, v):
+    #     """Prepends the api url and version string from the config to the tile url"""
+    #     return [
+    #         tile.replace("{api_url}", f"{config.API_URL_BASE}{config.API_VERSION_STR}")
+    #         for tile in v
+    #     ]
 
 
 class GeoJsonSource(Source):
@@ -44,10 +42,10 @@ class GeoJsonSource(Source):
 
     data: str
 
-    @validator("data", pre=True, always=True)
-    def set_url_base(cls, v):
-        """Prepends the api url and version string from the config to the tile url"""
-        return v.replace("{api_url}", f"{config.API_URL_BASE}{config.API_VERSION_STR}")
+    # @validator("data", pre=True, always=True)
+    # def set_url_base(cls, v):
+    #     """Prepends the api url and version string from the config to the tile url"""
+    #     return v.replace("{api_url}", f"{config.API_URL_BASE}{config.API_VERSION_STR}")
 
 
 class Swatch(BaseModel):
