@@ -78,7 +78,6 @@ class Dataset(BaseModel):
 
     id: str
     name: str
-    description: str = ""
     type: str
     is_periodic: bool = False
     time_unit: str = ""

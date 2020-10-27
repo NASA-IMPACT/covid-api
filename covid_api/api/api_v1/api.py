@@ -1,8 +1,8 @@
 """covid_api api."""
 
 from covid_api.api.api_v1.endpoints import (
-    datasets,
     detections,
+    datasets,
     groups,
     metadata,
     ogc,
