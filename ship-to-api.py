@@ -1,9 +1,9 @@
 """processing script for ship detection data"""
-import os
+import csv
 import json
+import os
 import subprocess
 from glob import glob
-import csv
 
 
 def get_location(loc):

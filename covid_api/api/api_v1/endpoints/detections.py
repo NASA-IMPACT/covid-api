@@ -1,12 +1,13 @@
 """ Machine Learning Detections. """
-from fastapi import APIRouter, HTTPException
 import json
 from enum import Enum
 
 from covid_api.core import config
-from covid_api.models.static import Detection
-from covid_api.db.utils import s3_get
 from covid_api.db.static.sites import SiteNames
+from covid_api.db.utils import s3_get
+from covid_api.models.static import Detection
+
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
 

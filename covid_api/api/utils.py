@@ -1,41 +1,38 @@
 """covid_api.api.utils."""
 
-from typing import Any, Dict, Tuple, Optional
-
-from enum import Enum
-import re
-import time
-import json
+import csv
 import hashlib
+import json
 import math
 import random
-import requests
+import re
+import time
+from enum import Enum
 from io import BytesIO
-import csv
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
-from shapely.geometry import shape, box
-from rasterstats.io import bounds_window
-
-from starlette.requests import Request
 
 # Temporary
 import rasterio
+import requests
 from rasterio import features
 from rasterio.io import MemoryFile
 from rasterio.warp import transform_bounds
-from rio_tiler import constants
-from rio_tiler.utils import has_alpha_band, has_mask_band
-from rio_tiler.mercator import get_zooms
-
+from rasterstats.io import bounds_window
 from rio_color.operations import parse_operations
 from rio_color.utils import scale_dtype, to_math_type
-from rio_tiler.utils import linear_rescale, _chunks
+from rio_tiler import constants
+from rio_tiler.mercator import get_zooms
+from rio_tiler.utils import _chunks, has_alpha_band, has_mask_band, linear_rescale
+from shapely.geometry import box, shape
 
+from covid_api.core.config import INDICATOR_BUCKET, PLANET_API_KEY
 from covid_api.db.memcache import CacheLayer
 from covid_api.db.utils import s3_get
 from covid_api.models.timelapse import Feature
-from covid_api.core.config import PLANET_API_KEY, INDICATOR_BUCKET
+
+from starlette.requests import Request
 
 
 def get_cache(request: Request) -> CacheLayer:
