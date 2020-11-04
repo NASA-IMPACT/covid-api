@@ -7,11 +7,11 @@
     "source": {
         "type": "raster",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/rpm/rpm-{spotlightId}.cog.tif&resampling_method=bilinear&bidx=1%2C2%2C3%24"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/rpm/rpm-{spotlightId}.cog.tif&resampling_method=bilinear&bidx=1%2C2%2C3%24"
         ]
     },
     "paint": {
-        "raster-opacity": 0.9
+        "raster_opacity": 0.9
     },
     "exclusiveWith": [
         "agriculture",

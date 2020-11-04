@@ -7,7 +7,7 @@
     "source": {
         "type": "raster",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/Togo/togo_cropland_v7-1_cog_v2.tif&resampling_method=bilinear&bidx=1&rescale=0%2C1&color_map=inferno"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/Togo/togo_cropland_v7-1_cog_v2.tif&resampling_method=bilinear&bidx=1&rescale=0%2C1&color_map=inferno"
         ]
     },
     "enabled": true,

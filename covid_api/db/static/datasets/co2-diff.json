@@ -12,7 +12,9 @@
         ]
     },
     "exclusive_with": [
+        "agriculture",
         "no2",
+        "no2-diff",
         "co2",
         "gibs-population",
         "car-count",
@@ -24,7 +26,7 @@
         "detections-ship",
         "detections-plane"
     ],
-    "enabled": true,
+    "enabled": false,
     "swatch": {
         "color": "#189C54",
         "name": "Dark Green"

@@ -18,6 +18,7 @@
         ]
     },
     "exclusive_with": [
+        "agriculture",
         "no2",
         "co2-diff",
         "co2",
