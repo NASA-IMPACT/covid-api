@@ -1,11 +1,12 @@
 """Static models."""
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import Polygon
-from pydantic import BaseModel
-from pydantic.color import Color
+from pydantic import BaseModel  # , validator
+
+# from pydantic.color import Color
 
 
 def to_camel(snake_str: str) -> str:
@@ -27,18 +28,38 @@ class NonGeoJsonSource(Source):
 
     tiles: List[str]
 
+    # @validator("tiles", pre=True, always=True)
+    # def set_url_base(cls, v):
+    #     """Prepends the api url and version string from the config to the tile url"""
+    #     return [
+    #         tile.replace("{api_url}", f"{config.API_URL_BASE}{config.API_VERSION_STR}")
+    #         for tile in v
+    #     ]
+
 
 class GeoJsonSource(Source):
     """Source Model for geojson data types"""
 
     data: str
 
+    # @validator("data", pre=True, always=True)
+    # def set_url_base(cls, v):
+    #     """Prepends the api url and version string from the config to the tile url"""
+    #     return v.replace("{api_url}", f"{config.API_URL_BASE}{config.API_VERSION_STR}")
+
 
 class Swatch(BaseModel):
     """Swatch Model."""
 
-    color: Color
+    color: str
     name: str
+
+
+class LabelStop(BaseModel):
+    """Model for Legend stops with color + label"""
+
+    color: str
+    label: str
 
 
 class Legend(BaseModel):
@@ -47,7 +68,7 @@ class Legend(BaseModel):
     type: str
     min: Optional[str]
     max: Optional[str]
-    stops: Union[List[Color], List[Dict[str, str]]]
+    stops: Union[List[str], List[LabelStop]]
 
 
 class Dataset(BaseModel):
@@ -55,7 +76,6 @@ class Dataset(BaseModel):
 
     id: str
     name: str
-    description: str = ""
     type: str
     is_periodic: bool = False
     time_unit: str = ""

@@ -28,7 +28,7 @@ class DatasetManager(object):
             for dataset in datasets
         }
 
-    def get(self, spotlight_id: str) -> Datasets:
+    def get(self, spotlight_id: str, api_url: str) -> Datasets:
         """
         Fetches all the datasets avilable for a given spotlight. If the
         spotlight_id provided is "global" then this method will return
@@ -40,7 +40,7 @@ class DatasetManager(object):
         global_datasets = self._overload_domain(datasets=global_datasets)
 
         if spotlight_id == "global":
-            return self._prep_output(global_datasets)
+            return self._prep_output(global_datasets, api_url=api_url)
 
         # Verify that the requested spotlight exists
         try:
@@ -89,27 +89,46 @@ class DatasetManager(object):
         # global datasets are returned for all spotlights
         spotlight_datasets.update(global_datasets)
 
-        return self._prep_output(spotlight_datasets)
+        return self._prep_output(spotlight_datasets, api_url=api_url)
 
-    def get_all(self) -> Datasets:
+    def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
         self._data = self._overload_domain(datasets=self._data)
-        return self._prep_output(self._data)
-        # return Datasets(datasets=[dataset.dict() for dataset in self._data.values()])
+        return self._prep_output(self._data, api_url=api_url)
 
     def list(self) -> List[str]:
         """List all datasets"""
         return list(self._data.keys())
 
-    def _prep_output(self, output_datasets: dict):
+    def _prep_output(self, output_datasets: dict, api_url: str):
         """
-        Replaces the `source` of datasets with geojson data types and builds the
-        object to return to the API consumer. The deepcopy of the the data to output
-        is necessary to avoid modifying the underlying objects, which would affect
-        the result of following API calls.
+        Replaces the `source` of the detections-* datasets with geojson data types and
+        inserts the url base of the source tile url.
+        The deepcopy of the the data to output is necessary to avoid modifying the
+        underlying objects, which would affect the result of subsequent API calls.
+
+        Params:
+        -------
+        output_datasets (dict): Dataset metadata objects to return to API consumer.
+        api_url (str):
+            Base url, of the form {schema}://{host}, extracted from the request, to
+            prepend all tile source urls with.
+
+        Returns:
+        --------
+        (dict) : datasets metadata object, ready to return to the API consumer
         """
         output_datasets = deepcopy(output_datasets)
         for dataset in output_datasets.values():
+            dataset.source.tiles = [
+                tile.replace("{api_url}", api_url) for tile in dataset.source.tiles
+            ]
+
+            if dataset.background_source:
+                dataset.background_source.tiles = [
+                    tile.replace("{api_url}", api_url)
+                    for tile in dataset.background_source.tiles
+                ]
             if dataset.id in ["detections-ship", "detections-plane"]:
                 dataset.source = GeoJsonSource(
                     type=dataset.source.type, data=dataset.source.tiles[0]

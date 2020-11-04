@@ -2,19 +2,19 @@
     "id": "detections-plane",
     "name": "Plane",
     "type": "inference-timeseries",
-    "description": "Planes detected each day in PlanetScope imagery are shown in red.",
     "s3_location": "detections-plane",
+    "is_periodic": false,
     "time_unit": "day",
     "source": {
         "type": "geojson",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/detections/plane/{spotlightId}/{date}.geojson"
+            "{api_url}/detections/plane/{spotlightId}/{date}.geojson"
         ]
     },
     "background_source": {
         "type": "raster",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
+            "{api_url}/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
         ]
     },
     "exclusive_with": [
