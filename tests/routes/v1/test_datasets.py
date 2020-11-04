@@ -178,10 +178,3 @@ def test_incorrect_dataset_id(app):
     _setup_s3(empty=True)
     response = app.get("/v1/datasets/NOT_A_VALID_DATASET")
     assert response.status_code == 404
-
-
-def test_full_(app):
-    response = app.get("v1/datasets/be")
-    print(response)
-    assert False
-    exit()
