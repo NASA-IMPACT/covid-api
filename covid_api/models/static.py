@@ -28,24 +28,11 @@ class NonGeoJsonSource(Source):
 
     tiles: List[str]
 
-    # @validator("tiles", pre=True, always=True)
-    # def set_url_base(cls, v):
-    #     """Prepends the api url and version string from the config to the tile url"""
-    #     return [
-    #         tile.replace("{api_url}", f"{config.API_URL_BASE}{config.API_VERSION_STR}")
-    #         for tile in v
-    #     ]
-
 
 class GeoJsonSource(Source):
     """Source Model for geojson data types"""
 
     data: str
-
-    # @validator("data", pre=True, always=True)
-    # def set_url_base(cls, v):
-    #     """Prepends the api url and version string from the config to the tile url"""
-    #     return v.replace("{api_url}", f"{config.API_URL_BASE}{config.API_VERSION_STR}")
 
 
 class Swatch(BaseModel):
@@ -71,19 +58,40 @@ class Legend(BaseModel):
     stops: Union[List[str], List[LabelStop]]
 
 
+class DatasetComparison(BaseModel):
+    """ Dataset `compare` Model."""
+
+    enabled: bool
+    help: str
+    year_diff: int
+    map_label: str
+    source: NonGeoJsonSource
+    time_unit: Optional[str]
+
+
+class Paint(BaseModel):
+    """Paint Model."""
+
+    raster_opacity: int
+
+
 class Dataset(BaseModel):
     """Dataset Model."""
 
     id: str
     name: str
     type: str
+
     is_periodic: bool = False
     time_unit: str = ""
-    domain: List = []
+    domain: List[str] = []
     source: Union[NonGeoJsonSource, GeoJsonSource]
     background_source: Optional[Union[NonGeoJsonSource, GeoJsonSource]]
+    exclusive_with: List[str] = []
     swatch: Swatch
+    compare: Optional[DatasetComparison]
     legend: Optional[Legend]
+    paint: Optional[Paint]
     info: str = ""
 
 

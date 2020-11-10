@@ -30,9 +30,9 @@
         "name": "Gold"
     },
     "legend": {
-        "type": "gradient-adjustable",
-        "min": "less",
-        "max": "more",
+        "type": "gradient",
+        "min": "< -3",
+        "max": "> 3",
         "stops": [
             "#3A88BD",
             "#C9E0ED",

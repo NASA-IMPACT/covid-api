@@ -30,7 +30,7 @@
     "enabled": true,
     "help": "Compare with baseline (5 previous years)",
     "map_label": "{date}: Base vs Mean",
-    "year_Diff": 2,
+    "year_diff": 2,
     "time_unit": "month_only",
     "source": {
       "type": "raster",

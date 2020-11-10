@@ -8,10 +8,11 @@
     "source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-mean/xco2_15day_mean.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-mean/xco2_16day_mean.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
         ]
     },
     "exclusive_with": [
+        "agriculture",
         "no2",
         "co2-diff",
         "gibs-population",
@@ -33,7 +34,7 @@
         "source": {
             "type": "raster",
             "tiles": [
-                "{api_url}//{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2/xco2_15day_base.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
+                "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2/xco2_16day_base.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
             ]
         }
     },
@@ -46,13 +47,13 @@
         "min": "< 408 ppm",
         "max": "> 419 ppm",
         "stops": [
-            "#5D4FA2",
-            "#2F75BE",
-            "#6DC7A3",
-            "#D7ED96",
-            "#FFEA9B",
-            "#FA894C",
-            "#B11E4D"
+            "#313695",
+            "#588cbf",
+            "#a3d2e5",
+            "#e8f6e8",
+            "#fee89c",
+            "#fba55c",
+            "#e24932"
         ]
     },
     "info": "This layer shows the average background concentration of carbon dioxide (CO₂) in our atmosphere for 2020. Redder colors indicate more CO₂. Whiter colors indicate less CO₂."

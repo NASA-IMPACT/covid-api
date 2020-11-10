@@ -719,14 +719,25 @@ def site_date_to_scenes(site: str, date: str):
     """get the scenes corresponding to detections for a given site and date"""
     # TODO: make this more generic
     # NOTE: detections folder has been broken up into `detections-plane` and `detections-ship`
-    site_date_to_scenes_csv = s3_get(
+    plane_site_date_to_scenes_csv = s3_get(
         INDICATOR_BUCKET, "detections-plane/detection_scenes.csv"
     )
-    site_date_lines = site_date_to_scenes_csv.decode("utf-8").split("\n")
-    reader = csv.DictReader(site_date_lines)
-    site_date_to_scenes_dict = dict()
+    plane_site_date_lines = plane_site_date_to_scenes_csv.decode("utf-8").split("\n")
+
+    ship_site_date_to_scenes_csv = s3_get(
+        INDICATOR_BUCKET, "detections-ship/detection_scenes.csv"
+    )
+    ship_site_date_lines = ship_site_date_to_scenes_csv.decode("utf-8").split("\n")
+
+    reader = list(csv.DictReader(plane_site_date_lines))
+    reader.extend(list(csv.DictReader(ship_site_date_lines)))
+
+    site_date_to_scenes_dict: dict = {}
+
     for row in reader:
-        site_date_to_scenes_dict[f'{row["aoi"]}-{row["date"]}'] = row[
-            "scene_id"
-        ].replace("'", '"')
-    return json.loads(site_date_to_scenes_dict[f"{site}-{date}"])
+
+        site_date_to_scenes_dict.setdefault(f'{row["aoi"]}-{row["date"]}', []).extend(
+            json.loads(row["scene_id"].replace("'", '"'))
+        )
+
+    return site_date_to_scenes_dict[f"{site}-{date}"]
