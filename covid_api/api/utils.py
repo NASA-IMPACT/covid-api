@@ -739,12 +739,5 @@ def site_date_to_scenes(site: str, date: str):
         site_date_to_scenes_dict.setdefault(f'{row["aoi"]}-{row["date"]}', []).extend(
             json.loads(row["scene_id"].replace("'", '"'))
         )
-    # This is a quick and dirt way to get around the fact that some uploaded files
-    # use hyphens instead of underscores in the date.
-    # TODO: remove this try/catch once all files in S3 have been standardized
-    try:
-        return site_date_to_scenes_dict[f"{site}-{date}"]
-    except KeyError:
-        return site_date_to_scenes_dict[f"{site}-{date.replace('-', '_')}"]
 
-    # return site_date_to_scenes_dict[f"{site}-{date}"]
+    return site_date_to_scenes_dict[f"{site}-{date}"]
