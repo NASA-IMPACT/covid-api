@@ -244,12 +244,12 @@ class DatasetManager(object):
         filtering out datasets where the "source.tiles" value contains either
         `spotlightId`.
         """
+
         return {
             k: v
             for k, v in self._data.items()
             if not any(
-                i in v.source.tiles[0]
-                for i in ["{{spotlightId}}", "greatlakes", "togo"]
+                i in v.source.tiles[0] for i in ["{spotlightId}", "greatlakes", "togo"]
             )
         }
 
