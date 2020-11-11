@@ -3,11 +3,11 @@
     "name": "Turbidity",
     "type": "raster-timeseries",
     "time_unit": "day",
-    "s3_location": "wq-greatlakes-sm",
+    "s3_location": "wq-gl-spm",
     "source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/wq-greatlakes-sm/sm_anomaly_greatlakes_{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/wq-gl-spm/sm_anomaly_greatlakes_{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
         ]
     },
     "exclusive_with": [
