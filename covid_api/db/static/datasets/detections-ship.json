@@ -2,23 +2,23 @@
     "id": "detections-ship",
     "name": "Shipping",
     "type": "inference-timeseries",
-    "description": "Ships detected each day in PlanetScope imagery are shown in red.",
     "s3_location": "detections-ship",
     "is_periodic": false,
     "time_unit": "day",
     "source": {
         "type": "geojson",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/detections/ship/{spotlightId}/{date}.geojson"
+            "{api_url}/detections/ship/{spotlightId}/{date}.geojson"
         ]
     },
     "background_source": {
         "type": "raster",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/planet/{spotlightId}-{date}.tif&resampling_method=nearest&bidx=1,2,3"
+            "{api_url}/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
         ]
     },
     "exclusive_with": [
+        "agriculture",
         "no2",
         "co2-diff",
         "co2",

@@ -1,29 +1,17 @@
 {
-    "id": "water-chlorophyll",
+    "id": "water-wq-gl-chl",
     "name": "Chlorophyll",
     "type": "raster-timeseries",
+    "s3_location": "wq-greatlakes-chl",
     "time_unit": "day",
-    "is_periodic": false,
-    "s3_location": "oc3_chla_anomaly",
     "source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/oc3_chla_anomaly/anomaly-chl-{spotlightId}-{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/wq-greatlakes-chl/chl_anomaly_greatlakes_{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
         ]
     },
     "exclusive_with": [
-        "agriculture",
-        "no2",
-        "co2-diff",
-        "co2",
-        "gibs-population",
-        "car-count",
-        "nightlights-viirs",
-        "nightlights-hd",
-        "detection-multi",
-        "water-spm",
-        "detections-ship",
-        "detections-plane"
+        "water-wq-gl-spm"
     ],
     "swatch": {
         "color": "#154F8D",

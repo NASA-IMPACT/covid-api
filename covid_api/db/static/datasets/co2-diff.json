@@ -1,18 +1,20 @@
 {
     "id": "co2-diff",
     "name": "Carbon Dioxide (Diff)",
-    "description": "This layer shows changes in carbon dioxide (CO₂) levels during coronavirus lockdowns versus previous years. Redder colors indicate increases in CO₂. Bluer colors indicate lower levels of CO₂.",
     "type": "raster-timeseries",
     "time_unit": "day",
+    "is_periodic": true,
     "s3_location": "xco2-diff",
     "source": {
         "type": "raster",
         "tiles": [
-            "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-diff/xco2_15day_diff.{date}.tif&resampling_method=bilinear&bidx=1&rescale=-0.000001%2C0.000001&color_map=rdbu_r"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-diff/xco2_16day_diff.{date}.tif&resampling_method=bilinear&bidx=1&rescale=-0.000001%2C0.000001&color_map=rdbu_r"
         ]
     },
     "exclusive_with": [
+        "agriculture",
         "no2",
+        "no2-diff",
         "co2",
         "gibs-population",
         "car-count",
@@ -24,7 +26,7 @@
         "detections-ship",
         "detections-plane"
     ],
-    "enabled": true,
+    "enabled": false,
     "swatch": {
         "color": "#189C54",
         "name": "Dark Green"

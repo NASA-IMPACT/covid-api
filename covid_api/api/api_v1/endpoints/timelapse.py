@@ -1,9 +1,9 @@
 """API metadata."""
 
-from fastapi import APIRouter
-
-from covid_api.models.timelapse import TimelapseValue, TimelapseRequest
 from covid_api.api.utils import get_zonal_stat
+from covid_api.models.timelapse import TimelapseRequest, TimelapseValue
+
+from fastapi import APIRouter
 
 router = APIRouter()
 

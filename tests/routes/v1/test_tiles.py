@@ -1,12 +1,10 @@
 """test /v1/tiles endpoints."""
 
+from io import BytesIO
 from typing import Dict
 
-from io import BytesIO
-from mock import patch
-
 import numpy
-
+from mock import patch
 from rasterio.io import MemoryFile
 
 from ...conftest import mock_rio

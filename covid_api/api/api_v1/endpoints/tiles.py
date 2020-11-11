@@ -1,27 +1,25 @@
 """API tiles."""
 
-from typing import Any, Dict, Union, Optional
-
 import re
-from io import BytesIO
 from functools import partial
+from io import BytesIO
+from typing import Any, Dict, Optional, Union
 
 import numpy
-
-from fastapi import APIRouter, Depends, Query, Path
-from starlette.concurrency import run_in_threadpool
-
-from rio_tiler.io import cogeo
 from rio_tiler.colormap import get_colormap
-from rio_tiler.utils import render, geotiff_options
+from rio_tiler.io import cogeo
 from rio_tiler.profiles import img_profiles
+from rio_tiler.utils import geotiff_options, render
 
 from covid_api.api import utils
 from covid_api.db.memcache import CacheLayer
-from covid_api.ressources.enums import ImageType
 from covid_api.ressources.common import drivers, mimetype
+from covid_api.ressources.enums import ImageType
 from covid_api.ressources.responses import TileResponse
 
+from fastapi import APIRouter, Depends, Path, Query
+
+from starlette.concurrency import run_in_threadpool
 
 _tile = partial(run_in_threadpool, cogeo.tile)
 _render = partial(run_in_threadpool, render)

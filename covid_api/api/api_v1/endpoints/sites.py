@@ -1,9 +1,9 @@
 """sites endpoint."""
 
-from fastapi import APIRouter
+from covid_api.db.static.sites import SiteNames, sites
+from covid_api.models.static import Site, Sites
 
-from covid_api.models.static import Sites, Site
-from covid_api.db.static.sites import sites, SiteNames
+from fastapi import APIRouter
 
 router = APIRouter()
 

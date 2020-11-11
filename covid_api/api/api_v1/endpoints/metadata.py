@@ -1,25 +1,24 @@
 """API metadata."""
 
-from typing import Any, Dict, Optional, Union
-
 import os
 import re
 from functools import partial
+from typing import Any, Dict, Optional, Union
 from urllib.parse import urlencode
 
 import numpy
-
 from rio_tiler.io import cogeo
 
-from fastapi import APIRouter, Query
-from starlette.requests import Request
-from starlette.responses import Response
-from starlette.concurrency import run_in_threadpool
-
+from covid_api.api.utils import info as cogInfo
 from covid_api.core import config
 from covid_api.models.mapbox import TileJSON
 from covid_api.ressources.enums import ImageType
-from covid_api.api.utils import info as cogInfo
+
+from fastapi import APIRouter, Query
+
+from starlette.concurrency import run_in_threadpool
+from starlette.requests import Request
+from starlette.responses import Response
 
 _info = partial(run_in_threadpool, cogInfo)
 _bounds = partial(run_in_threadpool, cogeo.bounds)
