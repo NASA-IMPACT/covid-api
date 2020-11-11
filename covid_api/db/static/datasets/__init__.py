@@ -1,6 +1,5 @@
 """ covid_api static datasets """
 import os
-import re
 from copy import deepcopy
 from typing import Any, Dict, List, Set
 
@@ -248,7 +247,10 @@ class DatasetManager(object):
         return {
             k: v
             for k, v in self._data.items()
-            if not re.search(r"{spotlightId}", v.source.tiles[0])
+            if not any(
+                i in v.source.tiles[0]
+                for i in ["{{spotlightId}}", "greatlakes", "togo"]
+            )
         }
 
 
