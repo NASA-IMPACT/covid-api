@@ -29,7 +29,8 @@
         "detection-multi",
         "water-chlorophyll",
         "water-spm",
-        "detections-ship"
+        "detections-ship",
+        "detections-vehicles"
     ],
     "enabled": false,
     "swatch": {
