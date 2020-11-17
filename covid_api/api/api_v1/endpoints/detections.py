@@ -12,7 +12,7 @@ from fastapi import APIRouter, HTTPException
 router = APIRouter()
 
 # TODO: unhardcoded types and dates
-MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple", "plane"]])  # type: ignore
+MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple", "plane", "vehicles"]])  # type: ignore
 
 
 @router.get(
