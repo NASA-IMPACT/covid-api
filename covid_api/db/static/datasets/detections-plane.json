@@ -37,5 +37,5 @@
         "color": "#C0C0C0",
         "name": "Grey"
     },
-    "info": "Planes detected each day in PlanetScope imagery are shown in red."
+    "info": "Planes detected each day in PlanetScope imagery are shown in orange."
 }
