@@ -8,13 +8,13 @@
     "source": {
         "type": "geojson",
         "tiles": [
-            "{api_url}/detections/vehicles/{spotlightId}/{date}.geojson"
+            "{api_url}/detections-vehicles/{spotlightId}/{date}.geojson"
         ]
     },
     "background_source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/detections-vehicles/background/{spotlightId}/{date}.tif"
         ]
     },
     "exclusive_with": [
