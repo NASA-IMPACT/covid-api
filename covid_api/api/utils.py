@@ -729,8 +729,16 @@ def site_date_to_scenes(site: str, date: str):
     )
     ship_site_date_lines = ship_site_date_to_scenes_csv.decode("utf-8").split("\n")
 
+    vehicles_site_date_to_scenes_csv = s3_get(
+        INDICATOR_BUCKET, "detections-vehicles/detection_scenes.csv"
+    )
+    vehicles_site_date_lines = vehicles_site_date_to_scenes_csv.decode("utf-8").split(
+        "\n"
+    )
+
     reader = list(csv.DictReader(plane_site_date_lines))
     reader.extend(list(csv.DictReader(ship_site_date_lines)))
+    reader.extend(list(csv.DictReader(vehicles_site_date_lines)))
 
     site_date_to_scenes_dict: dict = {}
 
