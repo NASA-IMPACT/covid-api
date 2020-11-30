@@ -34,6 +34,8 @@ extra_reqs = {
         "aws-cdk.aws_ecs_patterns",
         "aws-cdk.aws_iam",
         "aws-cdk.aws_elasticache",
+        "aws-cdk.aws_events",
+        "aws-cdk.aws_events_targets",
     ],
     "test": ["moto[iam]", "mock", "pytest", "pytest-cov", "pytest-asyncio", "requests"],
 }

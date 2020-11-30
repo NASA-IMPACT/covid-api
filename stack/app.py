@@ -11,6 +11,7 @@ from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_elasticache as escache
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda, core
+from aws_cdk import aws_events, aws_events_targets
 
 iam_policy_statement = iam.PolicyStatement(
     actions=["s3:*"], resources=[f"arn:aws:s3:::{config.BUCKET}*"]
@@ -118,6 +119,15 @@ class covidApiLambdaStack(core.Stack):
             self,
             f"{id}-endpoint",
             default_integration=apigw.LambdaProxyIntegration(handler=lambda_function),
+        )
+
+        metadata_update_function = aws_lambda.Function(
+            self, 
+            f"{id}-metadata-updater-lambda",
+            runtime=aws_lambda.Runtime.PYTHON_3_8, 
+            code=
+            handler=
+            
         )
 
     def create_package(self, code_dir: str) -> aws_lambda.Code:
