@@ -1,6 +1,6 @@
 {
     "id": "detections-plane",
-    "name": "Plane",
+    "name": "Airplanes",
     "type": "inference-timeseries",
     "s3_location": "detections-plane",
     "is_periodic": false,
@@ -36,5 +36,5 @@
         "color": "#C0C0C0",
         "name": "Grey"
     },
-    "info": "Planes detected each day in PlanetScope imagery are shown in red."
+    "info": "Grounded airplanes detected each day in PlanetScope imagery are shown in orange."
 }
