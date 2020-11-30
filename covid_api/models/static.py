@@ -77,7 +77,7 @@ def snake_case_to_kebab_case(s):
 class Paint(BaseModel):
     """Paint Model."""
 
-    raster_opacity: int
+    raster_opacity: float
 
     class Config:
         """Paint Model Config"""
