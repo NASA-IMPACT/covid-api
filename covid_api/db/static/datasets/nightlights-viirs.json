@@ -34,11 +34,11 @@
         "min": "less",
         "max": "more",
         "stops": [
-            "#08041d",
-            "#1f0a46",
-            "#52076c",
-            "#f57c16",
-            "#f7cf39"
+            "#440357",
+            "#3b508a",
+            "#208f8c",
+            "#5fc961",
+            "#fde725"
         ]
     },
     "info": "Darker colors indicate fewer night lights and less activity. Lighter colors indicate more night lights and more activity. Check out the HD dataset below to see a light-corrected version of this dataset."
