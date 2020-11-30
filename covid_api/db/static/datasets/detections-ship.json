@@ -36,5 +36,5 @@
         "color": "#C0C0C0",
         "name": "Grey"
     },
-    "info": "Ships detected each day in PlanetScope imagery are shown in red."
+    "info": "Ships detected each day in PlanetScope imagery are shown in orange."
 }

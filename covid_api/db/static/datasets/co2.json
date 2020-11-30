@@ -1,6 +1,6 @@
 {
     "id": "co2",
-    "name": "Carbox Dioxide (Avg)",
+    "name": "CO\u2082 (Avg)",
     "type": "raster-timeseries",
     "time_unit": "day",
     "s3_location": "xco2-mean",
@@ -56,5 +56,5 @@
             "#e24932"
         ]
     },
-    "info": "This layer shows the average background concentration of carbon dioxide (CO₂) in our atmosphere for 2020. Redder colors indicate more CO₂. Whiter colors indicate less CO₂."
+    "info": "This layer shows the average background concentration of carbon dioxide (CO₂) in our atmosphere for 2020. Redder colors indicate more CO₂. Bluer colors indicate less CO₂."
 }
