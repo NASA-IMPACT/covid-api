@@ -11,6 +11,9 @@
             "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/OMNO2d_HRMDifference/OMI_trno2_0.10x0.10_{date}_Col3_V4.nc.tif&resampling_method=bilinear&bidx=1&rescale=-8000000000000000%2C8000000000000000&color_map=rdbu_r"
         ]
     },
+    "paint": {
+        "raster-opacity": 0.9
+    },
     "exclusive_with": [
         "co2",
         "co2-diff",

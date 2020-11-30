@@ -69,10 +69,21 @@ class DatasetComparison(BaseModel):
     time_unit: Optional[str]
 
 
+def snake_case_to_kebab_case(s):
+    """Util method to convert kebab-case fieldnames to snake_case."""
+    return s.replace("_", "-")
+
+
 class Paint(BaseModel):
     """Paint Model."""
 
     raster_opacity: int
+
+    class Config:
+        """Paint Model Config"""
+
+        alias_generator = snake_case_to_kebab_case
+        allow_population_by_field_name = True
 
 
 class Dataset(BaseModel):
