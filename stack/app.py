@@ -9,9 +9,9 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_elasticache as escache
+from aws_cdk import aws_events, aws_events_targets
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda, core
-from aws_cdk import aws_events, aws_events_targets
 
 iam_policy_statement = iam.PolicyStatement(
     actions=["s3:*"], resources=[f"arn:aws:s3:::{config.BUCKET}*"]
