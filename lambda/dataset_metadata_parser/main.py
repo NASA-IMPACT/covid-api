@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 BASE_PATH = os.path.abspath(__file__)
 
