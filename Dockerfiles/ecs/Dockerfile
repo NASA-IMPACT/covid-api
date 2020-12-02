@@ -10,3 +10,4 @@ COPY covid_api/ /app/covid_api/
 COPY setup.py /app/setup.py
 
 RUN pip install -e /app/. --no-cache-dir
+CMD ["/start-reload.sh"]
