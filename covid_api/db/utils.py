@@ -14,7 +14,7 @@ from covid_api.models.static import IndicatorObservation
 s3 = boto3.client("s3")
 NoSuchKeyException = s3.exceptions.NoSuchKey
 
-_lambda = boto3.client("lambda", region="us-east-1")
+_lambda = boto3.client("lambda", region_name="us-east-1")
 
 
 def invoke_lambda(lambda_function_name, payload: dict = None):
