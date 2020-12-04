@@ -1,0 +1,2 @@
+class NoDatesFound(Exception):
+    pass

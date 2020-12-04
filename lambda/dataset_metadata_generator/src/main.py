@@ -1,7 +1,22 @@
 import json
 import os
+import re
+from datetime import datetime
+from typing import List, Optional, Set, Union
+
+import boto3
+from exceptions import NoDatesFound
 
 BASE_PATH = os.path.abspath(__file__)
+BUCKET_NAME = "covid-eo-data"
+s3 = boto3.resource("s3")
+bucket = s3.Bucket(BUCKET_NAME)
+
+DT_FORMAT = "%Y-%m-%d"
+MT_FORMAT = "%Y%m"
+DATASET_METADATA_FILENAME = os.environ.get(
+    "DATASET_METADATA_FILENAME", "dev-dataset-metadata.json"
+)
 
 
 def handler(event, context):
@@ -9,33 +24,40 @@ def handler(event, context):
     datasets = _gather_json_data("datasets")
     sites = _gather_json_data("sites")
 
+    metadata = {}
+
     for dataset in datasets:
-        if not dataset["s3_location"]:
+        if not dataset.get("s3_location"):
             continue
 
         domain_args = {
             "dataset_folder": dataset["s3_location"],
             "is_periodic": dataset["is_periodic"],
         }
-        if not _is_global_dataset(dataset):
-            dataset["domain"] = get_dataset_domain(**domain_args)
+        if _is_global_dataset(dataset):
+            metadata.setdefault("global", {}).update(
+                {dataset["id"]: {"domain": _get_dataset_domain(**domain_args)}}
+            )
 
-    global_datasets = _get_global_datasets(datasets)
-    for dataset in global_datasets:
-        if not dataset["s3_location"]:
-            continue
-        #  domain_args: Dict[str, Any] = {
-        #     "dataset_folder": dataset.s3_location,
-        #     "is_periodic": dataset.is_periodic,
-        # }
-        # if spotlight_id:
-        #     domain_args["spotlight_id"] = spotlight_id
+        for site in sites:
+            domain_args["spotlight_id"] = site["id"]
 
-        dataset["domain"] = get_dataset_domain(
-            dataset_folder=dataset["s3_location"], is_periodic=dataset["is_periodic"]
-        )
+            if site["id"] in ["du", "gh"]:
+                domain_args["spotligt_id"] = ["du", "gh", "EUPorts"]
+            try:
+                metadata.setdefault(site["id"], {}).update(
+                    {dataset["id"]: {"domain": _get_dataset_domain(**domain_args)}}
+                )
+            # skip adding dataset to metadata object if no dates were found for the given
+            # spotlight (indicates dataset is not valid for that spotlight)
+            except NoDatesFound:
+                pass
 
-    raise NotImplementedError
+    bucket.put_object(
+        Body=json.dumps(metadata),
+        Key=DATASET_METADATA_FILENAME,
+        ContentType="application/json",
+    )
 
 
 def _gather_json_data(dirname):
@@ -58,25 +80,9 @@ def _is_global_dataset(dataset):
     )
 
 
-def _get_global_datasets(datasets):
-    """
-        Returns all datasets which do not reference a specific spotlight, by
-        filtering out datasets where the "source.tiles" value contains either
-        `spotlightId`.
-        """
-
-    return {
-        k: v
-        for k, v in datasets.items()
-        if not any(
-            i in v.source.tiles[0] for i in ["{spotlightId}", "greatlakes", "togo"]
-        )
-    }
-
-
-def gather_s3_keys(
-    spotlight_id: Optional[str] = None, prefix: Optional[str] = None,
-) -> Set[str]:
+def _gather_s3_keys(
+    spotlight_id: Optional[Union[str, List]] = None, prefix: str = "",
+) -> List[str]:
     """
     Returns a set of S3 keys. If no args are provided, the keys will represent
     the entire S3 bucket.
@@ -93,52 +99,36 @@ def gather_s3_keys(
     set(str)
 
     """
-    keys: set = set()
 
-    list_objects_args = {"Bucket": INDICATOR_BUCKET}
-
-    if prefix:
-        list_objects_args["Prefix"] = prefix
-
-    response = s3.list_objects_v2(**list_objects_args)
-    keys.update({x["Key"] for x in response.get("Contents", [])})
-
-    while response["IsTruncated"]:
-
-        list_objects_args["ContinuationToken"] = response["NextContinuationToken"]
-        response = s3.list_objects_v2(**list_objects_args)
-
-        keys.update({x["Key"] for x in response.get("Contents", [])})
+    keys = [x.key for x in bucket.objects.filter(Prefix=prefix)]
 
     if not spotlight_id:
         return keys
 
-    return {
-        key
-        for key in keys
-        if re.search(
-            rf"""[^a-zA-Z0-9]({spotlight_id})[^a-zA-Z0-9]""", key, re.IGNORECASE,
-        )
-    }
+    if isinstance(spotlight_id, list):
+        spotlight_id = "|".join([s for s in spotlight_id])
+
+    pattern = re.compile(rf"""[^a-zA-Z0-9]({spotlight_id})[^a-zA-Z0-9]""")
+    return list({key for key in keys if pattern.search(key, re.IGNORECASE,)})
 
 
-def get_dataset_folders_by_spotlight(spotlight_id: str) -> Set[str]:
-    """
-    Returns the S3 prefix of datasets containing files for the given spotlight
+# def _get_dataset_folders_by_spotlight(spotlight_id: str) -> Set[str]:
+#     """
+#     Returns the S3 prefix of datasets containing files for the given spotlight
 
-    Params:
-    ------
-    spotlight_id (str): id of spotlight to search for
+#     Params:
+#     ------
+#     spotlight_id (str): id of spotlight to search for
 
-    Returns:
-    --------
-    set(str)
-    """
-    keys = gather_s3_keys(spotlight_id=spotlight_id)
-    return {k.split("/")[0] for k in keys}
+#     Returns:
+#     --------
+#     set(str)
+#     """
+#     keys = _gather_s3_keys(spotlight_id=spotlight_id)
+#     return {k.split("/")[0] for k in keys}
 
 
-def get_dataset_domain(
+def _get_dataset_domain(
     dataset_folder: str, is_periodic: bool, spotlight_id: str = None,
 ):
     """
@@ -163,7 +153,7 @@ def get_dataset_domain(
     if spotlight_id:
         s3_keys_args["spotlight_id"] = spotlight_id
 
-    keys = gather_s3_keys(**s3_keys_args)
+    keys = _gather_s3_keys(**s3_keys_args)
     dates = []
 
     for key in keys:
@@ -188,18 +178,15 @@ def get_dataset_domain(
                 )
                 date = datetime.strptime(datestring, DT_FORMAT)
         except ValueError:
-            # Invalid date value matched
+            # Invalid date value matched - skip date
             continue
 
         dates.append(date.strftime("%Y-%m-%dT%H:%M:%SZ"))
 
-    if is_periodic and len(dates):
+    if not len(dates) == 0:
+        raise NoDatesFound
+
+    if is_periodic:
         return [min(dates), max(dates)]
 
     return sorted(set(dates))
-
-
-def s3_get(bucket: str, key: str):
-    """Get AWS S3 Object."""
-    response = s3.get_object(Bucket=bucket, Key=key)
-    return response["Body"].read()

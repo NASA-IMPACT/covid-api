@@ -1,6 +1,7 @@
 """Construct App."""
 
 import os
+import shutil
 from typing import Any, Union
 
 import config
@@ -96,6 +97,10 @@ class covidApiLambdaStack(core.Stack):
                 LOG_LEVEL="error",
                 MEMCACHE_HOST=cache.attr_configuration_endpoint_address,
                 MEMCACHE_PORT=cache.attr_configuration_endpoint_port,
+                DATASET_METADATA_FILENAME=env["DATASET_METADATA_FILENAME"],
+                DATASET_METADATA_GENERATOR_FUNCTION_NAME=env[
+                    "DATASET_METADATA_GENERATOR_FUNCTION_NAME"
+                ],
             )
         )
 
@@ -121,15 +126,6 @@ class covidApiLambdaStack(core.Stack):
             default_integration=apigw.LambdaProxyIntegration(handler=lambda_function),
         )
 
-        metadata_update_function = aws_lambda.Function(
-            self, 
-            f"{id}-metadata-updater-lambda",
-            runtime=aws_lambda.Runtime.PYTHON_3_8, 
-            code=
-            handler=
-            
-        )
-
     def create_package(self, code_dir: str) -> aws_lambda.Code:
         """Build docker image and create package."""
         # print('building lambda package via docker')
@@ -151,6 +147,23 @@ class covidApiLambdaStack(core.Stack):
         # )
 
         return aws_lambda.Code.asset(os.path.join(code_dir, "package.zip"))
+
+        # Code.asset is deprecated - see: https://docs.aws.amazon.com/cdk/api/latest/python/aws_cdk.aws_lambda/Code.html
+
+        # return aws_lambda.Code.from_asset(
+        #     path=os.path.join(code_dir, "package.zip"),
+        #     bundling=core.BundlingOptions(
+        #         image=core.BundlingDockerImage.from_asset(
+        #             path=os.path.join(code_dir, "Dockerfiles/lambda/"),
+        #             # file="Dockerfile",
+        #         ),
+        #         command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
+        #         volumes=core.DockerVolume(
+        #             container_path="/local/", host_path=os.path.abspath(code_dir)
+        #         ),
+        #         user="0",
+        #     ),
+        # )
 
 
 class covidApiECSStack(core.Stack):
@@ -233,7 +246,71 @@ class covidApiECSStack(core.Stack):
         )
 
 
+class covidApiDatasetMetadataGeneratorStack(core.Stack):
+    def __init__(
+        self,
+        scope: core.Construct,
+        id: str,
+        dataset_metadata_filename: str,
+        dataset_metadata_generator_function_name: str,
+        code_dir: str = "./",
+        **kwargs: Any,
+    ) -> None:
+        """Define stack."""
+        super().__init__(scope, id, *kwargs)
+
+        base = os.path.abspath(os.path.join("covid_api", "db", "static"))
+        lambda_deployment_package_location = os.path.abspath(
+            os.path.join(code_dir, "lambda", "dataset_metadata_generator", "src")
+        )
+        for e in ["datasets", "sites"]:
+            self.copy_metadata_files_to_lambda_deployment_package(
+                from_dir=os.path.join(base, e),
+                to_dir=os.path.join(lambda_deployment_package_location, e),
+            )
+
+        dataset_metadata_updater_function = aws_lambda.Function(
+            self,
+            f"{id}-metadata-updater-lambda",
+            runtime=aws_lambda.Runtime.PYTHON_3_8,
+            code=aws_lambda.Code.from_asset(lambda_deployment_package_location),
+            handler="main.handler",
+            environment={"DATASET_METADATA_FILENAME": dataset_metadata_filename},
+            function_name=dataset_metadata_generator_function_name,
+        )
+
+        for e in ["datasets", "sites"]:
+            shutil.rmtree(os.path.join(lambda_deployment_package_location, e))
+
+        aws_events.Rule(
+            self,
+            f"{id}-metadata-update-daily-trigger",
+            # triggers everyday
+            schedule=aws_events.Schedule.rate(duration=core.Duration.days(1)),
+            targets=[
+                aws_events_targets.LambdaFunction(dataset_metadata_updater_function)
+            ],
+        )
+
+    def copy_metadata_files_to_lambda_deployment_package(self, from_dir, to_dir):
+        files = [
+            os.path.abspath(os.path.join(d, f))
+            for d, _, fnames in os.walk(from_dir)
+            for f in fnames
+            if f.endswith(".json")
+        ]
+
+        try:
+            os.mkdir(to_dir)
+        except FileExistsError:
+            pass
+
+        for f in files:
+            shutil.copy(f, to_dir)
+
+
 app = core.App()
+
 
 # Tag infrastructure
 for key, value in {
@@ -256,14 +333,24 @@ covidApiECSStack(
     env=config.ENV,
 )
 
-lambda_stackname = f"{config.PROJECT_NAME}-lambda-{config.STAGE}"
-covidApiLambdaStack(
+# lambda_stackname = f"{config.PROJECT_NAME}-lambda-{config.STAGE}"
+# covidApiLambdaStack(
+#     app,
+#     lambda_stackname,
+#     memory=config.MEMORY,
+#     timeout=config.TIMEOUT,
+#     concurrent=config.MAX_CONCURRENT,
+#     env=config.ENV,
+# )
+
+dataset_metadata_generator_stackname = (
+    f"{config.PROJECT_NAME}-dataset-metadata-generator-{config.STAGE}"
+)
+covidApiDatasetMetadataGeneratorStack(
     app,
-    lambda_stackname,
-    memory=config.MEMORY,
-    timeout=config.TIMEOUT,
-    concurrent=config.MAX_CONCURRENT,
-    env=config.ENV,
+    dataset_metadata_generator_stackname,
+    dataset_metadata_filename=config.DATASET_METADATA_FILENAME,
+    dataset_metadata_generator_function_name=config.DATASET_METADATA_GENERATOR_FUNCTION_NAME,
 )
 
 app.synth()

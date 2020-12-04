@@ -42,3 +42,17 @@ MAX_CONCURRENT: int = 500
 CACHE_NODE_TYPE = "cache.m5.large"
 CACHE_ENGINE = "memcached"
 CACHE_NODE_NUM = 1
+
+################################################################################
+#                                                                              #
+#                         DATASET METADATA GENERATOR                           #
+#                                                                              #
+################################################################################
+DATASET_METADATA_FILENAME = (
+    "dataset-metadata.json" if STAGE == "prod" else "dev-dataset-metadata.json"
+)
+DATASET_METADATA_GENERATOR_FUNCTION_NAME = (
+    "dataset-metadata-generator"
+    if STAGE == "prod"
+    else "dev-dataset-metadata-generator"
+)

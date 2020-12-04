@@ -12,6 +12,17 @@ from covid_api.core.config import DT_FORMAT, INDICATOR_BUCKET, MT_FORMAT
 from covid_api.models.static import IndicatorObservation
 
 s3 = boto3.client("s3")
+NoSuchKeyException = s3.exceptions.NoSuchKey
+
+_lambda = boto3.client("lambda", region="us-east-1")
+
+
+def invoke_lambda(lambda_function_name, payload: dict = None):
+    lambda_invoke_params = dict(FunctionName=lambda_function_name)
+    if payload:
+        lambda_invoke_params.update(dict(Payload=json.dumps(payload)))
+
+    return _lambda.invoke(**lambda_invoke_params)
 
 
 def gather_s3_keys(
