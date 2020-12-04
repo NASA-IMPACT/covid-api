@@ -11,6 +11,9 @@
       "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/OMNO2d_HRM/OMI_trno2_0.10x0.10_{date}_Col3_V4.nc.tif&resampling_method=bilinear&bidx=1&rescale=0%2C1.5e16&color_map=custom_no2&color_formula=gamma r {gamma}"
     ]
   },
+  "paint": {
+      "raster-opacity": 0.9
+  },
   "exclusive_with": [
     "agriculture",
     "co2",

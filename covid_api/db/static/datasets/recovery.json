@@ -11,7 +11,7 @@
         ]
     },
     "paint": {
-        "raster_opacity": 0.9
+        "raster-opacity": 0.9
     },
     "exclusiveWith": [
         "agriculture",
