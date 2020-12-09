@@ -1,0 +1,48 @@
+{
+    "id": "no2-diff",
+    "name": "NO\u2082 (Diff)",
+    "type": "raster-timeseries",
+    "time_unit": "month",
+    "is_periodic": false,
+    "s3_location": "OMNO2d_HRMDifference",
+    "source": {
+        "type": "raster",
+        "tiles": [
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/OMNO2d_HRMDifference/OMI_trno2_0.10x0.10_{date}_Col3_V4.nc.tif&resampling_method=bilinear&bidx=1&rescale=-8000000000000000%2C8000000000000000&color_map=rdbu_r"
+        ]
+    },
+    "paint": {
+        "raster-opacity": 0.9
+    },
+    "exclusive_with": [
+        "co2",
+        "co2-diff",
+        "gibs-population",
+        "car-count",
+        "nightlights-viirs",
+        "nightlights-hd",
+        "detection-ship",
+        "detection-multi",
+        "water-chlorophyll",
+        "water-spm",
+        "no2"
+    ],
+    "enabled": false,
+    "swatch": {
+        "color": "#f2a73a",
+        "name": "Gold"
+    },
+    "legend": {
+        "type": "gradient",
+        "min": "< -3",
+        "max": "> 3",
+        "stops": [
+            "#3A88BD",
+            "#C9E0ED",
+            "#E4EEF3",
+            "#FDDCC9",
+            "#DD7059"
+        ]
+    },
+    "info": "This layer shows changes in nitrogen dioxide (NO₂) levels. Redder colors indicate increases in NO₂. Bluer colors indicate lower levels of NO₂."
+}

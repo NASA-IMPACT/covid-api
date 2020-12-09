@@ -12,7 +12,7 @@ from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_elasticache as escache
 from aws_cdk import aws_events, aws_events_targets
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_lambda, core
+from aws_cdk import aws_lambda, aws_s3, core
 
 iam_policy_statement = iam.PolicyStatement(
     actions=["s3:*"], resources=[f"arn:aws:s3:::{config.BUCKET}*"]
@@ -261,12 +261,12 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
 
         base = os.path.abspath(os.path.join("covid_api", "db", "static"))
         lambda_deployment_package_location = os.path.abspath(
-            os.path.join(code_dir, "lambda", "dataset_metadata_generator", "src")
+            os.path.join(code_dir, "lambda", "dataset_metadata_generator")
         )
         for e in ["datasets", "sites"]:
             self.copy_metadata_files_to_lambda_deployment_package(
                 from_dir=os.path.join(base, e),
-                to_dir=os.path.join(lambda_deployment_package_location, e),
+                to_dir=os.path.join(lambda_deployment_package_location, "src", e),
             )
 
         dataset_metadata_updater_function = aws_lambda.Function(
@@ -274,13 +274,18 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
             f"{id}-metadata-updater-lambda",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             code=aws_lambda.Code.from_asset(lambda_deployment_package_location),
-            handler="main.handler",
+            handler="src.main.handler",
             environment={"DATASET_METADATA_FILENAME": dataset_metadata_filename},
             function_name=dataset_metadata_generator_function_name,
+            timeout=core.Duration.minutes(5),
         )
+        data_bucket = aws_s3.Bucket.from_bucket_name(
+            self, id=f"{id}-data-bucket", bucket_name=config.BUCKET
+        )
+        data_bucket.grant_read_write(dataset_metadata_updater_function)
 
-        for e in ["datasets", "sites"]:
-            shutil.rmtree(os.path.join(lambda_deployment_package_location, e))
+        # for e in ["datasets", "sites"]:
+        #     shutil.rmtree(os.path.join(lambda_deployment_package_location, e))
 
         aws_events.Rule(
             self,

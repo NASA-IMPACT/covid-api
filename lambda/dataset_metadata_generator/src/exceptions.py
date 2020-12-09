@@ -1,2 +1,0 @@
-class NoDatesFound(Exception):
-    pass

@@ -2,12 +2,11 @@ import json
 import os
 import re
 from datetime import datetime
-from typing import List, Optional, Set, Union
+from typing import List, Optional, Union
 
 import boto3
-from exceptions import NoDatesFound
 
-BASE_PATH = os.path.abspath(__file__)
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 BUCKET_NAME = "covid-eo-data"
 s3 = boto3.resource("s3")
 bucket = s3.Bucket(BUCKET_NAME)
@@ -32,37 +31,45 @@ def handler(event, context):
 
         domain_args = {
             "dataset_folder": dataset["s3_location"],
-            "is_periodic": dataset["is_periodic"],
+            "is_periodic": dataset.get("is_periodic"),
         }
+
+        domain = _get_dataset_domain(**domain_args)
+
+        metadata.setdefault("_all", {}).update({dataset["id"]: {"domain": domain}})
+
         if _is_global_dataset(dataset):
+
             metadata.setdefault("global", {}).update(
-                {dataset["id"]: {"domain": _get_dataset_domain(**domain_args)}}
+                {dataset["id"]: {"domain": domain}}
             )
+            continue
 
         for site in sites:
             domain_args["spotlight_id"] = site["id"]
 
             if site["id"] in ["du", "gh"]:
-                domain_args["spotligt_id"] = ["du", "gh", "EUPorts"]
-            try:
-                metadata.setdefault(site["id"], {}).update(
-                    {dataset["id"]: {"domain": _get_dataset_domain(**domain_args)}}
-                )
+                domain_args["spotlight_id"] = ["du", "gh", "EUPorts"]
+
             # skip adding dataset to metadata object if no dates were found for the given
             # spotlight (indicates dataset is not valid for that spotlight)
-            except NoDatesFound:
-                pass
+            if domain := _get_dataset_domain(**domain_args):
+                metadata.setdefault(site["id"], {}).update(
+                    {dataset["id"]: {"domain": domain}}
+                )
 
     bucket.put_object(
         Body=json.dumps(metadata),
         Key=DATASET_METADATA_FILENAME,
         ContentType="application/json",
     )
+    return json.dumps(metadata)
 
 
 def _gather_json_data(dirname):
 
     results = []
+
     for filename in os.listdir(os.path.join(BASE_PATH, dirname)):
         if not filename.endswith(".json"):
             continue
@@ -72,7 +79,7 @@ def _gather_json_data(dirname):
 
 
 def _is_global_dataset(dataset):
-    return any(
+    return not any(
         [
             i in dataset["source"]["tiles"][0]
             for i in ["{spotlightId}", "greatlakes", "togo"]
@@ -112,24 +119,10 @@ def _gather_s3_keys(
     return list({key for key in keys if pattern.search(key, re.IGNORECASE,)})
 
 
-# def _get_dataset_folders_by_spotlight(spotlight_id: str) -> Set[str]:
-#     """
-#     Returns the S3 prefix of datasets containing files for the given spotlight
-
-#     Params:
-#     ------
-#     spotlight_id (str): id of spotlight to search for
-
-#     Returns:
-#     --------
-#     set(str)
-#     """
-#     keys = _gather_s3_keys(spotlight_id=spotlight_id)
-#     return {k.split("/")[0] for k in keys}
-
-
 def _get_dataset_domain(
-    dataset_folder: str, is_periodic: bool, spotlight_id: str = None,
+    dataset_folder: str,
+    is_periodic: bool,
+    spotlight_id: Optional[Union[str, List]] = None,
 ):
     """
     Returns a domain for a given dataset as identified by a folder. If a
@@ -157,13 +150,13 @@ def _get_dataset_domain(
     dates = []
 
     for key in keys:
-        result = re.search(
-            # matches either dates like: YYYYMM or YYYY_MM_DD
+
+        # matches either dates like: YYYYMM or YYYY_MM_DD
+        pattern = re.compile(
             r"""[^a-zA-Z0-9]((?P<MT_DATE>(\d{6}))|"""
-            r"""((?P<YEAR>\d{4})_(?P<MONTH>\d{2})_(?P<DAY>\d{2})))[^a-zA-Z0-9]""",
-            key,
-            re.IGNORECASE,
+            r"""((?P<YEAR>\d{4})_(?P<MONTH>\d{2})_(?P<DAY>\d{2})))[^a-zA-Z0-9]"""
         )
+        result = pattern.search(key, re.IGNORECASE,)
         if not result:
             continue
 
@@ -183,10 +176,7 @@ def _get_dataset_domain(
 
         dates.append(date.strftime("%Y-%m-%dT%H:%M:%SZ"))
 
-    if not len(dates) == 0:
-        raise NoDatesFound
-
-    if is_periodic:
+    if is_periodic and len(dates):
         return [min(dates), max(dates)]
 
     return sorted(set(dates))

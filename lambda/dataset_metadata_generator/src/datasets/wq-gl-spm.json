@@ -1,0 +1,34 @@
+{
+    "id": "water-wq-gl-spm",
+    "name": "Turbidity",
+    "type": "raster-timeseries",
+    "time_unit": "day",
+    "s3_location": "wq-gl-spm",
+    "source": {
+        "type": "raster",
+        "tiles": [
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/wq-gl-spm/sm_anomaly_greatlakes_{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
+        ]
+    },
+    "exclusive_with": [
+        "water-wq-gl-chl"
+    ],
+    "swatch": {
+        "color": "#154F8D",
+        "name": "Deep blue"
+    },
+    "legend": {
+        "type": "gradient",
+        "min": "less",
+        "max": "more",
+        "stops": [
+            "#3A88BD",
+            "#C9E0ED",
+            "#E4EEF3",
+            "#FDDCC9",
+            "#DE725B",
+            "#67001F"
+        ]
+    },
+    "info": "Turbidity refers to the amount of sediment or particles suspended in water. Darker colors indicate more sediment and murkier water. Lighter colors indicate less sediment and clearer water."
+}

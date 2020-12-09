@@ -1,19 +1,14 @@
 """ covid_api static datasets """
 import json
 import os
-from copy import deepcopy
-from typing import Any, Dict, List, Set
+from typing import List
+
+import botocore
 
 from covid_api.core.config import INDICATOR_BUCKET
 from covid_api.db.static.errors import InvalidIdentifier
 from covid_api.db.static.sites import sites
-from covid_api.db.utils import (
-    NoSuchKeyException,
-    get_dataset_domain,
-    get_dataset_folders_by_spotlight,
-    invoke_lambda,
-    s3_get,
-)
+from covid_api.db.utils import invoke_lambda, s3_get
 from covid_api.models.static import DatasetInternal, Datasets, GeoJsonSource
 
 data_dir = os.path.join(os.path.dirname(__file__))
@@ -40,22 +35,23 @@ class DatasetManager(object):
             )
             for dataset in datasets
         }
-        try:
-            self._dataset_domain_metadata = json.loads(
-                s3_get(bucket=INDICATOR_BUCKET, key=dataset_metadata_file)
-            )
-        except NoSuchKeyException:
-            invoke_lambda(lambda_funciton_name=dataset_metadata_generator_function_name)
-            self._dataset_domain_metadata = json.loads(
-                s3_get(bucket=INDICATOR_BUCKET, key=dataset_metadata_file)
-            )
 
-    def _merge_datasets_with_domain(self, domains):
-        for dataset_id, dataset in domains.items():
-            for _dataset_id, _dataset in self._data.items():
-                if _dataset_id == dataset_id:
-                    dataset.update({k: v for k, v in _dataset.items() if k != "domain"})
-        return domains
+    def _load_domain_metadata(self):
+        try:
+            return json.loads(
+                s3_get(bucket=INDICATOR_BUCKET, key=dataset_metadata_file)
+            )
+        except botocore.errorfactory.ClientError as e:
+            if e.response["Error"]["Code"] == "NoSuchKey":
+                print(
+                    "No datasets domain metadata file found, requesting generation"
+                    "of a new file. This may take several minutes."
+                )
+                resp = invoke_lambda(
+                    lambda_function_name=dataset_metadata_generator_function_name
+                )
+
+                return json.loads(resp)
 
     def get(self, spotlight_id: str, api_url: str) -> Datasets:
         """
@@ -64,22 +60,26 @@ class DatasetManager(object):
         all datasets that are NOT spotlight specific. Raises an
         `InvalidIdentifier` exception if the provided spotlight_id does
         not exist.
+
+        Params:
+        -------
+        spotlight_id (str): spotlight id to return datasets for
+        api_url(str): {scheme}://{host} of request originator in order
+            to return correctly formated source urls
+
+        Returns:
+        -------
+        (Datasets) pydantic model contains a list of datasets' metadata
         """
-        global_datasets = self._merge_datasets_with_domain(
-            domains=self._dataset_domain_metadata["global"]
+
+        global_datasets = self._process(
+            self._load_domain_metadata()["global"],
+            api_url=api_url,
+            spotlight_id="global",
         )
 
-        # global_datasets = self._get_global_datasets()
-
-        # for dataset in global_datasets:
-        #     dataset["domain"] = self._dataset_domain_metadata["global"][dataset["id"]]
-
-        # # global_datasets = self._overload_domain(datasets=global_datasets)
-
         if spotlight_id == "global":
-            return self._prep_output(
-                global_datasets, api_url=api_url, spotlight_id=spotlight_id
-            )
+            return Datasets(datasets=[dataset.dict() for dataset in global_datasets])
 
         # Verify that the requested spotlight exists
         try:
@@ -87,123 +87,73 @@ class DatasetManager(object):
         except InvalidIdentifier:
             raise
 
-        # dict of {"dataset_id": {"domain":[]}} for a given sit
-        spotlight_datasets = self._merge_datasets_with_domain(
-            domains=self._dataset_domain_metadata[site]
+        spotlight_datasets = self._process(
+            self._load_domain_metadata()[site.id],
+            api_url=api_url,
+            spotlight_id=site.id,
         )
 
-        # global datasets are returned for all spotlights
-        spotlight_datasets.update(global_datasets)
-
-        # # loop through datsets belonging to the spotlight
-        # for k, v in spotlight_datasets.items():
-
-        #     # loop through all datataset info and find datasets matching
-        #     # spotlight datasets above
-        #     for dataset_id, dataset_metadata in self._data.items():
-        #         if dataset_id == k:
-
-        #             # update all metadata except for domain
-        #             v.update(
-        #                 {
-        #                     dk: dv
-        #                     for dk, dv in dataset_metadata.dict().items()
-        #                     if dk != "domain"
-        #                 }
-        #             )
-
-        # # Append "EUPorts" to the spotlight ID's if the requested spotlight id
-        # # was one of "du" or "gh", since certain datasets group both spotlights
-        # # under a single value: "EUPorts". It's then necessary to search,
-        # # and extract domain for each option ("du"/"gh" and "EUPorts") separately
-
-        # spotlight_ids = [site.id]
-        # if site.id in ["du", "gh"]:
-        #     spotlight_ids.append("EUPorts")
-
-        # spotlight_datasets = {}
-
-        # for spotlight_id in spotlight_ids:
-        #     # find all "folders" in S3 containing keys for the given spotlight
-        #     # each "folder" corresponds to a dataset.
-        #     spotlight_dataset_folders = get_dataset_folders_by_spotlight(
-        #         spotlight_id=spotlight_id
-        #     )
-        #     # filter the dataset items by those corresponding the folders above
-        #     # and add the datasets to the previously filtered `global` datasets
-        #     datasets = self._filter_datasets_by_folders(
-        #         folders=spotlight_dataset_folders
-        #     )
-
-        #     datasets = self._overload_spotlight_id(
-        #         datasets=datasets, spotlight_id=spotlight_id
-        #     )
-
-        #     datasets = self._overload_domain(
-        #         datasets=datasets, spotlight_id=spotlight_id
-        #     )
-        #     spotlight_datasets.update(datasets)
-
-        if spotlight_id == "tk":
-            spotlight_datasets["water-chlorophyll"].source.tiles = [
-                tile.replace("&rescale=-100%2C100", "")
-                for tile in spotlight_datasets["water-chlorophyll"].source.tiles
+        return Datasets(
+            datasets=[
+                dataset.dict() for dataset in [*global_datasets, *spotlight_datasets]
             ]
-
-        return self._prep_output(
-            spotlight_datasets, api_url=api_url, spotlight_id=spotlight_id
         )
 
     def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
-        self._data = self._overload_domain(datasets=self._data)
-        return self._prep_output(self._data, api_url=api_url)
+        datasets = self._process(
+            datasets_domains_metadata=self._load_domain_metadata()["_all"],
+            api_url=api_url,
+        )
+        return Datasets(datasets=[dataset.dict() for dataset in datasets])
 
     def list(self) -> List[str]:
         """List all datasets"""
         return list(self._data.keys())
 
-    def _format_urls(self, tiles: List[str], api_url: str, spotlight_id: str):
-        return [
-            tile.replace("{api_url}", api_url).replace("{spotlightId}", spotlight_id)
-            for tile in tiles
-        ]
+    def _format_urls(self, tiles: List[str], api_url: str, spotlight_id: str = None):
+        if spotlight_id:
+            return [
+                tile.replace("{api_url}", api_url).replace(
+                    "{spotlightId}", spotlight_id
+                )
+                for tile in tiles
+            ]
+        return [tile.replace("{api_url}", api_url) for tile in tiles]
 
-    def _prep_output(
-        self, output_datasets: dict, api_url: str, spotlight_id: str = None
-    ):
+    def _process(
+        self, datasets_domains_metadata: dict, api_url: str, spotlight_id: str = None
+    ) -> List[DatasetInternal]:
         """
-        Replaces the `source` of the detections-* datasets with geojson data types and
-        inserts the url base of the source tile url.
-        The deepcopy of the the data to output is necessary to avoid modifying the
-        underlying objects, which would affect the result of subsequent API calls.
+        Processes datasets to be returned to the API consumer: 
+        - Updates dataset domains for all returned datasets
+        - Inserts api url into source urls
+        - Inserts spotlight id into source url (if a spotlight id is provided)
 
         Params:
         -------
-        output_datasets (dict): Dataset metadata objects to return to API consumer.
+        output_datasets (dict): Dataset domains for the datasets to be returned.
         api_url (str):
             Base url, of the form {schema}://{host}, extracted from the request, to
             prepend all tile source urls with.
+        spotlight_id (Optional[str]):
+            Spotlight ID (if requested), to be inserted into the source urls
 
         Returns:
         --------
-        (dict) : datasets metadata object, ready to return to the API consumer
+        (list) : datasets metadata objects (to be serialized as a pydantic Datasets
+            model)
         """
-        output_datasets = deepcopy(output_datasets)
-        for dataset in output_datasets.values():
-            # dataset.source.tiles = [
-            #     url.replace("{spotlightId}", spotlight_id)
-            #     for url in dataset.source.tiles
-            # ]
+        output_datasets = {
+            k: v for k, v in self._data.items() if k in datasets_domains_metadata.keys()
+        }
 
-            # if not dataset.background_source:
-            #     continue
+        for k, dataset in output_datasets.items():
+            # overload domain with domain returned from s3 file
+            dataset.domain = datasets_domains_metadata[k]["domain"]
 
-            # dataset.background_source.tiles = [
-            #     url.replace("{spotlightId}", spotlight_id)
-            #     for url in dataset.background_source.tiles
-            # ]
-
+            # format url to contain the correct API host and
+            # spotlight id (if a spotlight was requested)
             format_url_params = dict(api_url=api_url)
             if spotlight_id:
                 format_url_params.update(dict(spotlight_id=spotlight_id))
@@ -216,148 +166,28 @@ class DatasetManager(object):
                     tiles=dataset.background_source.tiles, **format_url_params
                 )
             if dataset.compare:
-                dataset.compare.tiles = self._format_urls(
-                    tiles=dataset.compare.tiles, **format_url_params
+                dataset.compare.source.tiles = self._format_urls(
+                    tiles=dataset.compare.source.tiles, **format_url_params
                 )
-
-            # dataset.source.tiles = [
-            #     tile.replace("{api_url}", api_url) for tile in dataset.source.tiles
-            # ]
-
-            # if dataset.background_source:
-            #     dataset.background_source.tiles = [
-            #         tile.replace("{api_url}", api_url)
-            #         for tile in dataset.background_source.tiles
-            #     ]
-            # if dataset.compare:
-            #     dataset.compare.source.tiles = [
-            #         tile.replace("{api_url}", api_url)
-            #         for tile in dataset.compare.source.tiles
-            #   ]
-
-            if dataset.id in [
+            # source URLs of background tiles for `detections-*` datasets are
+            # handled differently in the front end so the the `source` objects
+            # get updated here
+            if k in [
                 "detections-ship",
                 "detections-plane",
                 "detections-vehicles",
             ]:
                 dataset.source = GeoJsonSource(
                     type=dataset.source.type, data=dataset.source.tiles[0]
-                )
+                ).dict()
 
-        return Datasets(
-            datasets=[dataset.dict() for dataset in output_datasets.values()]
-        )
+            if spotlight_id == "tk" and k == "water-chlorophyll":
+                dataset.source.tiles = [
+                    tile.replace("&rescale=-100%2C100", "")
+                    for tile in dataset.source.tiles
+                ]
 
-    @staticmethod
-    def _overload_spotlight_id(datasets: dict, spotlight_id: str):
-        """
-        Returns the provided `datasets` objects with an updated value for
-        each dataset's `source.tiles` and `background_source.tiles` keys.
-        The string "{spotlightId}" in the `tiles` URL(s) is replaced with the
-        actual value of the spotlightId (eg: "ny", "sf", "tk")
-        Params:
-        ------
-        datasets (dict): dataset metadata objects for which to overload
-        `source.tiles` and `background_source.tiles` keys.
-        spotlight_id ([dict]): spotlight id value with which to replace
-        "{spotlightId}"
-
-        Returns:
-        ------
-        dict: the `datasets` object, with an updated `source.tiles` and
-        `background_source.tiles` values for each dataset in the `datasets` object.
-        """
-        for _, dataset in datasets.items():
-            dataset.source.tiles = [
-                url.replace("{spotlightId}", spotlight_id)
-                for url in dataset.source.tiles
-            ]
-
-            if not dataset.background_source:
-                continue
-
-            dataset.background_source.tiles = [
-                url.replace("{spotlightId}", spotlight_id)
-                for url in dataset.background_source.tiles
-            ]
-        return datasets
-
-    @staticmethod
-    def _overload_domain(datasets: dict, spotlight_id: str = None):
-        """
-        Returns the provided `datasets` object with an updated value for
-        each dataset's `domain` key.
-        The domain is extracted by listing keys in S3 belonging to that
-        dataset (and spotlight, if provided) and extracting the dates from
-        those keys.
-
-        Params:
-        ------
-        datasets (dict): dataset metadata objects for which to overload
-        `domain` keys.
-        spotlight_id (Optional[str]): spotlight_id to further precise `domain`
-        search
-
-        Returns:
-        ------
-        dict: the `datasets` object, with an updated `domain` value for each
-        dataset in the `datasets` object.
-        """
-
-        for _, dataset in datasets.items():
-
-            # No point in searching for files in S3 if the dataset isn't stored there!
-            if not dataset.s3_location:
-                continue
-
-            domain_args: Dict[str, Any] = {
-                "dataset_folder": dataset.s3_location,
-                "is_periodic": dataset.is_periodic,
-            }
-
-            if spotlight_id:
-                domain_args["spotlight_id"] = spotlight_id
-
-            dataset.domain = get_dataset_domain(**domain_args)
-
-        return datasets
-
-    def _filter_datasets_by_folders(self, folders: Set[str]) -> Dict:
-        """
-        Returns all datasets corresponding to a set of folders (eg: for
-        folders {"BMHD_30M_MONTHLY", "xco2"} this method would return the
-        "Nightlights HD" and the "CO2" dataset metadata objects)
-
-        Params:
-        -------
-        folders (Set[str]): folders to filter datasets
-
-        Returns:
-        --------
-        Dict : Metadata objects for the datasets corresponding to the
-            folders provided.
-        """
-        # deepcopy is necessary because the spotlight and domain overriding was
-        # affecting the original dataset metadata items and returning the same values
-        # in subsequent API requests for different spotlights
-        return {
-            k: v for k, v in deepcopy(self._data).items() if v.s3_location in folders
-        }
-
-    def _get_global_datasets(self):
-        """
-        Returns all datasets which do not reference a specific spotlight, by
-        filtering out datasets where the "source.tiles" value contains either
-        `spotlightId`.
-        """
-
-        return {
-            k: v
-            for k, v in self._data.items()
-            if not any(
-                i in v.source.tiles[0] for i in ["{spotlightId}", "greatlakes", "togo"]
-            )
-        }
+        return output_datasets.values()
 
 
 datasets = DatasetManager()
