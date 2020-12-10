@@ -160,7 +160,7 @@ def _get_dataset_domain(
     """
     s3_keys_args = {"prefix": dataset_folder}
     if spotlight_id:
-        s3_keys_args["spotlight_id"]: str = spotlight_id
+        s3_keys_args["spotlight_id"] = spotlight_id
 
     keys = _gather_s3_keys(**s3_keys_args)
     dates = []
