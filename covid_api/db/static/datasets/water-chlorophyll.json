@@ -23,7 +23,8 @@
         "detection-multi",
         "water-spm",
         "detections-ship",
-        "detections-plane"
+        "detections-plane",
+        "detections-contrail"
     ],
     "swatch": {
         "color": "#154F8D",

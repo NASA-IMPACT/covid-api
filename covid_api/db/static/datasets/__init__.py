@@ -133,7 +133,11 @@ class DatasetManager(object):
                     tile.replace("{api_url}", api_url)
                     for tile in dataset.compare.source.tiles
                 ]
-            if dataset.id in ["detections-ship", "detections-plane"]:
+            if dataset.id in [
+                "detections-ship",
+                "detections-plane",
+                "detections-contrail",
+            ]:
                 dataset.source = GeoJsonSource(
                     type=dataset.source.type, data=dataset.source.tiles[0]
                 )

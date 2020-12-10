@@ -12,7 +12,7 @@
     ]
   },
   "paint": {
-      "raster-opacity": 0.9
+    "raster-opacity": 0.9
   },
   "exclusive_with": [
     "agriculture",
@@ -26,7 +26,8 @@
     "water-chlorophyll",
     "water-spm",
     "detections-ship",
-    "detections-plane"
+    "detections-plane",
+    "detections-contrail"
   ],
   "enabled": true,
   "compare": {

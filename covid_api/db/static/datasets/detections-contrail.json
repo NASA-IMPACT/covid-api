@@ -1,8 +1,8 @@
 {
-    "id": "detections-plane",
-    "name": "Airplanes",
+    "id": "detections-contrail",
+    "name": "Contrails",
     "type": "inference-timeseries",
-    "s3_location": "detections-plane",
+    "s3_location": "detections-contrail",
     "is_periodic": false,
     "time_unit": "day",
     "source": {
@@ -14,7 +14,7 @@
     "background_source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
+            "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/250m/{z}/{y}/{x}.jpeg"
         ]
     },
     "exclusive_with": [
@@ -29,13 +29,12 @@
         "detection-multi",
         "water-chlorophyll",
         "water-spm",
-        "detections-ship",
-        "detections-contrail"
+        "detections-ship"
     ],
     "enabled": false,
     "swatch": {
         "color": "#C0C0C0",
         "name": "Grey"
     },
-    "info": "Grounded airplanes detected each day in PlanetScope imagery are shown in orange."
+    "info": ""
 }
