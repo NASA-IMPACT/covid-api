@@ -25,11 +25,14 @@ class DatasetManager(object):
 
     def __init__(self):
         """Load all datasets in a dict."""
+
+        pass
+
+    def _data(self):
         datasets = [
             os.path.splitext(f)[0] for f in os.listdir(data_dir) if f.endswith(".json")
         ]
-
-        self._data = {
+        return {
             dataset: DatasetInternal.parse_file(
                 os.path.join(data_dir, f"{dataset}.json")
             )
@@ -50,8 +53,9 @@ class DatasetManager(object):
                 resp = invoke_lambda(
                     lambda_function_name=dataset_metadata_generator_function_name
                 )
-
-                return json.loads(resp)
+                print("Done. Response from lambda: ")
+                print(resp)
+                return resp
 
     def get(self, spotlight_id: str, api_url: str) -> Datasets:
         """
@@ -109,7 +113,7 @@ class DatasetManager(object):
 
     def list(self) -> List[str]:
         """List all datasets"""
-        return list(self._data.keys())
+        return list(self._data().keys())
 
     def _format_urls(self, tiles: List[str], api_url: str, spotlight_id: str = None):
         if spotlight_id:
@@ -123,9 +127,9 @@ class DatasetManager(object):
 
     def _process(
         self, datasets_domains_metadata: dict, api_url: str, spotlight_id: str = None
-    ) -> List[DatasetInternal]:
+    ):
         """
-        Processes datasets to be returned to the API consumer: 
+        Processes datasets to be returned to the API consumer:
         - Updates dataset domains for all returned datasets
         - Inserts api url into source urls
         - Inserts spotlight id into source url (if a spotlight id is provided)
@@ -145,10 +149,13 @@ class DatasetManager(object):
             model)
         """
         output_datasets = {
-            k: v for k, v in self._data.items() if k in datasets_domains_metadata.keys()
+            k: v
+            for k, v in self._data().items()
+            if k in datasets_domains_metadata.keys()
         }
 
         for k, dataset in output_datasets.items():
+
             # overload domain with domain returned from s3 file
             dataset.domain = datasets_domains_metadata[k]["domain"]
 
