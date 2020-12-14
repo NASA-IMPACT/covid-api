@@ -60,5 +60,5 @@
       "#050308"
     ]
   },
-  "info": "Darker colors indicate higher nitrogen dioxide (NO₂) levels associated and more activity. Lighter colors indicate lower levels of NO₂ and less activity."
+  "info": "Darker colors indicate higher nitrogen dioxide (NO₂) levels and more activity. Lighter colors indicate lower levels of NO₂ and less activity. Missing pixels indicate areas of no data most likely associated with cloud cover or snow."
 }

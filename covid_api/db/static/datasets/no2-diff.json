@@ -44,5 +44,5 @@
             "#DD7059"
         ]
     },
-    "info": "This layer shows changes in nitrogen dioxide (NO₂) levels. Redder colors indicate increases in NO₂. Bluer colors indicate lower levels of NO₂."
+    "info": "This layer shows changes in nitrogen dioxide (NO₂) levels. Redder colors indicate increases in NO₂. Bluer colors indicate lower levels of NO₂. Missing pixels indicate areas of no data most likely associated with cloud cover or snow."
 }

@@ -1,6 +1,6 @@
 {
     "id": "water-chlorophyll",
-    "name": "Chlorophyll",
+    "name": "Chlorophyll-a Anomaly",
     "type": "raster-timeseries",
     "time_unit": "day",
     "is_periodic": false,
@@ -43,5 +43,5 @@
             "#67001F"
         ]
     },
-    "info": "Chlorophyll is an indicator of algae growth. Redder colors indicate increases in chlorophyll-a and worse water quality. Bluer colors indicate decreases in chlorophyll-a and improved water quality. White areas indicate no change."
+    "info": "Chlorophyll-a is an indicator of algae growth. Redder colors indicate increases in chlorophyll-a and worse water quality. Bluer colors indicate decreases in chlorophyll-a and improved water quality. White areas indicate no change."
 }
