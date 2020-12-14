@@ -247,6 +247,9 @@ class covidApiECSStack(core.Stack):
 
 
 class covidApiDatasetMetadataGeneratorStack(core.Stack):
+    """Dataset metadata generator stack - comprises a lambda and a Cloudwatch
+    event that triggers a new lambda execution every 24hrs"""
+
     def __init__(
         self,
         scope: core.Construct,
@@ -284,8 +287,8 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
         )
         data_bucket.grant_read_write(dataset_metadata_updater_function)
 
-        # for e in ["datasets", "sites"]:
-        #     shutil.rmtree(os.path.join(lambda_deployment_package_location, e))
+        for e in ["datasets", "sites"]:
+            shutil.rmtree(os.path.join(lambda_deployment_package_location, e))
 
         aws_events.Rule(
             self,
@@ -298,6 +301,19 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
         )
 
     def copy_metadata_files_to_lambda_deployment_package(self, from_dir, to_dir):
+        """Copies dataset metadata files to the lambda deployment package
+        so that the dataset domain extractor lambda has access to the necessary
+        metadata items at runtime
+
+        Params:
+        -------
+        from_dir (str): relative filepath from which to copy all `.json` files
+        to_dir (str): relative filepath to copy `.json` files to
+
+        Return:
+        -------
+        None
+        """
         files = [
             os.path.abspath(os.path.join(d, f))
             for d, _, fnames in os.walk(from_dir)

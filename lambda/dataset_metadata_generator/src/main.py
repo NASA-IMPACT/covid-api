@@ -3,35 +3,77 @@ import datetime
 import json
 import os
 import re
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import boto3
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datastes")
+SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
+
+
 BUCKET_NAME = "covid-eo-data"
 s3 = boto3.resource("s3")
 bucket = s3.Bucket(BUCKET_NAME)
 
 DT_FORMAT = "%Y-%m-%d"
 MT_FORMAT = "%Y%m"
+
 DATASET_METADATA_FILENAME = os.environ.get(
     "DATASET_METADATA_FILENAME", "dev-dataset-metadata.json"
 )
 
 
 def handler(event, context):
-    """Reads through the s3 bucket to generate a file that contains
-    the datasets for each given spotlight option (_all, global, tk, ny, sf,
-    la, be, du, gh) and their respective domain for each spotlight
-    Params are standard lambda handler invocation params but not used in
-    the context of this lambda's code
+    """
+    Params:
+    -------
+    event (dict):
+    content (dict):
+
+    Both params are standard lambda handler invocation params but not used within this
+    lambda's code.
+
+    Returns:
+    -------
+    (string): JSON-encoded dict with top level keys for each of the possible
+        queries that can be run against the `/datasets` endpoint (key: _all_ contains
+        result of the LIST operation, each of other keys contain the result of
+        GET /datasets/{spotlight_id | "global"})
     """
 
     # TODO: defined TypedDicts for these!
-    datasets = _gather_json_data("datasets")
-    sites = _gather_json_data("sites")
+    datasets = _gather_json_data(DATASETS_JSON_FILEPATH)
+    sites = _gather_json_data(SITES_JSON_FILEPATH)
 
-    metadata = {}
+    result = json.dumps(_gather_datasets_metadata(datasets, sites))
+
+    bucket.put_object(
+        Body=result, Key=DATASET_METADATA_FILENAME, ContentType="application/json",
+    )
+    return result
+
+
+def _gather_datasets_metadata(datasets: List[dict], sites: List[dict]):
+    """Reads through the s3 bucket to generate a file that contains
+    the datasets for each given spotlight option (_all, global, tk, ny, sf,
+    la, be, du, gh) and their respective domain for each spotlight
+
+    Params:
+    -------
+    datasets (List[dict]): list of dataset metadata objects (contains fields
+        like: s3_location, time_unit, swatch, exclusive_with, etc), to use
+        to generate the result of each of the possible `/datasets` endpoint
+        queries.
+    sites (List[dict]): list of site metadata objects
+
+    Returns:
+    --------
+    (dict): python object with result of each possible query against the `/datasets`
+    endpoint with each dataset's associated domain.
+    """
+
+    metadata: Dict[str, dict] = {}
 
     for dataset in datasets:
         if not dataset.get("s3_location"):
@@ -62,28 +104,25 @@ def handler(event, context):
 
             # skip adding dataset to metadata object if no dates were found for the given
             # spotlight (indicates dataset is not valid for that spotlight)
-            if domain := _get_dataset_domain(**domain_args):
-                metadata.setdefault(site["id"], {}).update(
-                    {dataset["id"]: {"domain": domain}}
-                )
+            domain = _get_dataset_domain(**domain_args)
+            if not domain:
+                continue
 
-    bucket.put_object(
-        Body=json.dumps(metadata),
-        Key=DATASET_METADATA_FILENAME,
-        ContentType="application/json",
-    )
-    return json.dumps(metadata)
+            metadata.setdefault(site["id"], {}).update(
+                {dataset["id"]: {"domain": domain}}
+            )
+    return metadata
 
 
-def _gather_json_data(dirname: str) -> List[dict]:
+def _gather_json_data(dirpath: str) -> List[dict]:
     """Gathers all JSON files from within a diven directory"""
 
     results = []
 
-    for filename in os.listdir(os.path.join(BASE_PATH, dirname)):
+    for filename in os.listdir(dirpath):
         if not filename.endswith(".json"):
             continue
-        with open(os.path.join(BASE_PATH, dirname, filename)) as f:
+        with open(os.path.join(dirpath, filename)) as f:
             results.append(json.load(f))
     return results
 
@@ -158,7 +197,7 @@ def _get_dataset_domain(
     ------
     List[datetime]
     """
-    s3_keys_args = {"prefix": dataset_folder}
+    s3_keys_args: Dict[str, Any] = {"prefix": dataset_folder}
     if spotlight_id:
         s3_keys_args["spotlight_id"] = spotlight_id
 

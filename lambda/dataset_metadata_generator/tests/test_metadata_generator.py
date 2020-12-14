@@ -1,27 +1,46 @@
 """Test class for metadata generator lambda"""
-import json
 from datetime import datetime
 
 
-def test_databases(bucket, handler):
+def test_datasets(gather_datasets_metadata, datasets, sites, bucket):
     """Tests for basic (/) query"""
 
-    result = handler({}, {})
+    content = gather_datasets_metadata(datasets, sites)
 
-    assert result is not None
+    assert content is not None
 
-    content = json.loads(result)
     assert "global" in content.keys()
     assert "tk" in content.keys()
 
 
-def test_datasets_monthly(bucket, handler):
-    """Tests wether "monthly" dataset domain is correctly extracted"""
-    result = handler({}, {})
+def test_global_datasets(gather_datasets_metadata, datasets, sites, bucket):
+    """Test for correct extraction of global datasets"""
+    content = gather_datasets_metadata(datasets, sites)
 
-    assert result is not None
+    assert content is not None
 
-    content = json.loads(result)
+    assert "global" in content
+    assert set(content["global"].keys()) == {"co2"}
+
+    assert "_all" in content
+    assert set(content["_all"].keys()) == {
+        "co2",
+        "detections-plane",
+        "nightlights-hd",
+        "nightlights-viirs",
+        "water-chlorophyll",
+    }
+
+
+def test_periodic_daily_global_datasets(
+    gather_datasets_metadata, datasets, sites, bucket
+):
+    """Test domain of periodic (domain only contains start and stop
+    date) global datasets"""
+    content = gather_datasets_metadata(datasets, sites)
+
+    assert content is not None
+
     dataset_info = content["global"]["co2"]
 
     assert dataset_info["domain"][0] == datetime.strftime(
@@ -32,33 +51,30 @@ def test_datasets_monthly(bucket, handler):
     )
 
 
-def test_detections_datasets(bucket, handler):
-    """" Tests wether non-periodic dataset domain is correctly extracted"""
-    result = handler({}, {})
+def test_non_periodic_daily_spotlight_dataset(
+    gather_datasets_metadata, datasets, sites, bucket
+):
+    """Test non periodic (domain has all available dates) spotlight
+    sepecific datasets
+    """
+    content = gather_datasets_metadata(datasets, sites)
 
-    assert result is not None
+    assert content is not None
+    assert "ny" in content
 
-    content = json.loads(result)
     dataset_info = content["ny"]["detections-plane"]
 
     assert len(dataset_info["domain"]) > 2
 
 
-def test_datasets_daily(bucket, handler):
-    """test /datasets endpoint"""
+def test_euports_datasets(gather_datasets_metadata, datasets, sites, bucket):
+    """Test that an EUPorts datasets (du) searchs both for it's own spotlight id
+    AND EUPorts"""
 
-    # aws mocked resources
-    result = handler({}, {})
+    content = gather_datasets_metadata(datasets, sites)
 
-    assert result is not None
-
-    content = json.loads(result)
-    dataset_info = content["tk"]["water-chlorophyll"]
-
-    assert len(dataset_info["domain"]) > 2
-    assert dataset_info["domain"][0] == datetime.strftime(
-        datetime(2020, 1, 29), "%Y-%m-%dT%H:%M:%SZ"
-    )
-    assert dataset_info["domain"][-1] == datetime.strftime(
-        datetime(2020, 3, 2), "%Y-%m-%dT%H:%M:%SZ"
-    )
+    assert "du" in content
+    assert set(content["du"].keys()) == {
+        "nightlights-hd",
+        "nightlights-viirs",
+    }
