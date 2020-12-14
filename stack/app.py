@@ -1,7 +1,6 @@
 """Construct App."""
 
 import os
-import shutil
 from typing import Any, Union
 
 import config
@@ -262,15 +261,9 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
         """Define stack."""
         super().__init__(scope, id, *kwargs)
 
-        base = os.path.abspath(os.path.join("covid_api", "db", "static"))
         lambda_deployment_package_location = os.path.abspath(
             os.path.join(code_dir, "lambda", "dataset_metadata_generator")
         )
-        for e in ["datasets", "sites"]:
-            self.copy_metadata_files_to_lambda_deployment_package(
-                from_dir=os.path.join(base, e),
-                to_dir=os.path.join(lambda_deployment_package_location, "src", e),
-            )
 
         dataset_metadata_updater_function = aws_lambda.Function(
             self,
@@ -287,9 +280,6 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
         )
         data_bucket.grant_read_write(dataset_metadata_updater_function)
 
-        for e in ["datasets", "sites"]:
-            shutil.rmtree(os.path.join(lambda_deployment_package_location, e))
-
         aws_events.Rule(
             self,
             f"{id}-metadata-update-daily-trigger",
@@ -299,35 +289,6 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
                 aws_events_targets.LambdaFunction(dataset_metadata_updater_function)
             ],
         )
-
-    def copy_metadata_files_to_lambda_deployment_package(self, from_dir, to_dir):
-        """Copies dataset metadata files to the lambda deployment package
-        so that the dataset domain extractor lambda has access to the necessary
-        metadata items at runtime
-
-        Params:
-        -------
-        from_dir (str): relative filepath from which to copy all `.json` files
-        to_dir (str): relative filepath to copy `.json` files to
-
-        Return:
-        -------
-        None
-        """
-        files = [
-            os.path.abspath(os.path.join(d, f))
-            for d, _, fnames in os.walk(from_dir)
-            for f in fnames
-            if f.endswith(".json")
-        ]
-
-        try:
-            os.mkdir(to_dir)
-        except FileExistsError:
-            pass
-
-        for f in files:
-            shutil.copy(f, to_dir)
 
 
 app = core.App()
@@ -354,15 +315,15 @@ covidApiECSStack(
     env=config.ENV,
 )
 
-# lambda_stackname = f"{config.PROJECT_NAME}-lambda-{config.STAGE}"
-# covidApiLambdaStack(
-#     app,
-#     lambda_stackname,
-#     memory=config.MEMORY,
-#     timeout=config.TIMEOUT,
-#     concurrent=config.MAX_CONCURRENT,
-#     env=config.ENV,
-# )
+lambda_stackname = f"{config.PROJECT_NAME}-lambda-{config.STAGE}"
+covidApiLambdaStack(
+    app,
+    lambda_stackname,
+    memory=config.MEMORY,
+    timeout=config.TIMEOUT,
+    concurrent=config.MAX_CONCURRENT,
+    env=config.ENV,
+)
 
 dataset_metadata_generator_stackname = (
     f"{config.PROJECT_NAME}-dataset-metadata-generator-{config.STAGE}"
