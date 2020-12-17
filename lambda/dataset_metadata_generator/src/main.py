@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Union
 import boto3
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datastes")
+DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datasets")
 SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
 
 

@@ -92,4 +92,5 @@ def bucket(s3, empty_bucket):
         s3.put_object(
             Bucket=INDICATOR_BUCKET, Key=key, Body=b"test",
         )
+    # empty_bucket is now full. I wish there was a better way to do this...
     yield empty_bucket

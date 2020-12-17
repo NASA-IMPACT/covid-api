@@ -2,14 +2,13 @@
 
 import csv
 import json
-import re
 from datetime import datetime
-from typing import Dict, List, Optional, Set
+from typing import Dict, List
 
 import boto3
 from botocore import config
 
-from covid_api.core.config import DT_FORMAT, INDICATOR_BUCKET, MT_FORMAT
+from covid_api.core.config import DT_FORMAT, INDICATOR_BUCKET
 from covid_api.models.static import IndicatorObservation
 
 s3 = boto3.client("s3")
@@ -23,11 +22,65 @@ _lambda = boto3.client(
 )
 
 
-def invoke_lambda(lambda_function_name: str, payload: dict = None):
-    lambda_invoke_params = dict(FunctionName=lambda_function_name)
+def invoke_lambda(
+    lambda_function_name: str, payload: dict = None, invocation_type="RequestResponse"
+):
+    """Invokes a lambda function using the boto3 lambda client.
+
+    Params:
+    -------
+    lambda_function_name (str): name of the lambda to invoke
+    payload (Optional[dict]): data into invoke the lambda function with (will be accessible
+        in the lambda handler function under the `event` param)
+    invocation_type (Optional[str] = ["RequestResponse", "Event", "DryRun"]):
+        RequestReponse will run the lambda synchronously (holding up the thread
+        until the lambda responds
+        Event will run asynchronously
+        DryRun will only verify that the user/role has the correct permissions to invoke
+        the lambda function
+
+    Returns:
+    --------
+    (dict) Lambda invocation response, see:
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html#Lambda.Client.invoke
+
+    - NOTE:
+    The current configuration specifies a RequestResponse invocation, which does
+    indeed run synchronously, but returns a status succeeded of 202 (Accepted) when
+    it should return a 200 status. 202 status is expected from the `Event` invocation
+    type (indicated lamdba was initiated but we don't know it's status)
+
+    - NOTE:
+    The current configuration should directly return the lambda output under
+    response["Payload"]: StreamingBody, however the byte string currently being returned
+    contains lambda invocation/runtime details from the logs. (eg:
+
+    ```
+    START RequestId: 7c61eb52-735d-1ce4-0df2-a975197924eb Version: 1
+    END RequestId: 7c61eb52-735d-1ce4-0df2-a975197924eb
+    REPORT RequestId: 7c61eb52-735d-1ce4-0df2-a975197924eb  Init Duration: 232.54 ms        Duration: 3.02 ms       Billed Duration: 100 ms Memory Size: 128 MB    Max Memory Used: 33 MB
+
+    {"result":"success","input":"test"}
+
+    ```
+    when we only expect the JSON object: {"result":"success", "input":"test"} to be returned
+    )
+
+    To load just the lambda output use:
+
+    ```
+    response = r["Payload"].read().decode("utf-8")
+    lambda_output = json.loads(
+        response[response.index("{") : (response.index("}") + 1)]
+    )
+    ```
+    where r is the output of this function.
+    """
+    lambda_invoke_params = dict(
+        FunctionName=lambda_function_name, InvocationType=invocation_type
+    )
     if payload:
         lambda_invoke_params.update(dict(Payload=json.dumps(payload)))
-
     return _lambda.invoke(**lambda_invoke_params)
 
 

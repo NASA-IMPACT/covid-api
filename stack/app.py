@@ -1,9 +1,12 @@
 """Construct App."""
 
 import os
+import shutil
 from typing import Any, Union
 
 import config
+
+# import docker
 from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
@@ -45,6 +48,8 @@ class covidApiLambdaStack(core.Stack):
         self,
         scope: core.Construct,
         id: str,
+        dataset_metadata_filename: str,
+        dataset_metadata_generator_function_name: str,
         memory: int = 1024,
         timeout: int = 30,
         concurrent: int = 100,
@@ -96,10 +101,8 @@ class covidApiLambdaStack(core.Stack):
                 LOG_LEVEL="error",
                 MEMCACHE_HOST=cache.attr_configuration_endpoint_address,
                 MEMCACHE_PORT=cache.attr_configuration_endpoint_port,
-                DATASET_METADATA_FILENAME=env["DATASET_METADATA_FILENAME"],
-                DATASET_METADATA_GENERATOR_FUNCTION_NAME=env[
-                    "DATASET_METADATA_GENERATOR_FUNCTION_NAME"
-                ],
+                DATASET_METADATA_FILENAME=dataset_metadata_filename,
+                DATASET_METADATA_GENERATOR_FUNCTION_NAME=dataset_metadata_generator_function_name,
             )
         )
 
@@ -127,16 +130,16 @@ class covidApiLambdaStack(core.Stack):
 
     def create_package(self, code_dir: str) -> aws_lambda.Code:
         """Build docker image and create package."""
-        # print('building lambda package via docker')
-        # print(f'code dir: {code_dir}')
+        # print("building lambda package via docker")
+        # print(f"code dir: {code_dir}")
         # client = docker.from_env()
-        # print('docker client up')
+        # print("docker client up")
         # client.images.build(
         #     path=code_dir,
         #     dockerfile="Dockerfiles/lambda/Dockerfile",
         #     tag="lambda:latest",
         # )
-        # print('docker image built')
+        # print("docker image built")
         # client.containers.run(
         #     image="lambda:latest",
         #     command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
@@ -261,9 +264,15 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
         """Define stack."""
         super().__init__(scope, id, *kwargs)
 
+        base = os.path.abspath(os.path.join("covid_api", "db", "static"))
         lambda_deployment_package_location = os.path.abspath(
             os.path.join(code_dir, "lambda", "dataset_metadata_generator")
         )
+        for e in ["datasets", "sites"]:
+            self.copy_metadata_files_to_lambda_deployment_package(
+                from_dir=os.path.join(base, e),
+                to_dir=os.path.join(lambda_deployment_package_location, "src", e),
+            )
 
         dataset_metadata_updater_function = aws_lambda.Function(
             self,
@@ -275,6 +284,10 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
             function_name=dataset_metadata_generator_function_name,
             timeout=core.Duration.minutes(5),
         )
+
+        for e in ["datasets", "sites"]:
+            shutil.rmtree(os.path.join(lambda_deployment_package_location, "src", e))
+
         data_bucket = aws_s3.Bucket.from_bucket_name(
             self, id=f"{id}-data-bucket", bucket_name=config.BUCKET
         )
@@ -289,6 +302,33 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
                 aws_events_targets.LambdaFunction(dataset_metadata_updater_function)
             ],
         )
+
+    def copy_metadata_files_to_lambda_deployment_package(self, from_dir, to_dir):
+        """Copies dataset metadata files to the lambda deployment package
+        so that the dataset domain extractor lambda has access to the necessary
+        metadata items at runtime
+        Params:
+        -------
+        from_dir (str): relative filepath from which to copy all `.json` files
+        to_dir (str): relative filepath to copy `.json` files to
+        Return:
+        -------
+        None
+        """
+        files = [
+            os.path.abspath(os.path.join(d, f))
+            for d, _, fnames in os.walk(from_dir)
+            for f in fnames
+            if f.endswith(".json")
+        ]
+
+        try:
+            os.mkdir(to_dir)
+        except FileExistsError:
+            pass
+
+        for f in files:
+            shutil.copy(f, to_dir)
 
 
 app = core.App()
@@ -322,6 +362,8 @@ covidApiLambdaStack(
     memory=config.MEMORY,
     timeout=config.TIMEOUT,
     concurrent=config.MAX_CONCURRENT,
+    dataset_metadata_filename=config.DATASET_METADATA_FILENAME,
+    dataset_metadata_generator_function_name=config.DATASET_METADATA_GENERATOR_FUNCTION_NAME,
     env=config.ENV,
 )
 

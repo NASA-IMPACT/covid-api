@@ -48,7 +48,7 @@ class DatasetManager(object):
             if e.response["Error"]["Code"] == "NoSuchKey":
                 print(
                     "No datasets domain metadata file found, requesting generation"
-                    "of a new file. This may take several minutes."
+                    " of a new file. This may take several minutes."
                 )
                 resp = invoke_lambda(
                     lambda_function_name=dataset_metadata_generator_function_name
