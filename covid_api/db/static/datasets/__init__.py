@@ -50,12 +50,9 @@ class DatasetManager(object):
                     "No datasets domain metadata file found, requesting generation"
                     " of a new file. This may take several minutes."
                 )
-                resp = invoke_lambda(
+                return invoke_lambda(
                     lambda_function_name=dataset_metadata_generator_function_name
                 )
-                print("Done. Response from lambda: ")
-                print(resp)
-                return resp
 
     def get(self, spotlight_id: str, api_url: str) -> Datasets:
         """

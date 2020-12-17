@@ -22,11 +22,18 @@ from starlette.testclient import TestClient
 
 
 @pytest.fixture(autouse=True)
-def app(monkeypatch) -> TestClient:
+def aws_credentials():
+    os.environ["DISABLE_CACHE"] = "YESPLEASE"
+    os.environ["AWS_ACCESS_KEY_ID"] = "jqt"
+    os.environ["AWS_SECRET_ACCESS_KEY"] = "rde"
+
+
+@pytest.fixture
+def app(aws_credentials) -> TestClient:
     """Make sure we use monkeypatch env."""
-    monkeypatch.setenv("DISABLE_CACHE", "YESPLEASE")
-    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "jqt")
-    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "rde")
+    # monkeypatch.setenv("DISABLE_CACHE", "YESPLEASE")
+    # monkeypatch.setenv("AWS_ACCESS_KEY_ID", "jqt")
+    # monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "rde")
 
     from covid_api.main import app
 
@@ -41,7 +48,7 @@ def mock_rio(src_path: str) -> DatasetReader:
 
 
 @pytest.fixture
-def lambda_iam_role():
+def lambda_iam_role(aws_credentials):
     with mock_iam():
         iam = boto3.client("iam", region_name="us-east-1")
         try:
@@ -55,14 +62,14 @@ def lambda_iam_role():
 
 
 @pytest.fixture
-def lambda_client():
+def lambda_client(aws_credentials):
     """Yields a mocked boto3 s3 client"""
     with mock_lambda():
         yield boto3.client("lambda", region_name="us-east-1")
 
 
 @pytest.fixture
-def s3():
+def s3(aws_credentials):
     """Yields a mocked boto3 s3 client"""
     with mock_s3():
         yield boto3.client("s3", region_name="us-east-1")
@@ -168,7 +175,7 @@ def lambda_function(lambda_client, lambda_iam_role, lambda_zip_file):
 
 
 @pytest.fixture
-def db_utils():
+def db_utils(aws_credentials):
 
     from covid_api.db import utils
 
@@ -176,7 +183,7 @@ def db_utils():
 
 
 @pytest.fixture
-def dataset_manager():
+def dataset_manager(aws_credentials):
     from covid_api.db.static.datasets import DatasetManager
 
     yield DatasetManager()
