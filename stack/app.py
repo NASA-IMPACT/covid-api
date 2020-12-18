@@ -5,8 +5,7 @@ import shutil
 from typing import Any, Union
 
 import config
-
-# import docker
+import docker
 from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
@@ -130,23 +129,23 @@ class covidApiLambdaStack(core.Stack):
 
     def create_package(self, code_dir: str) -> aws_lambda.Code:
         """Build docker image and create package."""
-        # print("building lambda package via docker")
-        # print(f"code dir: {code_dir}")
-        # client = docker.from_env()
-        # print("docker client up")
-        # client.images.build(
-        #     path=code_dir,
-        #     dockerfile="Dockerfiles/lambda/Dockerfile",
-        #     tag="lambda:latest",
-        # )
-        # print("docker image built")
-        # client.containers.run(
-        #     image="lambda:latest",
-        #     command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
-        #     remove=True,
-        #     volumes={os.path.abspath(code_dir): {"bind": "/local/", "mode": "rw"}},
-        #     user=0,
-        # )
+        print("building lambda package via docker")
+        print(f"code dir: {code_dir}")
+        client = docker.from_env()
+        print("docker client up")
+        client.images.build(
+            path=code_dir,
+            dockerfile="Dockerfiles/lambda/Dockerfile",
+            tag="lambda:latest",
+        )
+        print("docker image built")
+        client.containers.run(
+            image="lambda:latest",
+            command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
+            remove=True,
+            volumes={os.path.abspath(code_dir): {"bind": "/local/", "mode": "rw"}},
+            user=0,
+        )
 
         return aws_lambda.Code.asset(os.path.join(code_dir, "package.zip"))
 
@@ -274,13 +273,20 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
                 to_dir=os.path.join(lambda_deployment_package_location, "src", e),
             )
 
+        data_bucket = aws_s3.Bucket.from_bucket_name(
+            self, id=f"{id}-data-bucket", bucket_name=config.BUCKET
+        )
+
         dataset_metadata_updater_function = aws_lambda.Function(
             self,
             f"{id}-metadata-updater-lambda",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             code=aws_lambda.Code.from_asset(lambda_deployment_package_location),
             handler="src.main.handler",
-            environment={"DATASET_METADATA_FILENAME": dataset_metadata_filename},
+            environment={
+                "DATASET_METADATA_FILENAME": dataset_metadata_filename,
+                "DATA_BUCKET_NAME": data_bucket.bucket_name,
+            },
             function_name=dataset_metadata_generator_function_name,
             timeout=core.Duration.minutes(5),
         )
@@ -288,9 +294,6 @@ class covidApiDatasetMetadataGeneratorStack(core.Stack):
         for e in ["datasets", "sites"]:
             shutil.rmtree(os.path.join(lambda_deployment_package_location, "src", e))
 
-        data_bucket = aws_s3.Bucket.from_bucket_name(
-            self, id=f"{id}-data-bucket", bucket_name=config.BUCKET
-        )
         data_bucket.grant_read_write(dataset_metadata_updater_function)
 
         aws_events.Rule(

@@ -8,9 +8,8 @@ from stack.config import DATASET_METADATA_GENERATOR_FUNCTION_NAME
 
 
 def test_metadata_file_generation_triggered_if_not_found(
-    app, lambda_function, empty_bucket, dataset_manager
+    app, lambda_function, empty_bucket, dataset_manager, monkeypatch
 ):
-
     with patch("covid_api.db.static.datasets.invoke_lambda") as mocked_invoke_lambda:
 
         mocked_invoke_lambda.return_value = {"result": "success"}

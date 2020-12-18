@@ -14,6 +14,12 @@ jobs:
       - run:
           name: test
           command: ~/.local/bin/tox
+          environment:
+            AWS_DEFAULT_REGION: us-east-1
+            AWS_ACCESS_KEY_ID: testing
+            AWS_SECRET_ACCESS_KEY: testing
+            AWS_SECURITY_TOKEN: testing
+            AWS_SESSION_TOKEN: testing
       - run:
           name: run pre-commit
           command: ~/.local/bin/pre-commit run --all-files

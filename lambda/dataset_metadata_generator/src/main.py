@@ -12,16 +12,15 @@ DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datasets")
 SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
 
 
-BUCKET_NAME = "covid-eo-data"
+BUCKET_NAME = os.environ["DATA_BUCKET_NAME"]
+DATASET_METADATA_FILENAME = os.environ["DATASET_METADATA_FILENAME"]
+
+
 s3 = boto3.resource("s3")
 bucket = s3.Bucket(BUCKET_NAME)
 
 DT_FORMAT = "%Y-%m-%d"
 MT_FORMAT = "%Y%m"
-
-DATASET_METADATA_FILENAME = os.environ.get(
-    "DATASET_METADATA_FILENAME", "dev-dataset-metadata.json"
-)
 
 
 def handler(event, context):

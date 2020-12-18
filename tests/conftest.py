@@ -22,18 +22,15 @@ from starlette.testclient import TestClient
 
 
 @pytest.fixture(autouse=True)
-def aws_credentials():
-    os.environ["DISABLE_CACHE"] = "YESPLEASE"
-    os.environ["AWS_ACCESS_KEY_ID"] = "jqt"
-    os.environ["AWS_SECRET_ACCESS_KEY"] = "rde"
+def aws_credentials(monkeypatch):
+    monkeypatch.setenv("DISABLE_CACHE", "YESPLEASE")
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "jqt")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "rde")
 
 
 @pytest.fixture
 def app(aws_credentials) -> TestClient:
     """Make sure we use monkeypatch env."""
-    # monkeypatch.setenv("DISABLE_CACHE", "YESPLEASE")
-    # monkeypatch.setenv("AWS_ACCESS_KEY_ID", "jqt")
-    # monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "rde")
 
     from covid_api.main import app
 

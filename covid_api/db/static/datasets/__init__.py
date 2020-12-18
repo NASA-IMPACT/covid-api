@@ -5,19 +5,17 @@ from typing import List
 
 import botocore
 
-from covid_api.core.config import INDICATOR_BUCKET
+from covid_api.core.config import (
+    DATASET_METADATA_FILENAME,
+    DATASET_METADATA_GENERATOR_FUNCTION_NAME,
+    INDICATOR_BUCKET,
+)
 from covid_api.db.static.errors import InvalidIdentifier
 from covid_api.db.static.sites import sites
 from covid_api.db.utils import invoke_lambda, s3_get
 from covid_api.models.static import DatasetInternal, Datasets, GeoJsonSource
 
 data_dir = os.path.join(os.path.dirname(__file__))
-dataset_metadata_file = os.environ.get(
-    "DATASET_METADATA_FILENAME", "dev-dataset-metadata.json"
-)
-dataset_metadata_generator_function_name = os.environ.get(
-    "DATASET_METADATA_GENERATOR_FUNCTION_NAME", "dev-dataset-metadata-generator"
-)
 
 
 class DatasetManager(object):
@@ -41,8 +39,12 @@ class DatasetManager(object):
 
     def _load_domain_metadata(self):
         try:
+            print("ENVIRON: ", os.environ)
+            print("INDICATOR BUCKET (environ): ", os.environ.get("INDICATOR_BUCKET"))
+            print("INDICATOR BUCKET (from config): ", INDICATOR_BUCKET)
+
             return json.loads(
-                s3_get(bucket=INDICATOR_BUCKET, key=dataset_metadata_file)
+                s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
             )
         except botocore.errorfactory.ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
@@ -51,7 +53,7 @@ class DatasetManager(object):
                     " of a new file. This may take several minutes."
                 )
                 return invoke_lambda(
-                    lambda_function_name=dataset_metadata_generator_function_name
+                    lambda_function_name=DATASET_METADATA_GENERATOR_FUNCTION_NAME
                 )
 
     def get(self, spotlight_id: str, api_url: str) -> Datasets:
