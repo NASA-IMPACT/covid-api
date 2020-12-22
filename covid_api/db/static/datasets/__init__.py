@@ -42,7 +42,12 @@ class DatasetManager(object):
             print("ENVIRON: ", os.environ)
             print("INDICATOR BUCKET (environ): ", os.environ.get("INDICATOR_BUCKET"))
             print("INDICATOR BUCKET (from config): ", INDICATOR_BUCKET)
-
+            print(
+                "Metadata: ",
+                json.loads(
+                    s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
+                ),
+            )
             return json.loads(
                 s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
             )

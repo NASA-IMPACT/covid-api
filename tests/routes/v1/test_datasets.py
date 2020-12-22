@@ -4,6 +4,8 @@
 import json
 from unittest.mock import patch
 
+from moto import mock_s3
+
 from stack.config import DATASET_METADATA_GENERATOR_FUNCTION_NAME
 
 
@@ -20,6 +22,7 @@ def test_metadata_file_generation_triggered_if_not_found(
         )
 
 
+@mock_s3
 def test_datasets(app, bucket):
     response = app.get("v1/datasets")
     assert response.status_code == 200
@@ -28,6 +31,7 @@ def test_datasets(app, bucket):
     assert "detections-plane" in [d["id"] for d in content["datasets"]]
 
 
+@mock_s3
 def test_spotlight_datasets(app, bucket):
     response = app.get("v1/datasets/tk")
     assert response.status_code == 200
@@ -37,6 +41,7 @@ def test_spotlight_datasets(app, bucket):
     assert "detections-ship" not in [d["id"] for d in content["datasets"]]
 
 
+@mock_s3
 def test_incorrect_dataset_id(app, bucket):
     response = app.get("/v1/datasets/NOT_A_VALID_DATASET")
     assert response.status_code == 404

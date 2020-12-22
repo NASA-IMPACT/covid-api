@@ -49,9 +49,9 @@ def lambda_iam_role(aws_credentials):
     with mock_iam():
         iam = boto3.client("iam", region_name="us-east-1")
         try:
-            return iam.get_role(RoleName="my-role")["Role"]["Arn"]
+            yield iam.get_role(RoleName="my-role")["Role"]["Arn"]
         except ClientError:
-            return iam.create_role(
+            yield iam.create_role(
                 RoleName="my-role",
                 AssumeRolePolicyDocument="some policy",
                 Path="/my-path/",
@@ -76,7 +76,7 @@ def s3(aws_credentials):
 def empty_bucket(s3):
     """Yields an empty mocked s3 bucket"""
     bucket = s3.create_bucket(Bucket=INDICATOR_BUCKET)
-    yield bucket
+    return bucket
 
 
 @pytest.fixture
@@ -132,7 +132,7 @@ def bucket(s3, empty_bucket):
         s3.put_object(
             Bucket=INDICATOR_BUCKET, Key=key, Body=content,
         )
-    yield empty_bucket
+    return empty_bucket
 
 
 @pytest.fixture
@@ -168,7 +168,7 @@ def lambda_function(lambda_client, lambda_iam_role, lambda_zip_file):
         MemorySize=128,
         Publish=True,
     )
-    yield function
+    return function
 
 
 @pytest.fixture
@@ -176,11 +176,11 @@ def db_utils(aws_credentials):
 
     from covid_api.db import utils
 
-    yield utils
+    return utils
 
 
 @pytest.fixture
 def dataset_manager(aws_credentials):
     from covid_api.db.static.datasets import DatasetManager
 
-    yield DatasetManager()
+    return DatasetManager()
