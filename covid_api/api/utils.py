@@ -687,6 +687,14 @@ COLOR_MAP_NAMES = [
 ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])  # type: ignore
 
 
+def modis_tile(x, y, z, date):
+    """Fetches a MODIS_Terra tiles (background for detections-contrail dataset"""
+    date = date.replace("_", "-")
+    url = f"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpeg"
+    r = requests.get(url)
+    return r.content
+
+
 def planet_mosaic_tile(scenes, x, y, z):
     """return a mosaicked tile for a set of planet scenes"""
     mosaic_tile = np.zeros((4, 256, 256), dtype=np.uint8)
