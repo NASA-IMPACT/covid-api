@@ -5,7 +5,6 @@ import shutil
 from typing import Any, Union
 
 import config
-import docker
 from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
@@ -129,42 +128,25 @@ class covidApiLambdaStack(core.Stack):
 
     def create_package(self, code_dir: str) -> aws_lambda.Code:
         """Build docker image and create package."""
-        print("building lambda package via docker")
-        print(f"code dir: {code_dir}")
-        client = docker.from_env()
-        print("docker client up")
-        client.images.build(
-            path=code_dir,
-            dockerfile="Dockerfiles/lambda/Dockerfile",
-            tag="lambda:latest",
-        )
-        print("docker image built")
-        client.containers.run(
-            image="lambda:latest",
-            command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
-            remove=True,
-            volumes={os.path.abspath(code_dir): {"bind": "/local/", "mode": "rw"}},
-            user=0,
-        )
+        # print("building lambda package via docker")
+        # print(f"code dir: {code_dir}")
+        # client = docker.from_env()
+        # print("docker client up")
+        # client.images.build(
+        #     path=code_dir,
+        #     dockerfile="Dockerfiles/lambda/Dockerfile",
+        #     tag="lambda:latest",
+        # )
+        # print("docker image built")
+        # client.containers.run(
+        #     image="lambda:latest",
+        #     command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
+        #     remove=True,
+        #     volumes={os.path.abspath(code_dir): {"bind": "/local/", "mode": "rw"}},
+        #     user=0,
+        # )
 
         return aws_lambda.Code.asset(os.path.join(code_dir, "package.zip"))
-
-        # Code.asset is deprecated - see: https://docs.aws.amazon.com/cdk/api/latest/python/aws_cdk.aws_lambda/Code.html
-
-        # return aws_lambda.Code.from_asset(
-        #     path=os.path.join(code_dir, "package.zip"),
-        #     bundling=core.BundlingOptions(
-        #         image=core.BundlingDockerImage.from_asset(
-        #             path=os.path.join(code_dir, "Dockerfiles/lambda/"),
-        #             # file="Dockerfile",
-        #         ),
-        #         command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
-        #         volumes=core.DockerVolume(
-        #             container_path="/local/", host_path=os.path.abspath(code_dir)
-        #         ),
-        #         user="0",
-        #     ),
-        # )
 
 
 class covidApiECSStack(core.Stack):

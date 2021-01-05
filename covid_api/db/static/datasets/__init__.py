@@ -39,13 +39,6 @@ class DatasetManager(object):
 
     def _load_domain_metadata(self):
         try:
-
-            print(
-                "Metadata: ",
-                json.loads(
-                    s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
-                ),
-            )
             return json.loads(
                 s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
             )
