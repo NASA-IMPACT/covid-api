@@ -39,9 +39,7 @@ class DatasetManager(object):
 
     def _load_domain_metadata(self):
         try:
-            print("ENVIRON: ", os.environ)
-            print("INDICATOR BUCKET (environ): ", os.environ.get("INDICATOR_BUCKET"))
-            print("INDICATOR BUCKET (from config): ", INDICATOR_BUCKET)
+
             print(
                 "Metadata: ",
                 json.loads(
@@ -52,6 +50,7 @@ class DatasetManager(object):
                 s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
             )
         except botocore.errorfactory.ClientError as e:
+
             if e.response["Error"]["Code"] == "NoSuchKey":
                 print(
                     "No datasets domain metadata file found, requesting generation"
@@ -93,6 +92,8 @@ class DatasetManager(object):
         try:
             site = sites.get(spotlight_id)
         except InvalidIdentifier:
+            print("ALL SITES: ")
+            print(sites.get_all())
             raise
 
         spotlight_datasets = self._process(

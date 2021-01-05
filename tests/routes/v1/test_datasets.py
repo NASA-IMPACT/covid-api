@@ -4,18 +4,83 @@
 import json
 from unittest.mock import patch
 
+import boto3
 from moto import mock_s3
 
-from stack.config import DATASET_METADATA_GENERATOR_FUNCTION_NAME
+from covid_api.core.config import INDICATOR_BUCKET
+
+DATASET_METADATA_FILENAME = "dev-dataset-metadata.json"
+DATASET_METADATA_GENERATOR_FUNCTION_NAME = "dev-dataset-metadata-generator"
 
 
+@mock_s3
+def _setup_s3(empty=False):
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(INDICATOR_BUCKET)
+    bucket.create()
+    if empty:
+        return bucket
+    s3_keys = [
+        ("indicators/test/super.csv", b"test"),
+        (
+            DATASET_METADATA_FILENAME,
+            json.dumps(
+                {
+                    "_all": {
+                        "co2": {
+                            "domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]
+                        },
+                        "detections-plane": {
+                            "domain": [
+                                "2019-01-01T00:00:00Z",
+                                "2019-10-10T00:00:00Z",
+                                "2020-01-01T:00:00:00Z",
+                            ]
+                        },
+                    },
+                    "global": {
+                        "co2": {
+                            "domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]
+                        }
+                    },
+                    "tk": {
+                        "detections-plane": {
+                            "domain": [
+                                "2019-01-01T00:00:00Z",
+                                "2019-10-10T00:00:00Z",
+                                "2020-01-01T:00:00:00Z",
+                            ]
+                        }
+                    },
+                    "ny": {
+                        "detections-ship": {
+                            "domain": [
+                                "2019-01-01T00:00:00Z",
+                                "2019-10-10T00:00:00Z",
+                                "2020-01-01T:00:00:00Z",
+                            ]
+                        }
+                    },
+                }
+            ),
+        ),
+    ]
+    for key, content in s3_keys:
+        bucket.put_object(Body=content, Key=key)
+    return bucket
+
+
+@mock_s3
 def test_metadata_file_generation_triggered_if_not_found(
-    app, lambda_function, empty_bucket, dataset_manager, monkeypatch
+    app, dataset_manager, monkeypatch
 ):
+
+    _setup_s3(empty=True)
+
     with patch("covid_api.db.static.datasets.invoke_lambda") as mocked_invoke_lambda:
 
         mocked_invoke_lambda.return_value = {"result": "success"}
-        dataset_manager._load_domain_metadata()
+        dataset_manager()._load_domain_metadata()
 
         mocked_invoke_lambda.assert_called_with(
             lambda_function_name=DATASET_METADATA_GENERATOR_FUNCTION_NAME
@@ -23,18 +88,24 @@ def test_metadata_file_generation_triggered_if_not_found(
 
 
 @mock_s3
-def test_datasets(app, bucket):
+def test_datasets(app):
+    _setup_s3()
     response = app.get("v1/datasets")
+
     assert response.status_code == 200
     content = json.loads(response.content)
+
     assert "co2" in [d["id"] for d in content["datasets"]]
     assert "detections-plane" in [d["id"] for d in content["datasets"]]
 
 
 @mock_s3
-def test_spotlight_datasets(app, bucket):
+def test_spotlight_datasets(app):
+    _setup_s3()
     response = app.get("v1/datasets/tk")
+
     assert response.status_code == 200
+
     content = json.loads(response.content)
     assert "co2" in [d["id"] for d in content["datasets"]]
     assert "detections-plane" in [d["id"] for d in content["datasets"]]
@@ -42,6 +113,8 @@ def test_spotlight_datasets(app, bucket):
 
 
 @mock_s3
-def test_incorrect_dataset_id(app, bucket):
+def test_incorrect_dataset_id(app):
+    _setup_s3()
+
     response = app.get("/v1/datasets/NOT_A_VALID_DATASET")
     assert response.status_code == 404
