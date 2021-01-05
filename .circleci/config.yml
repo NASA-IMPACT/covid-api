@@ -31,17 +31,6 @@ jobs:
             pip install -e .["deploy"] --user
             npm install -g cdk
 
-      - run:
-          name: install docker-ce-cli
-          command: |
-            apt-get update
-            apt-get install apt-transport-https \
-              ca-certificates curl gnupg2 software-properties-common -y
-            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable"
-            apt-get update
-            apt-get install docker-ce-cli -y
-
       - deploy:
           name: develop branch deployed to staging cdk stack
           command: |
@@ -61,17 +50,6 @@ jobs:
           command: |
             pip install -e .["deploy"] --user
             npm install -g cdk
-
-      - run:
-          name: install docker-ce-cli
-          command: |
-            apt-get update
-            apt-get install apt-transport-https \
-              ca-certificates curl gnupg2 software-properties-common -y
-            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable"
-            apt-get update
-            apt-get install docker-ce-cli -y
 
       - deploy:
           name: master branch deployed to production cdk stack
