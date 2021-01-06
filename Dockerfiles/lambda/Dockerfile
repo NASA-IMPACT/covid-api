@@ -21,4 +21,3 @@ RUN rm -rdf /var/task/stack
 
 
 COPY lambda/handler.py /var/task/handler.py
-CMD ["bash", "-c", "cp -R /var/task/. /asset-output/."]

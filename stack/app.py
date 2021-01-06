@@ -133,7 +133,7 @@ class covidApiLambdaStack(core.Stack):
                     path=os.path.abspath(code_dir),
                     file="Dockerfiles/lambda/Dockerfile",
                 ),
-                # command=["bash", "-c", "cp -R /var/task/. /asset-output/."],
+                command=["bash", "-c", "cp -R /var/task/. /asset-output/."],
             ),
         )
 
