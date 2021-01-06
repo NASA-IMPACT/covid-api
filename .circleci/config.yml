@@ -24,19 +24,20 @@ jobs:
     machine: # true
       #image: circleci/classic:201808-01
       image: ubuntu-2004:202010-01
+      # docker_layer_caching: true
     working_directory: ~/covid-api
     steps:
       - checkout
       # - setup_remote_docker
       - run: 
-          name: use python 3.7
+          name: use python 3
           # command: |
           #   pyenv install --list | grep 3.7
           #   pyenv install -v 3.7.0a1
           #   pyenv global 3.7.0
           command: |
             pyenv versions
-            pyenv global 3.5.2
+            pyenv global 3.8.5
 
       - run:
           name: install dependencies
