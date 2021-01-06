@@ -19,22 +19,13 @@ jobs:
           command: ~/.local/bin/pre-commit run --all-files
 
   deploy-staging:
-    # docker:
-    #   - image: nikolaik/python-nodejs:python3.7-nodejs12
-    machine: # true
-      #image: circleci/classic:201808-01
+    machine: 
       image: ubuntu-2004:202010-01
-      # docker_layer_caching: true
     working_directory: ~/covid-api
     steps:
       - checkout
-      # - setup_remote_docker
       - run: 
           name: use python 3
-          # command: |
-          #   pyenv install --list | grep 3.7
-          #   pyenv install -v 3.7.0a1
-          #   pyenv global 3.7.0
           command: |
             pyenv versions
             pyenv global 3.8.5
@@ -45,51 +36,30 @@ jobs:
             pip install -e .["deploy"] --user
             npm install -g cdk
 
-      # - run:
-      #     name: install docker-ce-cli
-      #     command: |
-      #       sudo apt-get update
-      #       sudo apt-get install apt-transport-https \
-      #         ca-certificates curl gnupg2 software-properties-common -y
-      #       curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-      #       add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable"
-      #       sudo apt-get update
-      #       sudo apt-get install docker-ce-cli -y
-
       - deploy:
-          name: develop branch deployed to staging cdk stack
+          name: develop branch deployed to staging cdk stack            
           command: |
-            STAGE='staging' cdk deploy covid-api-lambda-staging --region us-east-2 --require-approval never
-          # command: |
-          #   if [ "${CIRCLE_BRANCH}" == "develop" ]; then
-          #     STAGE='staging' cdk deploy covid-api-lambda-staging --region us-east-1 --require-approval never
-          #   fi
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              STAGE='staging' cdk deploy covid-api-lambda-staging --region us-east-1 --require-approval never
+            fi
 
   deploy-production:
-    # docker:
-    #   - image: nikolaik/python-nodejs:python3.7-nodejs12
     machine: 
       image: ubuntu-2004:202010-01
     working_directory: ~/covid-api
     steps:
       - checkout
-      - setup_remote_docker
+      - run: 
+          name: use python 3
+          command: |
+            pyenv versions
+            pyenv global 3.8.5
+
       - run:
           name: install dependencies
           command: |
             pip install -e .["deploy"] --user
             npm install -g cdk
-
-      - run:
-          name: install docker-ce-cli
-          command: |
-            apt-get update
-            apt-get install apt-transport-https \
-              ca-certificates curl gnupg2 software-properties-common -y
-            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable"
-            apt-get update
-            apt-get install docker-ce-cli -y
 
       - deploy:
           name: master branch deployed to production cdk stack
@@ -108,7 +78,8 @@ workflows:
             - test
           filters:
             branches:
-              only: /^feature\/.*/
+              # only: /^feature\/.*/
+              only: develop
       - deploy-production:
           requires:
             - test
