@@ -21,8 +21,8 @@ jobs:
   deploy-staging:
     # docker:
     #   - image: nikolaik/python-nodejs:python3.7-nodejs12
-    machine: 
-      image: ubuntu-2004:202010-01
+    machine: true
+      #image: ubuntu-2004:202010-01
     working_directory: ~/covid-api
     steps:
       - checkout
