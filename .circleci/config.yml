@@ -27,6 +27,11 @@ jobs:
     steps:
       - checkout
       #- setup_remote_docker
+      - run: 
+        name: use python 3.7
+        command: |
+          pyenv global 3.7
+
       - run:
           name: install dependencies
           command: |
@@ -94,7 +99,7 @@ workflows:
             - test
           filters:
             branches:
-              only: develop
+              only: feature/*
       - deploy-production:
           requires:
             - test
