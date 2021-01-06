@@ -35,6 +35,7 @@ jobs:
           #   pyenv install -v 3.7.0a1
           #   pyenv global 3.7.0
           command: |
+            pyenv versions
             pyenv global 3.5.2
 
       - run:
