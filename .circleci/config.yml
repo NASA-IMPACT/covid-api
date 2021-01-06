@@ -30,9 +30,12 @@ jobs:
       # - setup_remote_docker
       - run: 
           name: use python 3.7
+          # command: |
+          #   pyenv install --list | grep 3.7
+          #   pyenv install -v 3.7.0a1
+          #   pyenv global 3.7.0
           command: |
-            pyenv versions
-            pyenv global 3.7.0
+            pyenv global 3.5.2
 
       - run:
           name: install dependencies
@@ -40,16 +43,16 @@ jobs:
             pip install -e .["deploy"] --user
             npm install -g cdk
 
-      - run:
-          name: install docker-ce-cli
-          command: |
-            sudo apt-get update
-            sudo apt-get install apt-transport-https \
-              ca-certificates curl gnupg2 software-properties-common -y
-            curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable"
-            sudo apt-get update
-            sudo apt-get install docker-ce-cli -y
+      # - run:
+      #     name: install docker-ce-cli
+      #     command: |
+      #       sudo apt-get update
+      #       sudo apt-get install apt-transport-https \
+      #         ca-certificates curl gnupg2 software-properties-common -y
+      #       curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+      #       add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable"
+      #       sudo apt-get update
+      #       sudo apt-get install docker-ce-cli -y
 
       - deploy:
           name: develop branch deployed to staging cdk stack
