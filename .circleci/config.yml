@@ -99,7 +99,7 @@ workflows:
             - test
           filters:
             branches:
-              only: feature/*
+              only: feature\/.*
       - deploy-production:
           requires:
             - test
