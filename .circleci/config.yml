@@ -19,19 +19,19 @@ jobs:
           command: ~/.local/bin/pre-commit run --all-files
 
   deploy-staging:
-    docker:
-      - image: nikolaik/python-nodejs:python3.7-nodejs12
-    # machine: 
-    #   image: ubuntu-2004:202010-01
+    # docker:
+    #   - image: nikolaik/python-nodejs:python3.7-nodejs12
+    machine: 
+      image: ubuntu-2004:202010-01
     working_directory: ~/covid-api
     steps:
       - checkout
-      - setup_remote_docker
-      # - run: 
-      #     name: use python 3.7
-      #     command: |
-      #       pyenv install -v 3.7.0
-      #       pyenv global 3.7.0
+      # - setup_remote_docker
+      - run: 
+          name: use python 3.7
+          command: |
+            pyenv list
+            pyenv global 3.7.0
 
       - run:
           name: install dependencies
@@ -42,20 +42,22 @@ jobs:
       - run:
           name: install docker-ce-cli
           command: |
-            apt-get update
-            apt-get install apt-transport-https \
+            sudo apt-get update
+            sudo apt-get install apt-transport-https \
               ca-certificates curl gnupg2 software-properties-common -y
-            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+            curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
             add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable"
-            apt-get update
-            apt-get install docker-ce-cli -y
+            sudo apt-get update
+            sudo apt-get install docker-ce-cli -y
 
       - deploy:
           name: develop branch deployed to staging cdk stack
           command: |
-            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
-              STAGE='staging' cdk deploy covid-api-lambda-staging --region us-east-1 --require-approval never
-            fi
+            STAGE='staging' cdk deploy covid-api-lambda-staging --region us-east-1 --require-approval never
+          # command: |
+          #   if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+          #     STAGE='staging' cdk deploy covid-api-lambda-staging --region us-east-1 --require-approval never
+          #   fi
 
   deploy-production:
     # docker:
