@@ -5,6 +5,7 @@ import json
 from unittest.mock import patch
 
 import boto3
+import botocore
 from moto import mock_s3
 
 from covid_api.core.config import INDICATOR_BUCKET
@@ -80,7 +81,16 @@ def test_metadata_file_generation_triggered_if_not_found(
     with patch("covid_api.db.static.datasets.invoke_lambda") as mocked_invoke_lambda:
 
         mocked_invoke_lambda.return_value = {"result": "success"}
-        dataset_manager()._load_domain_metadata()
+        # Load dataset will invoke the mocked-lambda and then attempt to load the file
+        # from S3 once the lambda finished executing. Since the mocked lambda
+        # doesn't actually write anything to S3 in this test, the call to load the file
+        # from S3 will fail. This is not a problem since this test is just to ascertain
+        # that the lambda was in fact triggered.
+        try:
+            dataset_manager()._load_domain_metadata()
+        except botocore.exceptions.ClientError as e:
+            if e.response["Error"]["Code"] == "404":
+                pass
 
         mocked_invoke_lambda.assert_called_with(
             lambda_function_name=DATASET_METADATA_GENERATOR_FUNCTION_NAME
