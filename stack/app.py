@@ -5,7 +5,10 @@ import shutil
 from typing import Any, Union
 
 import config
+
+# import docker
 from aws_cdk import aws_apigatewayv2 as apigw
+from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
@@ -123,7 +126,9 @@ class covidApiLambdaStack(core.Stack):
         apigw.HttpApi(
             self,
             f"{id}-endpoint",
-            default_integration=apigw.LambdaProxyIntegration(handler=lambda_function),
+            default_integration=apigw_integrations.LambdaProxyIntegration(
+                handler=lambda_function
+            ),
         )
 
     def create_package(self, code_dir: str) -> aws_lambda.Code:

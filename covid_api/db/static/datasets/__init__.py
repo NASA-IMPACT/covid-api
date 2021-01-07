@@ -49,8 +49,16 @@ class DatasetManager(object):
                     "No datasets domain metadata file found, requesting generation"
                     " of a new file. This may take several minutes."
                 )
-                return invoke_lambda(
+                # invoke_lambda should return the output of the lambda's execution
+                # however there are issues with accessing the output object within the
+                # "Payload" returned by the lambda_invocation (see docstring).
+                # Instead the thread is held while the lambda executes and then
+                # loads the metadata from s3.
+                invoke_lambda(
                     lambda_function_name=DATASET_METADATA_GENERATOR_FUNCTION_NAME
+                )
+                return json.loads(
+                    s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
                 )
 
     def get(self, spotlight_id: str, api_url: str) -> Datasets:
@@ -85,8 +93,6 @@ class DatasetManager(object):
         try:
             site = sites.get(spotlight_id)
         except InvalidIdentifier:
-            print("ALL SITES: ")
-            print(sites.get_all())
             raise
 
         spotlight_datasets = self._process(
@@ -103,6 +109,7 @@ class DatasetManager(object):
 
     def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
+        # print(self._load_domain_metadata())
         datasets = self._process(
             datasets_domains_metadata=self._load_domain_metadata()["_all"],
             api_url=api_url,
