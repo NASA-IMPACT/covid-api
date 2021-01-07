@@ -27,7 +27,6 @@ jobs:
       - run: 
           name: use python 3
           command: |
-            pyenv versions
             pyenv global 3.8.5
 
       - run:
@@ -52,7 +51,6 @@ jobs:
       - run: 
           name: use python 3
           command: |
-            pyenv versions
             pyenv global 3.8.5
 
       - run:
