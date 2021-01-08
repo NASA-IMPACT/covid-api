@@ -56,7 +56,11 @@ class covidApiLambdaStack(core.Stack):
         super().__init__(scope, id, *kwargs)
 
         # add cache
-        vpc = ec2.Vpc(self, f"{id}-vpc")
+        if config.VPC_ID:
+            vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID)
+        else:
+            vpc = ec2.Vpc(self, f"{id}-vpc")
+
         sb_group = escache.CfnSubnetGroup(
             self,
             f"{id}-subnet-group",
@@ -156,7 +160,11 @@ class covidApiECSStack(core.Stack):
         """Define stack."""
         super().__init__(scope, id, *kwargs)
 
-        vpc = ec2.Vpc(self, f"{id}-vpc", max_azs=2)
+        # add cache
+        if config.VPC_ID:
+            vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID)
+        else:
+            vpc = ec2.Vpc(self, f"{id}-vpc")
 
         cluster = ecs.Cluster(self, f"{id}-cluster", vpc=vpc)
 
