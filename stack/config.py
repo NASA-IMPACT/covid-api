@@ -9,11 +9,12 @@ STAGE = os.environ.get("STAGE", "dev")
 BUCKET = "covid-eo-data"
 
 # Additional environement variable to set in the task/lambda
-ENV: dict = dict()
+TASK_ENV: dict = dict()
 
 # Existing VPC to point ECS/LAMBDA stacks towards. Defaults to creating a new
 # VPC if no ID is supplied.
 VPC_ID = os.environ.get("VPC_ID")
+
 
 ################################################################################
 #                                                                              #

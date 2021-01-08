@@ -39,7 +39,7 @@ jobs:
           name: develop branch deployed to staging cdk stack            
           command: |
             if [ "${CIRCLE_BRANCH}" == "develop" ]; then
-              STAGE='staging' cdk deploy covid-api-lambda-staging --region us-east-1 --require-approval never
+              STAGE='staging' VPC_ID='vpc-0fa3007e738c7bbdf' cdk deploy covid-api-lambda-staging --region us-east-1 --require-approval never
             fi
 
   deploy-production:
