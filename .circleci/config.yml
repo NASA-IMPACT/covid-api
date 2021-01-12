@@ -24,40 +24,49 @@ jobs:
           name: run pre-commit
           command: ~/.local/bin/pre-commit run --all-files
 
-  deploy:
-    docker:
-      - image: nikolaik/python-nodejs:python3.7-nodejs12
+  deploy-staging:
+    machine: 
+      image: ubuntu-2004:202010-01
     working_directory: ~/covid-api
     steps:
       - checkout
-      - setup_remote_docker
+      - run: 
+          name: use python 3
+          command: |
+            pyenv global 3.8.5
+
       - run:
           name: install dependencies
           command: |
             pip install -e .["deploy"] --user
             npm install -g cdk
 
-      - run:
-          name: install docker-ce-cli
+      - deploy:
+          name: develop branch deployed to staging cdk stack            
           command: |
-            apt-get update
-            apt-get install apt-transport-https \
-              ca-certificates curl gnupg2 software-properties-common -y
-            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable"
-            apt-get update
-            apt-get install docker-ce-cli -y
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              STAGE='staging' VPC_ID='vpc-0fa3007e738c7bbdf' cdk deploy covid-api-lambda-staging --region us-east-1 --require-approval never
+            fi
+
+  deploy-production:
+    machine: 
+      image: ubuntu-2004:202010-01
+    working_directory: ~/covid-api
+    steps:
+      - checkout
+      - run: 
+          name: use python 3
+          command: |
+            pyenv global 3.8.5
 
       - run:
-          name: create lambda package
+          name: install dependencies
           command: |
-            docker build . -t lambda:latest -f Dockerfiles/lambda/Dockerfile
-            docker run --name lambda lambda:latest echo "container up"
-            docker cp lambda:/tmp/package.zip package.zip
-            docker stop lambda
+            pip install -e .["deploy"] --user
+            npm install -g cdk
 
       - deploy:
-          name: master branch deployed to cdk stack
+          name: master branch deployed to production cdk stack
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               STAGE='prod' cdk deploy covid-api-lambda-prod --region us-east-1 --require-approval never
@@ -68,7 +77,14 @@ workflows:
   test_and_deploy:
     jobs:
       - test
-      - deploy:
+      - deploy-staging: 
+          requires:
+            - test
+          filters:
+            branches:
+              # only: /^feature\/.*/
+              only: develop
+      - deploy-production:
           requires:
             - test
           filters:

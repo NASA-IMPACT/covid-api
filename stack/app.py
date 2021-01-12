@@ -54,15 +54,18 @@ class covidApiLambdaStack(core.Stack):
         memory: int = 1024,
         timeout: int = 30,
         concurrent: int = 100,
-        env: dict = {},
         code_dir: str = "./",
         **kwargs: Any,
     ) -> None:
         """Define stack."""
-        super().__init__(scope, id, *kwargs)
+        super().__init__(scope, id, **kwargs)
 
         # add cache
-        vpc = ec2.Vpc(self, f"{id}-vpc")
+        if config.VPC_ID:
+            vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID,)
+        else:
+            vpc = ec2.Vpc(self, f"{id}-vpc")
+
         sb_group = escache.CfnSubnetGroup(
             self,
             f"{id}-subnet-group",
@@ -157,14 +160,18 @@ class covidApiECSStack(core.Stack):
         memory: Union[int, float] = 512,
         mincount: int = 1,
         maxcount: int = 50,
-        env: dict = {},
+        task_env: dict = {},
         code_dir: str = "./",
         **kwargs: Any,
     ) -> None:
         """Define stack."""
-        super().__init__(scope, id, *kwargs)
+        super().__init__(scope, id, **kwargs)
 
-        vpc = ec2.Vpc(self, f"{id}-vpc", max_azs=2)
+        # add cache
+        if config.VPC_ID:
+            vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID,)
+        else:
+            vpc = ec2.Vpc(self, f"{id}-vpc")
 
         cluster = ecs.Cluster(self, f"{id}-cluster", vpc=vpc)
 
@@ -177,7 +184,7 @@ class covidApiECSStack(core.Stack):
                 LOG_LEVEL="error",
             )
         )
-        task_env.update(env)
+        task_env.update(task_env)
 
         fargate_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
@@ -334,7 +341,11 @@ covidApiECSStack(
     memory=config.TASK_MEMORY,
     mincount=config.MIN_ECS_INSTANCES,
     maxcount=config.MAX_ECS_INSTANCES,
-    env=config.ENV,
+    task_env=config.TASK_ENV,
+    env=dict(
+        account=os.environ["CDK_DEFAULT_ACCOUNT"],
+        region=os.environ["CDK_DEFAULT_REGION"],
+    ),
 )
 
 lambda_stackname = f"{config.PROJECT_NAME}-lambda-{config.STAGE}"
@@ -346,7 +357,10 @@ covidApiLambdaStack(
     concurrent=config.MAX_CONCURRENT,
     dataset_metadata_filename=config.DATASET_METADATA_FILENAME,
     dataset_metadata_generator_function_name=config.DATASET_METADATA_GENERATOR_FUNCTION_NAME,
-    env=config.ENV,
+    env=dict(
+        account=os.environ["CDK_DEFAULT_ACCOUNT"],
+        region=os.environ["CDK_DEFAULT_REGION"],
+    ),
 )
 
 dataset_metadata_generator_stackname = (
