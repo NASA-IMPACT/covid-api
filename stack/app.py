@@ -99,6 +99,7 @@ class covidApiLambdaStack(core.Stack):
                 LOG_LEVEL="error",
                 MEMCACHE_HOST=cache.attr_configuration_endpoint_address,
                 MEMCACHE_PORT=cache.attr_configuration_endpoint_port,
+                PLANET_API_KEY=os.environ["PLANET_API_KEY"],
             )
         )
 
