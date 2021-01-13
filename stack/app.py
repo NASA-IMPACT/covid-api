@@ -1,17 +1,21 @@
 """Construct App."""
 
 import os
+import shutil
 from typing import Any, Union
 
 import config
+
+# import docker
 from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_elasticache as escache
+from aws_cdk import aws_events, aws_events_targets
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_lambda, core
+from aws_cdk import aws_lambda, aws_s3, core
 
 iam_policy_statement = iam.PolicyStatement(
     actions=["s3:*"], resources=[f"arn:aws:s3:::{config.BUCKET}*"]
@@ -45,6 +49,8 @@ class covidApiLambdaStack(core.Stack):
         self,
         scope: core.Construct,
         id: str,
+        dataset_metadata_filename: str,
+        dataset_metadata_generator_function_name: str,
         memory: int = 1024,
         timeout: int = 30,
         concurrent: int = 100,
@@ -99,6 +105,8 @@ class covidApiLambdaStack(core.Stack):
                 LOG_LEVEL="error",
                 MEMCACHE_HOST=cache.attr_configuration_endpoint_address,
                 MEMCACHE_PORT=cache.attr_configuration_endpoint_port,
+                DATASET_METADATA_FILENAME=dataset_metadata_filename,
+                DATASET_METADATA_GENERATOR_FUNCTION_NAME=dataset_metadata_generator_function_name,
                 PLANET_API_KEY=os.environ["PLANET_API_KEY"],
             )
         )
@@ -226,7 +234,95 @@ class covidApiECSStack(core.Stack):
         )
 
 
+class covidApiDatasetMetadataGeneratorStack(core.Stack):
+    """Dataset metadata generator stack - comprises a lambda and a Cloudwatch
+    event that triggers a new lambda execution every 24hrs"""
+
+    def __init__(
+        self,
+        scope: core.Construct,
+        id: str,
+        dataset_metadata_filename: str,
+        dataset_metadata_generator_function_name: str,
+        code_dir: str = "./",
+        **kwargs: Any,
+    ) -> None:
+        """Define stack."""
+        super().__init__(scope, id, *kwargs)
+
+        base = os.path.abspath(os.path.join("covid_api", "db", "static"))
+        lambda_deployment_package_location = os.path.abspath(
+            os.path.join(code_dir, "lambda", "dataset_metadata_generator")
+        )
+        for e in ["datasets", "sites"]:
+            self.copy_metadata_files_to_lambda_deployment_package(
+                from_dir=os.path.join(base, e),
+                to_dir=os.path.join(lambda_deployment_package_location, "src", e),
+            )
+
+        data_bucket = aws_s3.Bucket.from_bucket_name(
+            self, id=f"{id}-data-bucket", bucket_name=config.BUCKET
+        )
+
+        dataset_metadata_updater_function = aws_lambda.Function(
+            self,
+            f"{id}-metadata-updater-lambda",
+            runtime=aws_lambda.Runtime.PYTHON_3_8,
+            code=aws_lambda.Code.from_asset(lambda_deployment_package_location),
+            handler="src.main.handler",
+            environment={
+                "DATASET_METADATA_FILENAME": dataset_metadata_filename,
+                "DATA_BUCKET_NAME": data_bucket.bucket_name,
+            },
+            function_name=dataset_metadata_generator_function_name,
+            timeout=core.Duration.minutes(5),
+        )
+
+        for e in ["datasets", "sites"]:
+            shutil.rmtree(os.path.join(lambda_deployment_package_location, "src", e))
+
+        data_bucket.grant_read_write(dataset_metadata_updater_function)
+
+        aws_events.Rule(
+            self,
+            f"{id}-metadata-update-daily-trigger",
+            # triggers everyday
+            schedule=aws_events.Schedule.rate(duration=core.Duration.days(1)),
+            targets=[
+                aws_events_targets.LambdaFunction(dataset_metadata_updater_function)
+            ],
+        )
+
+    def copy_metadata_files_to_lambda_deployment_package(self, from_dir, to_dir):
+        """Copies dataset metadata files to the lambda deployment package
+        so that the dataset domain extractor lambda has access to the necessary
+        metadata items at runtime
+        Params:
+        -------
+        from_dir (str): relative filepath from which to copy all `.json` files
+        to_dir (str): relative filepath to copy `.json` files to
+        Return:
+        -------
+        None
+        """
+        files = [
+            os.path.abspath(os.path.join(d, f))
+            for d, _, fnames in os.walk(from_dir)
+            for f in fnames
+            if f.endswith(".json")
+        ]
+
+        try:
+            os.mkdir(to_dir)
+        except FileExistsError:
+            pass
+
+        for f in files:
+            shutil.copy(f, to_dir)
+
+
 app = core.App()
+
 
 # Tag infrastructure
 for key, value in {
@@ -260,10 +356,22 @@ covidApiLambdaStack(
     memory=config.MEMORY,
     timeout=config.TIMEOUT,
     concurrent=config.MAX_CONCURRENT,
+    dataset_metadata_filename=config.DATASET_METADATA_FILENAME,
+    dataset_metadata_generator_function_name=config.DATASET_METADATA_GENERATOR_FUNCTION_NAME,
     env=dict(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+)
+
+dataset_metadata_generator_stackname = (
+    f"{config.PROJECT_NAME}-dataset-metadata-generator-{config.STAGE}"
+)
+covidApiDatasetMetadataGeneratorStack(
+    app,
+    dataset_metadata_generator_stackname,
+    dataset_metadata_filename=config.DATASET_METADATA_FILENAME,
+    dataset_metadata_generator_function_name=config.DATASET_METADATA_GENERATOR_FUNCTION_NAME,
 )
 
 app.synth()
