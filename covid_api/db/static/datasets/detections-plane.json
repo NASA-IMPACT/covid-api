@@ -8,7 +8,7 @@
     "source": {
         "type": "geojson",
         "tiles": [
-            "{api_url}/detections/plane/{spotlightId}/{date}.geojson"
+            "{api_url}/detections-plane/{spotlightId}/{date}.geojson"
         ]
     },
     "background_source": {
@@ -29,7 +29,8 @@
         "detection-multi",
         "water-chlorophyll",
         "water-spm",
-        "detections-ship"
+        "detections-ship",
+        "detections-vehicles"
     ],
     "enabled": false,
     "swatch": {

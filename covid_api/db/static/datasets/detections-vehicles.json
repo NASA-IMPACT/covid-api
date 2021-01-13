@@ -1,20 +1,20 @@
 {
-    "id": "detections-ship",
-    "name": "Shipping",
+    "id": "detections-vehicles",
+    "name": "Vehicle",
     "type": "inference-timeseries",
-    "s3_location": "detections-ship",
+    "s3_location": "detections-vehicles",
     "is_periodic": false,
     "time_unit": "day",
     "source": {
         "type": "geojson",
         "tiles": [
-            "{api_url}/detections-ship/{spotlightId}/{date}.geojson"
+            "{api_url}/detections-vehicles/{spotlightId}/{date}.geojson"
         ]
     },
     "background_source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/detections-vehicles/background/{spotlightId}/{date}.tif"
         ]
     },
     "exclusive_with": [
@@ -29,13 +29,13 @@
         "detection-multi",
         "water-chlorophyll",
         "water-spm",
-        "detections-plane",
-        "detections-vehicles"
+        "detections-ship",
+        "detections-plane"
     ],
     "enabled": false,
     "swatch": {
         "color": "#C0C0C0",
         "name": "Grey"
     },
-    "info": "Ships detected each day in PlanetScope imagery are shown in orange."
+    "info": "Vehicles detected each day in PlanetScope imagery are shown in orange."
 }
