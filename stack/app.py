@@ -107,6 +107,7 @@ class covidApiLambdaStack(core.Stack):
                 MEMCACHE_PORT=cache.attr_configuration_endpoint_port,
                 DATASET_METADATA_FILENAME=dataset_metadata_filename,
                 DATASET_METADATA_GENERATOR_FUNCTION_NAME=dataset_metadata_generator_function_name,
+                PLANET_API_KEY=os.environ["PLANET_API_KEY"],
             )
         )
 
