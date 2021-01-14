@@ -14,6 +14,7 @@ services:
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - DISABLE_CACHE=YESPLEASE
       - CPL_TMPDIR=/tmp
       - GDAL_CACHEMAX=75%
       - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
@@ -31,6 +32,7 @@ services:
       - VSI_CACHE=TRUE
       - VSI_CACHE_SIZE=536870912
       - WORKERS_PER_CORE=5
+    
 
   memcached:
     image: remotepixel/memcached-sasl:latest
