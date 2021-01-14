@@ -105,10 +105,8 @@ def _gather_datasets_metadata(datasets: List[dict], sites: List[dict]):
             # skip adding dataset to metadata object if no dates were found for the given
             # spotlight (indicates dataset is not valid for that spotlight)
             try:
-                print("Requesting domain: ", domain_args)
                 domain = _get_dataset_domain(**domain_args)
             except NoKeysFoundForSpotlight:
-                print("No keys found for given domain")
                 continue
 
             metadata.setdefault(site["id"], {}).update(
