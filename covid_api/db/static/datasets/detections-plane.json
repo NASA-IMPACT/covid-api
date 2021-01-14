@@ -8,7 +8,7 @@
     "source": {
         "type": "geojson",
         "tiles": [
-            "{api_url}/detections-plane/{spotlightId}/{date}.geojson"
+            "{api_url}/detections/plane/{spotlightId}/{date}.geojson"
         ]
     },
     "background_source": {

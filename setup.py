@@ -14,6 +14,7 @@ inst_reqs = [
     "email-validator",
     "fiona",
     "shapely",
+    "rasterio==1.1.8",
     "rasterstats",
     "geojson-pydantic",
     "boto3",
