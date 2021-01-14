@@ -31,7 +31,6 @@ services:
       - VSI_CACHE=TRUE
       - VSI_CACHE_SIZE=536870912
       - WORKERS_PER_CORE=5
-    
 
   memcached:
     image: remotepixel/memcached-sasl:latest
