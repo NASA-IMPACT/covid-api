@@ -740,4 +740,6 @@ def site_date_to_scenes(site: str, date: str):
             json.loads(row["scene_id"].replace("'", '"'))
         )
 
-    return site_date_to_scenes_dict[f"{site}-{date}"]
+    # deduplicate scene list (in case multiple datasets contains the same
+    # scene id)
+    return list(set(site_date_to_scenes_dict[f"{site}-{date}"]))

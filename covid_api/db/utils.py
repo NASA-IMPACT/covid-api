@@ -2,141 +2,86 @@
 
 import csv
 import json
-import re
 from datetime import datetime
-from typing import Dict, List, Optional, Set
+from typing import Dict, List
 
 import boto3
+from botocore import config
 
-from covid_api.core.config import DT_FORMAT, INDICATOR_BUCKET, MT_FORMAT
+from covid_api.core.config import DT_FORMAT, INDICATOR_BUCKET
 from covid_api.models.static import IndicatorObservation
 
 s3 = boto3.client("s3")
 
-
-def gather_s3_keys(
-    spotlight_id: Optional[str] = None, prefix: Optional[str] = None,
-) -> Set[str]:
-    """
-    Returns a set of S3 keys. If no args are provided, the keys will represent
-    the entire S3 bucket.
-    Params:
-    -------
-    spotlight_id (Optional[str]):
-        Id of a spotlight to filter keys by
-    prefix (Optional[str]):
-        S3 Prefix under which to gather keys, used to specifcy a specific
-        dataset folder to search within.
-
-    Returns:
-    -------
-    set(str)
-
-    """
-    keys: set = set()
-
-    list_objects_args = {"Bucket": INDICATOR_BUCKET}
-
-    if prefix:
-        list_objects_args["Prefix"] = prefix
-
-    response = s3.list_objects_v2(**list_objects_args)
-    keys.update({x["Key"] for x in response.get("Contents", [])})
-
-    while response["IsTruncated"]:
-
-        list_objects_args["ContinuationToken"] = response["NextContinuationToken"]
-        response = s3.list_objects_v2(**list_objects_args)
-
-        keys.update({x["Key"] for x in response.get("Contents", [])})
-
-    if not spotlight_id:
-        return keys
-
-    return {
-        key
-        for key in keys
-        if re.search(
-            rf"""[^a-zA-Z0-9]({spotlight_id})[^a-zA-Z0-9]""", key, re.IGNORECASE,
-        )
-    }
+_lambda = boto3.client(
+    "lambda",
+    region_name="us-east-1",
+    config=config.Config(
+        read_timeout=900, connect_timeout=900, retries={"max_attempts": 0}
+    ),
+)
 
 
-def get_dataset_folders_by_spotlight(spotlight_id: str) -> Set[str]:
-    """
-    Returns the S3 prefix of datasets containing files for the given spotlight
+def invoke_lambda(
+    lambda_function_name: str, payload: dict = None, invocation_type="RequestResponse"
+):
+    """Invokes a lambda function using the boto3 lambda client.
 
     Params:
-    ------
-    spotlight_id (str): id of spotlight to search for
+    -------
+    lambda_function_name (str): name of the lambda to invoke
+    payload (Optional[dict]): data into invoke the lambda function with (will be accessible
+        in the lambda handler function under the `event` param)
+    invocation_type (Optional[str] = ["RequestResponse", "Event", "DryRun"]):
+        RequestReponse will run the lambda synchronously (holding up the thread
+        until the lambda responds
+        Event will run asynchronously
+        DryRun will only verify that the user/role has the correct permissions to invoke
+        the lambda function
 
     Returns:
     --------
-    set(str)
+    (dict) Lambda invocation response, see:
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html#Lambda.Client.invoke
+
+    - NOTE:
+    The current configuration specifies a RequestResponse invocation, which does
+    indeed run synchronously, but returns a status succeeded of 202 (Accepted) when
+    it should return a 200 status. 202 status is expected from the `Event` invocation
+    type (indicated lamdba was initiated but we don't know it's status)
+
+    - NOTE:
+    The current configuration should directly return the lambda output under
+    response["Payload"]: StreamingBody, however the byte string currently being returned
+    contains lambda invocation/runtime details from the logs. (eg:
+
+    ```
+    START RequestId: 7c61eb52-735d-1ce4-0df2-a975197924eb Version: 1
+    END RequestId: 7c61eb52-735d-1ce4-0df2-a975197924eb
+    REPORT RequestId: 7c61eb52-735d-1ce4-0df2-a975197924eb  Init Duration: 232.54 ms        Duration: 3.02 ms       Billed Duration: 100 ms Memory Size: 128 MB    Max Memory Used: 33 MB
+
+    {"result":"success","input":"test"}
+
+    ```
+    when we only expect the JSON object: {"result":"success", "input":"test"} to be returned
+    )
+
+    To load just the lambda output use:
+
+    ```
+    response = r["Payload"].read().decode("utf-8")
+    lambda_output = json.loads(
+        response[response.index("{") : (response.index("}") + 1)]
+    )
+    ```
+    where r is the output of this function.
     """
-    keys = gather_s3_keys(spotlight_id=spotlight_id)
-    return {k.split("/")[0] for k in keys}
-
-
-def get_dataset_domain(
-    dataset_folder: str, is_periodic: bool, spotlight_id: str = None,
-):
-    """
-    Returns a domain for a given dataset as identified by a folder. If a
-    time_unit is passed as a function parameter, the function will assume
-    that the domain is periodic and with only return the min/max dates,
-    otherwise ALL dates available for that dataset/spotlight will be returned.
-
-    Params:
-    ------
-    dataset_folder (str): dataset folder to search within
-    time_unit (Optional[str]): time_unit from the dataset's metadata json file
-    spotlight_id (Optional[str]): a dictionary containing the
-        `spotlight_id` of a spotlight to restrict the
-        domain search to.
-
-    Return:
-    ------
-    List[datetime]
-    """
-    s3_keys_args = {"prefix": dataset_folder}
-    if spotlight_id:
-        s3_keys_args["spotlight_id"] = spotlight_id
-
-    keys = gather_s3_keys(**s3_keys_args)
-    dates = []
-
-    for key in keys:
-        result = re.search(
-            # matches either dates like: YYYYMM or YYYY_MM_DD
-            r"""[^a-zA-Z0-9]((?P<MT_DATE>(\d{6}))|"""
-            r"""((?P<YEAR>\d{4})_(?P<MONTH>\d{2})_(?P<DAY>\d{2})))[^a-zA-Z0-9]""",
-            key,
-            re.IGNORECASE,
-        )
-        if not result:
-            continue
-
-        date = None
-        try:
-            if result.group("MT_DATE"):
-                date = datetime.strptime(result.group("MT_DATE"), MT_FORMAT)
-            else:
-                datestring = (
-                    f"""{result.group("YEAR")}-{result.group("MONTH")}"""
-                    f"""-{result.group("DAY")}"""
-                )
-                date = datetime.strptime(datestring, DT_FORMAT)
-        except ValueError:
-            # Invalid date value matched
-            continue
-
-        dates.append(date.strftime("%Y-%m-%dT%H:%M:%SZ"))
-
-    if is_periodic and len(dates):
-        return [min(dates), max(dates)]
-
-    return sorted(set(dates))
+    lambda_invoke_params = dict(
+        FunctionName=lambda_function_name, InvocationType=invocation_type
+    )
+    if payload:
+        lambda_invoke_params.update(dict(Payload=json.dumps(payload)))
+    return _lambda.invoke(**lambda_invoke_params)
 
 
 def s3_get(bucket: str, key: str):

@@ -26,7 +26,8 @@
     "water-chlorophyll",
     "water-spm",
     "detections-ship",
-    "detections-plane"
+    "detections-plane",
+    "detections-vehicles"
   ],
   "enabled": true,
   "compare": {
