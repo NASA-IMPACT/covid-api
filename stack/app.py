@@ -17,7 +17,7 @@ from aws_cdk import aws_events, aws_events_targets
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda, aws_s3, core
 
-iam_policy_statement = iam.PolicyStatement(
+s3_full_access_to_data_bucket = iam.PolicyStatement(
     actions=["s3:*"], resources=[f"arn:aws:s3:::{config.BUCKET}*"]
 )
 
@@ -73,22 +73,43 @@ class covidApiLambdaStack(core.Stack):
             subnet_ids=[sb.subnet_id for sb in vpc.private_subnets],
         )
 
-        sg = ec2.SecurityGroup(self, f"{id}-cache-sg", vpc=vpc)
+        lambda_function_security_group = ec2.SecurityGroup(
+            self, f"{id}-lambda-sg", vpc=vpc
+        )
+        lambda_function_security_group.add_egress_rule(
+            ec2.Peer.any_ipv4(),
+            connection=ec2.Port(protocol=ec2.Protocol("ALL"), string_representation=""),
+            description="Allow lambda security group all outbound access",
+        )
+
+        cache_security_group = ec2.SecurityGroup(self, f"{id}-cache-sg", vpc=vpc)
+
+        cache_security_group.add_ingress_rule(
+            lambda_function_security_group,
+            connection=ec2.Port(protocol=ec2.Protocol("ALL"), string_representation=""),
+            description="Allow Lambda security group access to Cache security group",
+        )
+
         cache = escache.CfnCacheCluster(
             self,
             f"{id}-cache",
             cache_node_type=config.CACHE_NODE_TYPE,
             engine=config.CACHE_ENGINE,
             num_cache_nodes=config.CACHE_NODE_NUM,
-            vpc_security_group_ids=[sg.security_group_id],
+            vpc_security_group_ids=[cache_security_group.security_group_id],
             cache_subnet_group_name=sb_group.ref,
         )
 
-        vpc_access_policy_statement = iam.PolicyStatement(
+        logs_access = iam.PolicyStatement(
             actions=[
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
                 "logs:PutLogEvents",
+            ],
+            resources=["*"],
+        )
+        ec2_network_access = iam.PolicyStatement(
+            actions=[
                 "ec2:CreateNetworkInterface",
                 "ec2:DescribeNetworkInterfaces",
                 "ec2:DeleteNetworkInterface",
@@ -121,10 +142,12 @@ class covidApiLambdaStack(core.Stack):
             reserved_concurrent_executions=concurrent,
             timeout=core.Duration.seconds(timeout),
             environment=lambda_env,
+            security_groups=[lambda_function_security_group],
             vpc=vpc,
         )
-        lambda_function.add_to_role_policy(iam_policy_statement)
-        lambda_function.add_to_role_policy(vpc_access_policy_statement)
+        lambda_function.add_to_role_policy(s3_full_access_to_data_bucket)
+        lambda_function.add_to_role_policy(logs_access)
+        lambda_function.add_to_role_policy(ec2_network_access)
 
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
         apigw.HttpApi(
