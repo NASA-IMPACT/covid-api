@@ -100,7 +100,7 @@ class covidApiLambdaStack(core.Stack):
             cache_subnet_group_name=sb_group.ref,
         )
 
-        vpc_log_access = iam.PolicyStatement(
+        logs_access = iam.PolicyStatement(
             actions=[
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
@@ -108,7 +108,7 @@ class covidApiLambdaStack(core.Stack):
             ],
             resources=["*"],
         )
-        vpc_network_access = iam.PolicyStatement(
+        ec2_network_access = iam.PolicyStatement(
             actions=[
                 "ec2:CreateNetworkInterface",
                 "ec2:DescribeNetworkInterfaces",
@@ -146,8 +146,8 @@ class covidApiLambdaStack(core.Stack):
             vpc=vpc,
         )
         lambda_function.add_to_role_policy(s3_full_access_to_data_bucket)
-        lambda_function.add_to_role_policy(vpc_log_access)
-        lambda_function.add_to_role_policy(vpc_network_access)
+        lambda_function.add_to_role_policy(logs_access)
+        lambda_function.add_to_role_policy(ec2_network_access)
 
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
         apigw.HttpApi(
