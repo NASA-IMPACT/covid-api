@@ -24,7 +24,11 @@
         "water-spm",
         "detections-ship",
         "detections-plane",
+<<<<<<< HEAD
         "detections-contrail"
+=======
+        "detections-vehicles"
+>>>>>>> develop
     ],
     "enabled": false,
     "compare": {

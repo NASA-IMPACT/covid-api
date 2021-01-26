@@ -1,18 +1,23 @@
 """Construct App."""
 
 import os
+import shutil
 from typing import Any, Union
 
 import config
+
+# import docker
 from aws_cdk import aws_apigatewayv2 as apigw
+from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_elasticache as escache
+from aws_cdk import aws_events, aws_events_targets
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_lambda, core
+from aws_cdk import aws_lambda, aws_s3, core
 
-iam_policy_statement = iam.PolicyStatement(
+s3_full_access_to_data_bucket = iam.PolicyStatement(
     actions=["s3:*"], resources=[f"arn:aws:s3:::{config.BUCKET}*"]
 )
 
@@ -44,18 +49,23 @@ class covidApiLambdaStack(core.Stack):
         self,
         scope: core.Construct,
         id: str,
+        dataset_metadata_filename: str,
+        dataset_metadata_generator_function_name: str,
         memory: int = 1024,
         timeout: int = 30,
         concurrent: int = 100,
-        env: dict = {},
         code_dir: str = "./",
         **kwargs: Any,
     ) -> None:
         """Define stack."""
-        super().__init__(scope, id, *kwargs)
+        super().__init__(scope, id, **kwargs)
 
         # add cache
-        vpc = ec2.Vpc(self, f"{id}-vpc")
+        if config.VPC_ID:
+            vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID,)
+        else:
+            vpc = ec2.Vpc(self, f"{id}-vpc")
+
         sb_group = escache.CfnSubnetGroup(
             self,
             f"{id}-subnet-group",
@@ -63,22 +73,43 @@ class covidApiLambdaStack(core.Stack):
             subnet_ids=[sb.subnet_id for sb in vpc.private_subnets],
         )
 
-        sg = ec2.SecurityGroup(self, f"{id}-cache-sg", vpc=vpc)
+        lambda_function_security_group = ec2.SecurityGroup(
+            self, f"{id}-lambda-sg", vpc=vpc
+        )
+        lambda_function_security_group.add_egress_rule(
+            ec2.Peer.any_ipv4(),
+            connection=ec2.Port(protocol=ec2.Protocol("ALL"), string_representation=""),
+            description="Allow lambda security group all outbound access",
+        )
+
+        cache_security_group = ec2.SecurityGroup(self, f"{id}-cache-sg", vpc=vpc)
+
+        cache_security_group.add_ingress_rule(
+            lambda_function_security_group,
+            connection=ec2.Port(protocol=ec2.Protocol("ALL"), string_representation=""),
+            description="Allow Lambda security group access to Cache security group",
+        )
+
         cache = escache.CfnCacheCluster(
             self,
             f"{id}-cache",
             cache_node_type=config.CACHE_NODE_TYPE,
             engine=config.CACHE_ENGINE,
             num_cache_nodes=config.CACHE_NODE_NUM,
-            vpc_security_group_ids=[sg.security_group_id],
+            vpc_security_group_ids=[cache_security_group.security_group_id],
             cache_subnet_group_name=sb_group.ref,
         )
 
-        vpc_access_policy_statement = iam.PolicyStatement(
+        logs_access = iam.PolicyStatement(
             actions=[
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
                 "logs:PutLogEvents",
+            ],
+            resources=["*"],
+        )
+        ec2_network_access = iam.PolicyStatement(
+            actions=[
                 "ec2:CreateNetworkInterface",
                 "ec2:DescribeNetworkInterfaces",
                 "ec2:DeleteNetworkInterface",
@@ -95,6 +126,9 @@ class covidApiLambdaStack(core.Stack):
                 LOG_LEVEL="error",
                 MEMCACHE_HOST=cache.attr_configuration_endpoint_address,
                 MEMCACHE_PORT=cache.attr_configuration_endpoint_port,
+                DATASET_METADATA_FILENAME=dataset_metadata_filename,
+                DATASET_METADATA_GENERATOR_FUNCTION_NAME=dataset_metadata_generator_function_name,
+                PLANET_API_KEY=os.environ["PLANET_API_KEY"],
             )
         )
 
@@ -108,39 +142,35 @@ class covidApiLambdaStack(core.Stack):
             reserved_concurrent_executions=concurrent,
             timeout=core.Duration.seconds(timeout),
             environment=lambda_env,
+            security_groups=[lambda_function_security_group],
             vpc=vpc,
         )
-        lambda_function.add_to_role_policy(iam_policy_statement)
-        lambda_function.add_to_role_policy(vpc_access_policy_statement)
+        lambda_function.add_to_role_policy(s3_full_access_to_data_bucket)
+        lambda_function.add_to_role_policy(logs_access)
+        lambda_function.add_to_role_policy(ec2_network_access)
 
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
         apigw.HttpApi(
             self,
             f"{id}-endpoint",
-            default_integration=apigw.LambdaProxyIntegration(handler=lambda_function),
+            default_integration=apigw_integrations.LambdaProxyIntegration(
+                handler=lambda_function
+            ),
         )
 
     def create_package(self, code_dir: str) -> aws_lambda.Code:
         """Build docker image and create package."""
-        # print('building lambda package via docker')
-        # print(f'code dir: {code_dir}')
-        # client = docker.from_env()
-        # print('docker client up')
-        # client.images.build(
-        #     path=code_dir,
-        #     dockerfile="Dockerfiles/lambda/Dockerfile",
-        #     tag="lambda:latest",
-        # )
-        # print('docker image built')
-        # client.containers.run(
-        #     image="lambda:latest",
-        #     command="/bin/sh -c 'cp /tmp/package.zip /local/package.zip'",
-        #     remove=True,
-        #     volumes={os.path.abspath(code_dir): {"bind": "/local/", "mode": "rw"}},
-        #     user=0,
-        # )
 
-        return aws_lambda.Code.asset(os.path.join(code_dir, "package.zip"))
+        return aws_lambda.Code.from_asset(
+            path=os.path.abspath(code_dir),
+            bundling=core.BundlingOptions(
+                image=core.BundlingDockerImage.from_asset(
+                    path=os.path.abspath(code_dir),
+                    file="Dockerfiles/lambda/Dockerfile",
+                ),
+                command=["bash", "-c", "cp -R /var/task/. /asset-output/."],
+            ),
+        )
 
 
 class covidApiECSStack(core.Stack):
@@ -154,14 +184,18 @@ class covidApiECSStack(core.Stack):
         memory: Union[int, float] = 512,
         mincount: int = 1,
         maxcount: int = 50,
-        env: dict = {},
+        task_env: dict = {},
         code_dir: str = "./",
         **kwargs: Any,
     ) -> None:
         """Define stack."""
-        super().__init__(scope, id, *kwargs)
+        super().__init__(scope, id, **kwargs)
 
-        vpc = ec2.Vpc(self, f"{id}-vpc", max_azs=2)
+        # add cache
+        if config.VPC_ID:
+            vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID,)
+        else:
+            vpc = ec2.Vpc(self, f"{id}-vpc")
 
         cluster = ecs.Cluster(self, f"{id}-cluster", vpc=vpc)
 
@@ -174,7 +208,7 @@ class covidApiECSStack(core.Stack):
                 LOG_LEVEL="error",
             )
         )
-        task_env.update(env)
+        task_env.update(task_env)
 
         fargate_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
@@ -223,7 +257,95 @@ class covidApiECSStack(core.Stack):
         )
 
 
+class covidApiDatasetMetadataGeneratorStack(core.Stack):
+    """Dataset metadata generator stack - comprises a lambda and a Cloudwatch
+    event that triggers a new lambda execution every 24hrs"""
+
+    def __init__(
+        self,
+        scope: core.Construct,
+        id: str,
+        dataset_metadata_filename: str,
+        dataset_metadata_generator_function_name: str,
+        code_dir: str = "./",
+        **kwargs: Any,
+    ) -> None:
+        """Define stack."""
+        super().__init__(scope, id, *kwargs)
+
+        base = os.path.abspath(os.path.join("covid_api", "db", "static"))
+        lambda_deployment_package_location = os.path.abspath(
+            os.path.join(code_dir, "lambda", "dataset_metadata_generator")
+        )
+        for e in ["datasets", "sites"]:
+            self.copy_metadata_files_to_lambda_deployment_package(
+                from_dir=os.path.join(base, e),
+                to_dir=os.path.join(lambda_deployment_package_location, "src", e),
+            )
+
+        data_bucket = aws_s3.Bucket.from_bucket_name(
+            self, id=f"{id}-data-bucket", bucket_name=config.BUCKET
+        )
+
+        dataset_metadata_updater_function = aws_lambda.Function(
+            self,
+            f"{id}-metadata-updater-lambda",
+            runtime=aws_lambda.Runtime.PYTHON_3_8,
+            code=aws_lambda.Code.from_asset(lambda_deployment_package_location),
+            handler="src.main.handler",
+            environment={
+                "DATASET_METADATA_FILENAME": dataset_metadata_filename,
+                "DATA_BUCKET_NAME": data_bucket.bucket_name,
+            },
+            function_name=dataset_metadata_generator_function_name,
+            timeout=core.Duration.minutes(5),
+        )
+
+        for e in ["datasets", "sites"]:
+            shutil.rmtree(os.path.join(lambda_deployment_package_location, "src", e))
+
+        data_bucket.grant_read_write(dataset_metadata_updater_function)
+
+        aws_events.Rule(
+            self,
+            f"{id}-metadata-update-daily-trigger",
+            # triggers everyday
+            schedule=aws_events.Schedule.rate(duration=core.Duration.days(1)),
+            targets=[
+                aws_events_targets.LambdaFunction(dataset_metadata_updater_function)
+            ],
+        )
+
+    def copy_metadata_files_to_lambda_deployment_package(self, from_dir, to_dir):
+        """Copies dataset metadata files to the lambda deployment package
+        so that the dataset domain extractor lambda has access to the necessary
+        metadata items at runtime
+        Params:
+        -------
+        from_dir (str): relative filepath from which to copy all `.json` files
+        to_dir (str): relative filepath to copy `.json` files to
+        Return:
+        -------
+        None
+        """
+        files = [
+            os.path.abspath(os.path.join(d, f))
+            for d, _, fnames in os.walk(from_dir)
+            for f in fnames
+            if f.endswith(".json")
+        ]
+
+        try:
+            os.mkdir(to_dir)
+        except FileExistsError:
+            pass
+
+        for f in files:
+            shutil.copy(f, to_dir)
+
+
 app = core.App()
+
 
 # Tag infrastructure
 for key, value in {
@@ -243,7 +365,11 @@ covidApiECSStack(
     memory=config.TASK_MEMORY,
     mincount=config.MIN_ECS_INSTANCES,
     maxcount=config.MAX_ECS_INSTANCES,
-    env=config.ENV,
+    task_env=config.TASK_ENV,
+    env=dict(
+        account=os.environ["CDK_DEFAULT_ACCOUNT"],
+        region=os.environ["CDK_DEFAULT_REGION"],
+    ),
 )
 
 lambda_stackname = f"{config.PROJECT_NAME}-lambda-{config.STAGE}"
@@ -253,7 +379,22 @@ covidApiLambdaStack(
     memory=config.MEMORY,
     timeout=config.TIMEOUT,
     concurrent=config.MAX_CONCURRENT,
-    env=config.ENV,
+    dataset_metadata_filename=config.DATASET_METADATA_FILENAME,
+    dataset_metadata_generator_function_name=config.DATASET_METADATA_GENERATOR_FUNCTION_NAME,
+    env=dict(
+        account=os.environ["CDK_DEFAULT_ACCOUNT"],
+        region=os.environ["CDK_DEFAULT_REGION"],
+    ),
+)
+
+dataset_metadata_generator_stackname = (
+    f"{config.PROJECT_NAME}-dataset-metadata-generator-{config.STAGE}"
+)
+covidApiDatasetMetadataGeneratorStack(
+    app,
+    dataset_metadata_generator_stackname,
+    dataset_metadata_filename=config.DATASET_METADATA_FILENAME,
+    dataset_metadata_generator_function_name=config.DATASET_METADATA_GENERATOR_FUNCTION_NAME,
 )
 
 app.synth()

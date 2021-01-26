@@ -1,4 +1,4 @@
-FROM laurents/uvicorn-gunicorn-fastapi:python3.7-slim
+FROM tiangolo/uvicorn-gunicorn:python3.8
 # Ref https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker/issues/15
 # Cuts image size by 50%
 # FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
@@ -11,4 +11,5 @@ COPY covid_api/ /app/covid_api/
 COPY setup.py /app/setup.py
 
 RUN pip install -e /app/. --no-cache-dir
+
 CMD ["/start-reload.sh"]

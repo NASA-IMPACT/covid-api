@@ -27,7 +27,8 @@
     "water-spm",
     "detections-ship",
     "detections-plane",
-    "detections-contrail"
+    "detections-contrail",
+    "detections-vehicles"
   ],
   "enabled": true,
   "compare": {

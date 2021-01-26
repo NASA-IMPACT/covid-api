@@ -9,7 +9,12 @@ STAGE = os.environ.get("STAGE", "dev")
 BUCKET = "covid-eo-data"
 
 # Additional environement variable to set in the task/lambda
-ENV: dict = dict()
+TASK_ENV: dict = dict()
+
+# Existing VPC to point ECS/LAMBDA stacks towards. Defaults to creating a new
+# VPC if no ID is supplied.
+VPC_ID = os.environ.get("VPC_ID")
+
 
 ################################################################################
 #                                                                              #
@@ -42,3 +47,17 @@ MAX_CONCURRENT: int = 500
 CACHE_NODE_TYPE = "cache.m5.large"
 CACHE_ENGINE = "memcached"
 CACHE_NODE_NUM = 1
+
+################################################################################
+#                                                                              #
+#                         DATASET METADATA GENERATOR                           #
+#                                                                              #
+################################################################################
+DATASET_METADATA_FILENAME = (
+    "dataset-metadata.json" if STAGE == "prod" else "dev-dataset-metadata.json"
+)
+DATASET_METADATA_GENERATOR_FUNCTION_NAME = (
+    "dataset-metadata-generator"
+    if STAGE == "prod"
+    else "dev-dataset-metadata-generator"
+)
