@@ -86,8 +86,7 @@ def _extract_s3_url(dataset: Dataset):
 
 def _insert_date(url: str, dataset: Dataset, date: str):
     _validate_query_date(dataset, date)
-
-    url = url.replace("{date}", date)
+    return url.replace("{date}", date)
 
 
 def _validate_query_date(dataset: Dataset, date: str):
@@ -106,4 +105,4 @@ def _insert_spotlight_id(url: str, spotlight_id: str):
     except InvalidIdentifier:
         raise
 
-    url = url.replace("{spotlightId}", spotlight_id)
+    return url.replace("{spotlightId}", spotlight_id)

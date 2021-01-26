@@ -229,7 +229,7 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
         # Create a mask of the data that filters out the tile's `nodata` value. In order
         # to ensure the average calculation isn't incorrectly affected by large, negative,
         # `nodata` values.
-        masked_data = np.ma.masked_not_equal(data[0], src.nodata)
+        masked_data = np.ma.masked_equal(data[0], src.nodata)
 
         return (
             np.average(masked_data, weights=pctcover),
