@@ -30,7 +30,8 @@
         "water-chlorophyll",
         "water-spm",
         "detections-ship",
-        "detections-plane"
+        "detections-plane",
+        "detections-contrail"
     ],
     "enabled": false,
     "swatch": {

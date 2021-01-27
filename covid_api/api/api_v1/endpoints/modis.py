@@ -41,7 +41,6 @@ async def tile(
     x: int = Path(..., description="Mercator tiles's column"),
     y: int = Path(..., description="Mercator tiles's row"),
     date: str = Query(..., description="date of site for detections"),
-    site: str = Query(..., description="id of site for detections"),
     cache_client: CacheLayer = Depends(utils.get_cache),
 ) -> TileResponse:
     """Handle /modis requests."""

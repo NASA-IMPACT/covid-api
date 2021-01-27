@@ -54,6 +54,7 @@ class DatasetManager(object):
                 # "Payload" returned by the lambda_invocation (see docstring).
                 # Instead the thread is held while the lambda executes and then
                 # loads the metadata from s3.
+
                 invoke_lambda(
                     lambda_function_name=DATASET_METADATA_GENERATOR_FUNCTION_NAME
                 )
@@ -188,6 +189,7 @@ class DatasetManager(object):
                 "detections-ship",
                 "detections-plane",
                 "detections-vehicles",
+                "detections-contrail",
             ]:
                 dataset.source = GeoJsonSource(
                     type=dataset.source.type, data=dataset.source.tiles[0]

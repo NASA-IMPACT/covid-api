@@ -14,7 +14,7 @@
     "background_source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/modis/{z}/{x}/{y}?date={date}&site={spotlightId}"
+            "{api_url}/modis/{z}/{x}/{y}?date={date}"
         ]
     },
     "exclusive_with": [
@@ -29,12 +29,14 @@
         "detection-multi",
         "water-chlorophyll",
         "water-spm",
-        "detections-ship"
+        "detections-ship",
+        "detections-plane",
+        "detections-vehicles"
     ],
     "enabled": false,
     "swatch": {
         "color": "#C0C0C0",
         "name": "Grey"
     },
-    "info": ""
+    "info": "Contrails detected each day, displayed over MODIS Imagery"
 }

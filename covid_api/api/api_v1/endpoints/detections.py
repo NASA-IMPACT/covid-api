@@ -25,9 +25,11 @@ MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple", "plane", "veh
 )
 def get_detection(ml_type: MLTypes, site: SiteNames, date: str):
     """ Handle /detections requests."""
+
     try:
-        if ml_type.value == "contrail":
-            date = date.replace("-", "_")
+        # if ml_type.value == "contrail":
+        #     date = date.replace("_", "-")
+
         return json.loads(
             s3_get(
                 bucket=config.INDICATOR_BUCKET,

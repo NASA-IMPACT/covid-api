@@ -11,6 +11,7 @@ from enum import Enum
 from io import BytesIO
 from typing import Any, Dict, Optional, Tuple
 
+import mercantile
 import numpy as np
 
 # Temporary
@@ -689,8 +690,17 @@ ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])  # type:
 
 def modis_tile(x, y, z, date):
     """Fetches a MODIS_Terra tiles (background for detections-contrail dataset"""
-    date = date.replace("_", "-")
-    url = f"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpeg"
+
+    # date = date.replace("_", "-")
+
+    print("X,Y,Z: ", x, y, z)
+
+    epsg_3857_bbox = mercantile.xy_bounds(x, y, z)
+    print("Bounding box: ", epsg_3857_bbox._asdict().values())
+
+    url = f"https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&layers=MODIS_Aqua_SurfaceReflectance_Bands143&version=1.3.0&crs=EPSG:3857&transparent=true&width=512&height=512&bbox={','.join([str(v) for v in epsg_3857_bbox._asdict().values()])}&format=image/png&time={date}"
+    # url = f"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpeg"
+    print("Formatted url: ", url)
     r = requests.get(url)
     return r.content
 
