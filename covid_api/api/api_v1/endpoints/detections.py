@@ -27,8 +27,6 @@ def get_detection(ml_type: MLTypes, site: SiteNames, date: str):
     """ Handle /detections requests."""
 
     try:
-        # if ml_type.value == "contrail":
-        #     date = date.replace("_", "-")
 
         return json.loads(
             s3_get(
