@@ -19,9 +19,6 @@ DATASET_METADATA_FILENAME = os.environ["DATASET_METADATA_FILENAME"]
 s3 = boto3.resource("s3")
 bucket = s3.Bucket(BUCKET_NAME)
 
-DT_FORMAT = "%Y-%m-%d"
-MT_FORMAT = "%Y%m"
-
 
 def handler(event, context):
     """
