@@ -168,6 +168,8 @@ class DatasetManager(object):
             # spotlight id (if a spotlight was requested)
             format_url_params = dict(api_url=api_url)
             if spotlight_id:
+                if k == "nightlights-hd" and spotlight_id in ["du", "gh"]:
+                    spotlight_id = "EUPorts"
                 format_url_params.update(dict(spotlight_id=spotlight_id))
 
             dataset.source.tiles = self._format_urls(
