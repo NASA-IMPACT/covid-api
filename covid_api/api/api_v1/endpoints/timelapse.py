@@ -9,7 +9,7 @@ from covid_api.api.api_v1.endpoints.exceptions import (
     UnableToExtractS3Url,
 )
 from covid_api.api.utils import get_zonal_stat
-from covid_api.core.config import API_VERSION_STR, DT_FORMAT, MT_FORMAT
+from covid_api.core.config import API_VERSION_STR
 from covid_api.db.static.datasets import datasets as _datasets
 from covid_api.db.static.errors import InvalidIdentifier
 from covid_api.db.static.sites import sites
@@ -90,7 +90,7 @@ def _insert_date(url: str, dataset: Dataset, date: str):
 
 
 def _validate_query_date(dataset: Dataset, date: str):
-    date_format = DT_FORMAT if dataset.time_unit == "day" else MT_FORMAT
+    date_format = "%Y_%m_%d" if dataset.time_unit == "day" else "%Y%m"
     try:
         datetime.strptime(date, date_format)
     except ValueError:
