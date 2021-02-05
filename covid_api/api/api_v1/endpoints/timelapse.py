@@ -2,12 +2,6 @@
 import re
 from datetime import datetime
 
-from covid_api.api.api_v1.endpoints.exceptions import (
-    InvalidDateFormat,
-    MissingSpotlightId,
-    NonRasterDataset,
-    UnableToExtractS3Url,
-)
 from covid_api.api.utils import get_zonal_stat
 from covid_api.core.config import API_VERSION_STR
 from covid_api.db.static.datasets import datasets as _datasets
@@ -16,7 +10,7 @@ from covid_api.db.static.sites import sites
 from covid_api.models.static import Dataset
 from covid_api.models.timelapse import TimelapseRequest, TimelapseValue
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from starlette.requests import Request
 
@@ -45,8 +39,14 @@ def timelapse(request: Request, query: TimelapseRequest):
     # spotlight specific
     if "{spotlightId}" in url:
         url = _insert_spotlight_id(url, query.spotlight_id)
+    try:
+        mean, median = get_zonal_stat(query.geojson, url)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to calculate mean/median values. This is likely due to a bounding box extending beyond the borders of the tile.",
+        )
 
-    mean, median = get_zonal_stat(query.geojson, url)
     return dict(mean=mean, median=median)
 
 
@@ -66,12 +66,17 @@ def _get_dataset_metadata(request: Request, query: TimelapseRequest):
     )
 
     if not dataset:
-        raise InvalidIdentifier
+        raise HTTPException(
+            status_code=404, detail=f"No dataset found for id: {query.dataset_id}"
+        )
 
     dataset = dataset[0]
 
     if dataset.source.type != "raster":
-        raise NonRasterDataset
+        raise HTTPException(
+            status_code=400,
+            detail=f"Dataset {query.dataset_id} is not a raster-type dataset",
+        )
 
     return dataset
 
@@ -79,7 +84,7 @@ def _get_dataset_metadata(request: Request, query: TimelapseRequest):
 def _extract_s3_url(dataset: Dataset):
     url_search = re.search(r"url=([^&\s]*)", dataset.source.tiles[0])
     if not url_search:
-        raise UnableToExtractS3Url
+        raise HTTPException(status_code=500)
 
     return url_search.group(1)
 
@@ -94,15 +99,20 @@ def _validate_query_date(dataset: Dataset, date: str):
     try:
         datetime.strptime(date, date_format)
     except ValueError:
-        raise InvalidDateFormat
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid date format. {date} should be either YYYY_MM_DD or YYYYMM",
+        )
 
 
 def _insert_spotlight_id(url: str, spotlight_id: str):
     if not spotlight_id:
-        raise MissingSpotlightId
+        raise HTTPException(status_code=400, detail="Missing spotlightId")
     try:
         sites.get(spotlight_id)
     except InvalidIdentifier:
-        raise
+        raise HTTPException(
+            status_code=404, detail=f"No spotlight found for id: {spotlight_id}"
+        )
 
     return url.replace("{spotlightId}", spotlight_id)

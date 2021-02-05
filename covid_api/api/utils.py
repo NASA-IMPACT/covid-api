@@ -219,12 +219,9 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
         # store our window information & read
         window_affine = src.window_transform(window)
         data = src.read(window=window)
+
         # calculate the coverage of pixels for weighting
         pctcover = rasterize_pctcover(geom, atrans=window_affine, shape=data.shape[1:])
-
-        print("Data: ", data)
-        print("PctCover: ", pctcover)
-        print("Nodata val: ", src.nodata)
 
         # Create a mask of the data that filters out the tile's `nodata` value. In order
         # to ensure the average calculation isn't incorrectly affected by large, negative,
