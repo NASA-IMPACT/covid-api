@@ -32,5 +32,7 @@ def get_detection(ml_type: MLTypes, site: SiteNames, date: str):
                 key=f"detections-{ml_type.value}/{site.value}/{date}.geojson",
             )
         )
+    # TODO: catch the specific exception that corresponds to a missing file
+    # and raise 404, otherwise raise a generic 500 error.
     except Exception:
         raise HTTPException(status_code=404, detail="Detections not found")

@@ -41,7 +41,7 @@ TASK_MEMORY: int = 512
 ################################################################################
 TIMEOUT: int = 10
 MEMORY: int = 1536
-MAX_CONCURRENT: int = 500
+MAX_CONCURRENT: int = 500 if STAGE == "prod" else 50
 
 # Cache
 CACHE_NODE_TYPE = "cache.m5.large"
