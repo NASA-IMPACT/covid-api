@@ -47,7 +47,7 @@ async def tile(
     timings = []
     headers: Dict[str, str] = {}
 
-    tile_hash = utils.get_hash(**dict(z=z, x=x, y=y, planet=False))
+    tile_hash = utils.get_hash(**dict(z=z, x=x, y=y, date=date, modis=True))
 
     content = None
     if cache_client:

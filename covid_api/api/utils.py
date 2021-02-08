@@ -691,15 +691,11 @@ ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])  # type:
 def modis_tile(x, y, z, date):
     """Fetches a MODIS_Terra tiles (background for detections-contrail dataset"""
 
-    print("X,Y,Z: ", x, y, z)
-
     epsg_3857_bbox = mercantile.xy_bounds(x, y, z)
     bbox_string = ",".join(str(v) for v in epsg_3857_bbox._asdict().values())
-    print("Bounding box: ", bbox_string)
 
-    url = f"https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&layers=MODIS_Aqua_SurfaceReflectance_Bands143&version=1.3.0&crs=EPSG:3857&transparent=true&width=512&height=512&bbox={bbox_string}&format=image/png&time={date.replace('_', '-')}T00:00:00Z"
-    # url = f"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpeg"
-    print("Formatted url: ", url)
+    url = f"https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&layers=MODIS_Terra_CorrectedReflectance_TrueColor&version=1.3.0&crs=EPSG:3857&transparent=true&width=512&height=512&bbox={bbox_string}&format=image/png&time={date.replace('_', '-') }T00:00:00Z"
+
     r = requests.get(url)
     return r.content
 
