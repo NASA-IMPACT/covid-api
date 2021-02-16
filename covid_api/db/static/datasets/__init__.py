@@ -185,12 +185,7 @@ class DatasetManager(object):
             # source URLs of background tiles for `detections-*` datasets are
             # handled differently in the front end so the the `source` objects
             # get updated here
-            if k in [
-                "detections-ship",
-                "detections-plane",
-                "detections-vehicles",
-                "detections-contrail",
-            ]:
+            if k.startswith("detections-"):
                 dataset.source = GeoJsonSource(
                     type=dataset.source.type, data=dataset.source.tiles[0]
                 ).dict()
