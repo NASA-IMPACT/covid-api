@@ -33,7 +33,8 @@ def mock_rio(src_path: str) -> DatasetReader:
 
 
 @pytest.fixture
-def dataset_manager():
+def dataset_manager(monkeypatch):
+
     from covid_api.db.static.datasets import DatasetManager
 
     return DatasetManager
