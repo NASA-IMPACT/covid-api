@@ -11,6 +11,7 @@ from enum import Enum
 from io import BytesIO
 from typing import Any, Dict, Optional, Tuple
 
+import mercantile
 import numpy as np
 
 # Temporary
@@ -685,6 +686,18 @@ COLOR_MAP_NAMES = [
 
 
 ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])  # type: ignore
+
+
+def modis_tile(x, y, z, date):
+    """Fetches a MODIS_Terra tiles (background for detections-contrail dataset"""
+
+    epsg_3857_bbox = mercantile.xy_bounds(x, y, z)
+    bbox_string = ",".join(str(v) for v in epsg_3857_bbox._asdict().values())
+
+    url = f"https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&layers=MODIS_Terra_CorrectedReflectance_TrueColor&version=1.3.0&crs=EPSG:3857&transparent=true&width=512&height=512&bbox={bbox_string}&format=image/png&time={date.replace('_', '-') }T00:00:00Z"
+
+    r = requests.get(url)
+    return r.content
 
 
 def planet_mosaic_tile(scenes, x, y, z):

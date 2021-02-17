@@ -19,6 +19,7 @@ inst_reqs = [
     "geojson-pydantic",
     "boto3",
     "requests",
+    "mercantile",
 ]
 extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit"],

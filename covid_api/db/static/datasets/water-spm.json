@@ -24,6 +24,7 @@
         "water-chlorophyll",
         "detections-ship",
         "detections-plane",
+        "detections-contrail",
         "detections-vehicles"
     ],
     "swatch": {

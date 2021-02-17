@@ -1,20 +1,20 @@
 {
-    "id": "detections-vehicles",
-    "name": "Vehicle",
+    "id": "detections-contrail",
+    "name": "Contrails",
     "type": "inference-timeseries",
-    "s3_location": "detections-vehicles",
+    "s3_location": "detections-contrail",
     "is_periodic": false,
     "time_unit": "day",
     "source": {
         "type": "geojson",
         "tiles": [
-            "{api_url}/detections/vehicles/{spotlightId}/{date}.geojson"
+            "{api_url}/detections/contrail/{spotlightId}/{date}.geojson"
         ]
     },
     "background_source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/detections-vehicles/background/{spotlightId}/{date}.tif"
+            "{api_url}/modis/{z}/{x}/{y}?date={date}"
         ]
     },
     "exclusive_with": [
@@ -31,12 +31,12 @@
         "water-spm",
         "detections-ship",
         "detections-plane",
-        "detections-contrail"
+        "detections-vehicles"
     ],
     "enabled": false,
     "swatch": {
         "color": "#C0C0C0",
         "name": "Grey"
     },
-    "info": "Vehicles detected each day in PlanetScope imagery are shown in orange."
+    "info": "Contrails detected each day, displayed over MODIS Imagery"
 }
