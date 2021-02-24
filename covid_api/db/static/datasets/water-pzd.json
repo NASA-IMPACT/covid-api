@@ -1,0 +1,48 @@
+{
+    "id": "water-pzd",
+    "name": "Photic Zone Depth Anomaly",
+    "type": "raster-timeseries",
+    "time_unit": "day",
+    "is_periodic": false,
+    "s3_location": "pzd_anomaly",
+    "source": {
+        "type": "raster",
+        "tiles": [
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/pzd_anomaly/anomaly-pzd-{spotlightId}-{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
+        ]
+    },
+    "exclusive_with": [
+        "agriculture",
+        "no2",
+        "co2-diff",
+        "co2",
+        "gibs-population",
+        "car-count",
+        "nightlights-viirs",
+        "nightlights-hd",
+        "detection-multi",
+        "water-spm",
+        "detections-ship",
+        "detections-plane",
+        "detections-contrail",
+        "detections-vehicles"
+    ],
+    "swatch": {
+        "color": "#154F8D",
+        "name": "Deep blue"
+    },
+    "legend": {
+        "type": "gradient",
+        "min": "less",
+        "max": "more",
+        "stops": [
+            "#3A88BD",
+            "#C9E0ED",
+            "#E4EEF3",
+            "#FDDCC9",
+            "#DE725B",
+            "#67001F"
+        ]
+    },
+    "info": "Photic zone depth (PZD) is the depth at which only 1% of the surface irradiation remains, and is an indicator of water clarity. PZD is impacted by concentrations of chlorophyll-a, suspended solids, and CDOM. Redder colors indicate increased water clarity. Bluer colors indicate decreased water clarity. White areas indicate no change."
+}
