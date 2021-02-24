@@ -54,6 +54,7 @@ class DatasetManager(object):
                 # "Payload" returned by the lambda_invocation (see docstring).
                 # Instead the thread is held while the lambda executes and then
                 # loads the metadata from s3.
+
                 invoke_lambda(
                     lambda_function_name=DATASET_METADATA_GENERATOR_FUNCTION_NAME
                 )
@@ -168,6 +169,8 @@ class DatasetManager(object):
             # spotlight id (if a spotlight was requested)
             format_url_params = dict(api_url=api_url)
             if spotlight_id:
+                if k == "nightlights-viirs" and spotlight_id in ["du", "gh"]:
+                    spotlight_id = "EUPorts"
                 format_url_params.update(dict(spotlight_id=spotlight_id))
 
             dataset.source.tiles = self._format_urls(
@@ -184,11 +187,7 @@ class DatasetManager(object):
             # source URLs of background tiles for `detections-*` datasets are
             # handled differently in the front end so the the `source` objects
             # get updated here
-            if k in [
-                "detections-ship",
-                "detections-plane",
-                "detections-vehicles",
-            ]:
+            if k.startswith("detections-"):
                 dataset.source = GeoJsonSource(
                     type=dataset.source.type, data=dataset.source.tiles[0]
                 ).dict()

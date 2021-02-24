@@ -30,6 +30,7 @@
         "water-chlorophyll",
         "water-spm",
         "detections-ship",
+        "detections-contrail",
         "detections-vehicles"
     ],
     "enabled": false,

@@ -19,6 +19,7 @@ inst_reqs = [
     "geojson-pydantic",
     "boto3",
     "requests",
+    "mercantile",
 ]
 extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit"],
@@ -43,7 +44,7 @@ extra_reqs = {
 
 setup(
     name="covid_api",
-    version="0.4.0",
+    version="0.5.0",
     description=u"",
     long_description=long_description,
     long_description_content_type="text/markdown",
