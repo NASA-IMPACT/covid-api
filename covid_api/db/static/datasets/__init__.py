@@ -42,6 +42,8 @@ class DatasetManager(object):
             return json.loads(
                 s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
             )
+            # with open('covid_api/db/static/datasets_g/MOD13A1.006.json') as datasets_json:
+            #     return json.load(datasets_json)
         except botocore.errorfactory.ClientError as e:
 
             if e.response["Error"]["Code"] == "NoSuchKey":
@@ -110,7 +112,7 @@ class DatasetManager(object):
 
     def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
-        # print(self._load_domain_metadata())
+        print(self._load_domain_metadata())
         datasets = self._process(
             datasets_domains_metadata=self._load_domain_metadata()["_all"],
             api_url=api_url,

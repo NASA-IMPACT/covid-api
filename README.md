@@ -44,3 +44,10 @@ Verifying PEP257 Compliance..............................................Passed
 mypy.....................................................................Passed
 [precommit cc12c5a] fix a really important thing
  ```
+
+ ## Development
+
+ ```bash
+ pip install -e . --no-cache-dir
+ uvicorn covid_api.main:app --reload
+ ```
