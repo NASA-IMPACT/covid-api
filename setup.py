@@ -1,6 +1,6 @@
 """Setup covid_api."""
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open("README.md") as f:
     long_description = f.read()
@@ -14,26 +14,29 @@ inst_reqs = [
     "email-validator",
     "fiona",
     "shapely",
+    "rasterio==1.1.8",
     "rasterstats",
     "geojson-pydantic",
     "boto3",
     "requests",
+    "mercantile",
 ]
 extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit"],
     "server": ["uvicorn", "click==7.0"],
     "deploy": [
         "docker",
-        "attrs~=19.3.0",
-        "aws-cdk.core",
-        "aws-cdk.aws_lambda",
-        "aws-cdk.aws_apigatewayv2",
-        "aws-cdk.aws_ecs",
-        "aws-cdk.aws_ec2",
-        "aws-cdk.aws_autoscaling",
-        "aws-cdk.aws_ecs_patterns",
-        "aws-cdk.aws_iam",
-        "aws-cdk.aws_elasticache",
+        "attrs",
+        "aws-cdk.core>=1.72.0",
+        "aws-cdk.aws_lambda>=1.72.0",
+        "aws-cdk.aws_apigatewayv2>=1.72.0",
+        "aws-cdk.aws_apigatewayv2_integrations>=1.72.0",
+        "aws-cdk.aws_ecs>=1.72.0",
+        "aws-cdk.aws_ec2>=1.72.0",
+        "aws-cdk.aws_autoscaling>=1.72.0",
+        "aws-cdk.aws_ecs_patterns>=1.72.0",
+        "aws-cdk.aws_iam>=1.72.0",
+        "aws-cdk.aws_elasticache>=1.72.0",
     ],
     "test": ["moto[iam]", "mock", "pytest", "pytest-cov", "pytest-asyncio", "requests"],
 }
@@ -41,7 +44,7 @@ extra_reqs = {
 
 setup(
     name="covid_api",
-    version="0.2.1",
+    version="0.5.0",
     description=u"",
     long_description=long_description,
     long_description_content_type="text/markdown",

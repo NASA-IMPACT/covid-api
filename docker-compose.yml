@@ -1,4 +1,4 @@
-version: '3'
+version: '3.2'
 
 services:
   api:
@@ -7,6 +7,10 @@ services:
       dockerfile: Dockerfiles/ecs/Dockerfile
     ports:
       - "8000:8000"
+    volumes:
+      - type: bind
+        source: ./covid_api
+        target: /app/covid_api
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
@@ -21,6 +25,8 @@ services:
       - MEMCACHE_USERNAME=myuser
       - MEMCACHE_PASSWORD=mypassword
       - PLANET_API_KEY=${PLANET_API_KEY}
+      - DATASET_METADATA_FILENAME=${STAGE}-dataset-metadata.json
+      - DATASET_METADATA_GENERATOR_FUNCTION_NAME=${STAGE}-dataset-metadata-generator
       - PORT=8000
       - PYTHONWARNINGS=ignore
       - VARIABLE_NAME=app

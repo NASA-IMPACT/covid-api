@@ -1,12 +1,11 @@
 """ covid_api static sites """
 import os
-from typing import List
 from enum import Enum
+from typing import List
 
-from covid_api.models.static import Site, Sites
 from covid_api.db.static.errors import InvalidIdentifier
-
-from covid_api.db.utils import get_indicators, indicator_folders, indicator_exists
+from covid_api.db.utils import get_indicators, indicator_exists, indicator_folders
+from covid_api.models.static import Site, Sites
 
 data_dir = os.path.join(os.path.dirname(__file__))
 

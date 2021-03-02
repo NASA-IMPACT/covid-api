@@ -2,8 +2,8 @@
 import os
 from typing import List
 
-from covid_api.models.static import IndicatorGroup, IndicatorGroups
 from covid_api.db.static.errors import InvalidIdentifier
+from covid_api.models.static import IndicatorGroup, IndicatorGroups
 
 data_dir = os.path.join(os.path.dirname(__file__))
 

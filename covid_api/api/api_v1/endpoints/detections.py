@@ -1,17 +1,18 @@
 """ Machine Learning Detections. """
-from fastapi import APIRouter, HTTPException
 import json
 from enum import Enum
 
 from covid_api.core import config
-from covid_api.models.static import Detection
-from covid_api.db.utils import s3_get
 from covid_api.db.static.sites import SiteNames
+from covid_api.db.utils import s3_get
+from covid_api.models.static import Detection
+
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
 
 # TODO: unhardcoded types and dates
-MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple", "plane"]])  # type: ignore
+MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple", "plane", "vehicles", "contrail"]])  # type: ignore
 
 
 @router.get(
@@ -24,7 +25,9 @@ MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple", "plane"]])  #
 )
 def get_detection(ml_type: MLTypes, site: SiteNames, date: str):
     """ Handle /detections requests."""
+
     try:
+
         return json.loads(
             s3_get(
                 bucket=config.INDICATOR_BUCKET,

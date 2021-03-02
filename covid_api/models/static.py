@@ -1,28 +1,55 @@
 """Static models."""
 
-from typing import List, Any, Optional, Union, Dict
-from pydantic import BaseModel
-from pydantic.color import Color
+from typing import Any, List, Optional, Union
+
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import Polygon
+from pydantic import BaseModel  # , validator
+
+# from pydantic.color import Color
+
+
+def to_camel(snake_str: str) -> str:
+    """
+    Converts snake_case_string to camelCaseString
+    """
+    first, *others = snake_str.split("_")
+    return "".join([first.lower(), *map(str.title, others)])
 
 class Vector(BaseModel):
     type: str
     data: str
 
 class Source(BaseModel):
-    """Source Model."""
+    """Base Source Model"""
 
     type: str
-    tiles: Optional[List]
-    vector: Optional[Vector]
+
+
+class NonGeoJsonSource(Source):
+    """Source Model for all non-geojson data types"""
+
+    tiles: List[str]
+
+
+class GeoJsonSource(Source):
+    """Source Model for geojson data types"""
+
+    data: str
 
 
 class Swatch(BaseModel):
     """Swatch Model."""
 
-    color: Color
+    color: str
     name: str
+
+
+class LabelStop(BaseModel):
+    """Model for Legend stops with color + label"""
+
+    color: str
+    label: str
 
 
 class Legend(BaseModel):
@@ -31,7 +58,35 @@ class Legend(BaseModel):
     type: str
     min: Optional[str]
     max: Optional[str]
-    stops: Union[List[Color], List[Dict[str, str]]]
+    stops: Union[List[str], List[LabelStop]]
+
+
+class DatasetComparison(BaseModel):
+    """ Dataset `compare` Model."""
+
+    enabled: bool
+    help: str
+    year_diff: int
+    map_label: str
+    source: NonGeoJsonSource
+    time_unit: Optional[str]
+
+
+def snake_case_to_kebab_case(s):
+    """Util method to convert kebab-case fieldnames to snake_case."""
+    return s.replace("_", "-")
+
+
+class Paint(BaseModel):
+    """Paint Model."""
+
+    raster_opacity: float
+
+    class Config:
+        """Paint Model Config"""
+
+        alias_generator = snake_case_to_kebab_case
+        allow_population_by_field_name = True
 
 
 class Dataset(BaseModel):
@@ -39,40 +94,40 @@ class Dataset(BaseModel):
 
     id: str
     name: str
-    description: str = ""
     type: str
+    is_periodic: bool = False
+    time_unit: str = ""
+    domain: List[str] = []
+    source: Union[NonGeoJsonSource, GeoJsonSource]
+    background_source: Optional[Union[NonGeoJsonSource, GeoJsonSource]]
+    exclusive_with: List[str] = []
+    swatch: Swatch
+    compare: Optional[DatasetComparison]
+    legend: Optional[Legend]
+    paint: Optional[Paint]
+    info: str = ""
+
+
+class DatasetExternal(Dataset):
+    """ Public facing dataset model (uses camelCase fieldnames) """
+
+    class Config:
+        """Generates alias to convert all fieldnames from snake_case to camelCase"""
+
+        alias_generator = to_camel
+        allow_population_by_field_name = True
+
+
+class DatasetInternal(Dataset):
+    """ Private dataset model (includes the dataset's location in s3) """
+
     s3_location: Optional[str]
-    is_periodic: bool = True
-    time_unit: Optional[str]
-    domain: List = []
-    source: Source
-    background_source: Optional[Source]
-    swatch: Swatch
-    legend: Optional[Legend]
-    info: str = ""
-
-
-class OutputDataset(BaseModel):
-    """Dataset Model."""
-
-    id: str
-    name: str
-    description: str = ""
-    type: str
-    is_periodic: bool = True
-    timeUnit: Optional[str]
-    domain: List = []
-    source: Source
-    background_source: Optional[Source]
-    swatch: Swatch
-    legend: Optional[Legend]
-    info: str = ""
 
 
 class Datasets(BaseModel):
     """Dataset List Model."""
 
-    datasets: List[OutputDataset]
+    datasets: List[DatasetExternal]
 
 
 class Site(BaseModel):

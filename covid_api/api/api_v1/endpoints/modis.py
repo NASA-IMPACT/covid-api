@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends, Path, Query
 from starlette.concurrency import run_in_threadpool
 
 _render = partial(run_in_threadpool, render)
-_tile = partial(run_in_threadpool, utils.planet_mosaic_tile)
+_tile = partial(run_in_threadpool, utils.modis_tile)
 
 router = APIRouter()
 responses = {
@@ -31,26 +31,23 @@ responses = {
     }
 }
 tile_routes_params: Dict[str, Any] = dict(
-    responses=responses, tags=["planet"], response_class=TileResponse
+    responses=responses, tags=["modis"], response_class=TileResponse
 )
 
 
-@router.get(r"/planet/{z}/{x}/{y}", **tile_routes_params)
+@router.get(r"/modis/{z}/{x}/{y}", **tile_routes_params)
 async def tile(
     z: int = Path(..., ge=0, le=30, description="Mercator tiles's zoom level"),
     x: int = Path(..., description="Mercator tiles's column"),
     y: int = Path(..., description="Mercator tiles's row"),
     date: str = Query(..., description="date of site for detections"),
-    site: str = Query(..., description="id of site for detections"),
     cache_client: CacheLayer = Depends(utils.get_cache),
 ) -> TileResponse:
-    """Handle /planet requests."""
+    """Handle /modis requests."""
     timings = []
     headers: Dict[str, str] = {}
 
-    scenes = utils.site_date_to_scenes(site, date)
-
-    tile_hash = utils.get_hash(**dict(z=z, x=x, y=y, scenes=scenes, planet=True))
+    tile_hash = utils.get_hash(**dict(z=z, x=x, y=y, date=date, modis=True))
 
     content = None
     if cache_client:
@@ -62,11 +59,9 @@ async def tile(
 
     if not content:
         with utils.Timer() as t:
-            tile, mask = await _tile(scenes, x, y, z)
+            content = await _tile(x, y, z, date)
+
         timings.append(("Read", t.elapsed))
-
-        content = await _render(tile, mask)
-
         timings.append(("Format", t.elapsed))
 
         if cache_client and content:

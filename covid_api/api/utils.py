@@ -1,41 +1,39 @@
 """covid_api.api.utils."""
 
-from typing import Any, Dict, Tuple, Optional
-
-from enum import Enum
-import re
-import time
-import json
+import csv
 import hashlib
+import json
 import math
 import random
-import requests
+import re
+import time
+from enum import Enum
 from io import BytesIO
-import csv
+from typing import Any, Dict, Optional, Tuple
 
+import mercantile
 import numpy as np
-from shapely.geometry import shape, box
-from rasterstats.io import bounds_window
-
-from starlette.requests import Request
 
 # Temporary
 import rasterio
+import requests
 from rasterio import features
 from rasterio.io import MemoryFile
 from rasterio.warp import transform_bounds
-from rio_tiler import constants
-from rio_tiler.utils import has_alpha_band, has_mask_band
-from rio_tiler.mercator import get_zooms
-
+from rasterstats.io import bounds_window
 from rio_color.operations import parse_operations
 from rio_color.utils import scale_dtype, to_math_type
-from rio_tiler.utils import linear_rescale, _chunks
+from rio_tiler import constants
+from rio_tiler.mercator import get_zooms
+from rio_tiler.utils import _chunks, has_alpha_band, has_mask_band, linear_rescale
+from shapely.geometry import box, shape
 
+from covid_api.core.config import INDICATOR_BUCKET, PLANET_API_KEY
 from covid_api.db.memcache import CacheLayer
 from covid_api.db.utils import s3_get
 from covid_api.models.timelapse import Feature
-from covid_api.core.config import PLANET_API_KEY, INDICATOR_BUCKET
+
+from starlette.requests import Request
 
 
 def get_cache(request: Request) -> CacheLayer:
@@ -222,11 +220,12 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
         window_affine = src.window_transform(window)
         data = src.read(window=window)
 
+        # calculate the coverage of pixels for weighting
         pctcover = rasterize_pctcover(geom, atrans=window_affine, shape=data.shape[1:])
 
         return (
-            np.nanmean(data * pctcover),
-            np.nanmedian(data * pctcover),
+            np.average(data[0], weights=pctcover),
+            np.nanmedian(data),
         )
 
 
@@ -689,6 +688,18 @@ COLOR_MAP_NAMES = [
 ColorMapName = Enum("ColorMapNames", [(a, a) for a in COLOR_MAP_NAMES])  # type: ignore
 
 
+def modis_tile(x, y, z, date):
+    """Fetches a MODIS_Terra tiles (background for detections-contrail dataset"""
+
+    epsg_3857_bbox = mercantile.xy_bounds(x, y, z)
+    bbox_string = ",".join(str(v) for v in epsg_3857_bbox._asdict().values())
+
+    url = f"https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&layers=MODIS_Terra_CorrectedReflectance_TrueColor&version=1.3.0&crs=EPSG:3857&transparent=true&width=512&height=512&bbox={bbox_string}&format=image/png&time={date.replace('_', '-') }T00:00:00Z"
+
+    r = requests.get(url)
+    return r.content
+
+
 def planet_mosaic_tile(scenes, x, y, z):
     """return a mosaicked tile for a set of planet scenes"""
     mosaic_tile = np.zeros((4, 256, 256), dtype=np.uint8)
@@ -721,14 +732,27 @@ def site_date_to_scenes(site: str, date: str):
     """get the scenes corresponding to detections for a given site and date"""
     # TODO: make this more generic
     # NOTE: detections folder has been broken up into `detections-plane` and `detections-ship`
-    site_date_to_scenes_csv = s3_get(
+    plane_site_date_to_scenes_csv = s3_get(
         INDICATOR_BUCKET, "detections-plane/detection_scenes.csv"
     )
-    site_date_lines = site_date_to_scenes_csv.decode("utf-8").split("\n")
-    reader = csv.DictReader(site_date_lines)
-    site_date_to_scenes_dict = dict()
+    plane_site_date_lines = plane_site_date_to_scenes_csv.decode("utf-8").split("\n")
+
+    ship_site_date_to_scenes_csv = s3_get(
+        INDICATOR_BUCKET, "detections-ship/detection_scenes.csv"
+    )
+    ship_site_date_lines = ship_site_date_to_scenes_csv.decode("utf-8").split("\n")
+
+    reader = list(csv.DictReader(plane_site_date_lines))
+    reader.extend(list(csv.DictReader(ship_site_date_lines)))
+
+    site_date_to_scenes_dict: dict = {}
+
     for row in reader:
-        site_date_to_scenes_dict[f'{row["aoi"]}-{row["date"]}'] = row[
-            "scene_id"
-        ].replace("'", '"')
-    return json.loads(site_date_to_scenes_dict[f"{site}-{date}"])
+
+        site_date_to_scenes_dict.setdefault(f'{row["aoi"]}-{row["date"]}', []).extend(
+            json.loads(row["scene_id"].replace("'", '"'))
+        )
+
+    # deduplicate scene list (in case multiple datasets contains the same
+    # scene id)
+    return list(set(site_date_to_scenes_dict[f"{site}-{date}"]))

@@ -10,6 +10,9 @@
       "https://h4ymwpefng.execute-api.us-east-1.amazonaws.com/v1/{z}/{x}/{y}@1x?url=s3://cumulus-map-internal/cloud-optimized/GPM_3IMERGDF/3B-DAY.MS.MRG.3IMERG.{date}-S000000-E235959.V06.tif&resampling_method=bilinear&bidx=1&rescale=0%2C1.5e16&color_map=custom_no2&color_formula=gamma r {gamma}"
     ]
   },
+  "paint": {
+    "raster-opacity": 0.9
+  },
   "exclusive_with": [
     "agriculture",
     "co2",
@@ -22,7 +25,9 @@
     "water-chlorophyll",
     "water-spm",
     "detections-ship",
-    "detections-plane"
+    "detections-plane",
+    "detections-contrail",
+    "detections-vehicles"
   ],
   "enabled": true,
   "compare": {
@@ -55,5 +60,5 @@
       "#050308"
     ]
   },
-  "info": "Darker colors indicate higher nitrogen dioxide (NO₂) levels associated and more activity. Lighter colors indicate lower levels of NO₂ and less activity."
+  "info": "Darker colors indicate higher nitrogen dioxide (NO₂) levels and more activity. Lighter colors indicate lower levels of NO₂ and less activity. Missing pixels indicate areas of no data most likely associated with cloud cover or snow."
 }

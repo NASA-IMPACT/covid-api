@@ -9,7 +9,12 @@ STAGE = os.environ.get("STAGE", "dev")
 BUCKET = "cumulus-map-internal"
 
 # Additional environement variable to set in the task/lambda
-ENV: dict = dict()
+TASK_ENV: dict = dict()
+
+# Existing VPC to point ECS/LAMBDA stacks towards. Defaults to creating a new
+# VPC if no ID is supplied.
+VPC_ID = os.environ.get("VPC_ID")
+
 
 ################################################################################
 #                                                                              #
@@ -36,7 +41,10 @@ TASK_MEMORY: int = 512
 ################################################################################
 TIMEOUT: int = 10
 MEMORY: int = 1536
-MAX_CONCURRENT: int = 500
+
+# stack skips setting concurrency if this value is 0
+# the stack will instead use unreserved lambda concurrency
+MAX_CONCURRENT: int = 500 if STAGE == "prod" else 0
 
 # Cache
 CACHE_NODE_TYPE = "cache.m5.large"

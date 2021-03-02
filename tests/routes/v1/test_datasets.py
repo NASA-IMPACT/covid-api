@@ -1,172 +1,130 @@
 """Test /v1/datasets endpoints"""
 
-import boto3
+
 import json
-from datetime import datetime
+from unittest.mock import patch
+
+import boto3
+import botocore
 from moto import mock_s3
+
 from covid_api.core.config import INDICATOR_BUCKET
+
+DATASET_METADATA_FILENAME = "dev-dataset-metadata.json"
+DATASET_METADATA_GENERATOR_FUNCTION_NAME = "dev-dataset-metadata-generator"
 
 
 @mock_s3
 def _setup_s3(empty=False):
-    s3 = boto3.client("s3")
-    s3.create_bucket(Bucket=INDICATOR_BUCKET)
-
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(INDICATOR_BUCKET)
+    bucket.create()
     if empty:
-        return s3
-
+        return bucket
     s3_keys = [
-        "xco2-mean/GOSAT_XCO2_201901_be_BG_circle_cog.tif",
-        "xco2-mean/GOSAT_XCO2_201904_be_BG_circle_cog.tif",
-        "xco2-mean/GOSAT_XCO2_201906_be_BG_circle_cog.tif",
-        "oc3_chla_anomaly/anomaly-chl-tk-2020_01_29.tif",
-        "oc3_chla_anomaly/anomaly-chl-tk-2020_02_05.tif",
-        "oc3_chla_anomaly/anomaly-chl-tk-2020_03_02.tif",
-        "BM_500M_DAILY/VNP46A2_V011_be_2020_01_01_cog.tif",
-        "BM_500M_DAILY/VNP46A2_V011_be_2020_02_29_cog.tif",
-        "BM_500M_DAILY/VNP46A2_V011_be_2020_03_20_cog.tif",
-        "BM_500M_DAILY/VNP46A2_V011_EUPorts_2020_01_01_cog.tif",
-        "BM_500M_DAILY/VNP46A2_V011_EUPorts_2020_02_29_cog.tif",
-        "BM_500M_DAILY/VNP46A2_V011_EUPorts_2020_03_20_cog.tif",
-        "BMHD_30M_MONTHLY/BMHD_VNP46A2_du_202005_cog.tif",
-        "BMHD_30M_MONTHLY/BMHD_VNP46A2_du_202006_cog.tif",
-        "BMHD_30M_MONTHLY/BMHD_VNP46A2_du_202007_cog.tif",
-        "OMNO2d_HRM/OMI_trno2_0.10x0.10_200401_Col3_V4.nc.tif",
-        "OMNO2d_HRM/OMI_trno2_0.10x0.10_200708_Col3_V4.nc.tif",
-        "OMNO2d_HRM/OMI_trno2_0.10x0.10_200901_Col3_V4.nc.tif",
-        "detections-plane/ny/2020_01_09.geojson",
-        "detections-plane/ny/2020_01_21.geojson",
-        "detections-plane/ny/2020_02_02.geoson",
-        "detections-ship/ny/2020_01_09.geojson",
-        "detections-ship/ny/2020_01_21.geojson",
-        "detections-ship/ny/2020_02_02.geoson",
-        "indicators/test/super.csv",
+        ("indicators/test/super.csv", b"test"),
+        (
+            DATASET_METADATA_FILENAME,
+            json.dumps(
+                {
+                    "_all": {
+                        "co2": {
+                            "domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]
+                        },
+                        "detections-plane": {
+                            "domain": [
+                                "2019-01-01T00:00:00Z",
+                                "2019-10-10T00:00:00Z",
+                                "2020-01-01T:00:00:00Z",
+                            ]
+                        },
+                    },
+                    "global": {
+                        "co2": {
+                            "domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]
+                        }
+                    },
+                    "tk": {
+                        "detections-plane": {
+                            "domain": [
+                                "2019-01-01T00:00:00Z",
+                                "2019-10-10T00:00:00Z",
+                                "2020-01-01T:00:00:00Z",
+                            ]
+                        }
+                    },
+                    "ny": {
+                        "detections-ship": {
+                            "domain": [
+                                "2019-01-01T00:00:00Z",
+                                "2019-10-10T00:00:00Z",
+                                "2020-01-01T:00:00:00Z",
+                            ]
+                        }
+                    },
+                }
+            ),
+        ),
     ]
-    for key in s3_keys:
-        s3.put_object(
-            Bucket=INDICATOR_BUCKET,
-            Key=key,
-            Body=b"test",
+    for key, content in s3_keys:
+        bucket.put_object(Body=content, Key=key)
+    return bucket
+
+
+@mock_s3
+def test_metadata_file_generation_triggered_if_not_found(
+    app, dataset_manager, monkeypatch
+):
+
+    _setup_s3(empty=True)
+
+    with patch("covid_api.db.static.datasets.invoke_lambda") as mocked_invoke_lambda:
+
+        mocked_invoke_lambda.return_value = {"result": "success"}
+        # Load dataset will invoke the mocked-lambda and then attempt to load the file
+        # from S3 once the lambda finished executing. Since the mocked lambda
+        # doesn't actually write anything to S3 in this test, the call to load the file
+        # from S3 will fail. This is not a problem since this test is just to ascertain
+        # that the lambda was in fact triggered.
+        try:
+            dataset_manager()._load_domain_metadata()
+        except botocore.exceptions.ClientError as e:
+            if e.response["Error"]["Code"] == "404":
+                pass
+
+        mocked_invoke_lambda.assert_called_with(
+            lambda_function_name=DATASET_METADATA_GENERATOR_FUNCTION_NAME
         )
 
-    return s3
+
+@mock_s3
+def test_datasets(app):
+    _setup_s3()
+    response = app.get("v1/datasets")
+
+    assert response.status_code == 200
+    content = json.loads(response.content)
+
+    assert "co2" in [d["id"] for d in content["datasets"]]
+    assert "detections-plane" in [d["id"] for d in content["datasets"]]
 
 
 @mock_s3
-def test_databases(app):
-
+def test_spotlight_datasets(app):
     _setup_s3()
-
-    response = app.get("/v1/datasets")
+    response = app.get("v1/datasets/tk")
 
     assert response.status_code == 200
 
     content = json.loads(response.content)
-    assert "datasets" in content
-    assert len(content["datasets"]) > 0
-
-
-@mock_s3
-def test_datasets_monthly(app):
-
-    _setup_s3()
-
-    response = app.get("/v1/datasets/be")
-    assert response.status_code == 200
-
-    content = json.loads(response.content)
-    assert "datasets" in content
-
-    print(content["datasets"])
-
-    dataset_info = [d for d in content["datasets"] if d["id"] == "co2"][0]
-    assert dataset_info["domain"][0] == datetime.strftime(
-        datetime(2019, 1, 1), "%Y-%m-%dT%H:%M:%S"
-    )
-    assert dataset_info["domain"][1] == datetime.strftime(
-        datetime(2019, 6, 1), "%Y-%m-%dT%H:%M:%S"
-    )
-
-
-@mock_s3
-def test_euports_dataset(app):
-
-    _setup_s3()
-
-    response = app.get("/v1/datasets/du")
-    assert response.status_code == 200
-
-    content = json.loads(response.content)
-    assert "datasets" in content
-
-    dataset_info = [d for d in content["datasets"] if d["id"] == "nightlights-hd"][0]
-    assert dataset_info["domain"][0] == datetime.strftime(
-        datetime(2020, 5, 1), "%Y-%m-%dT%H:%M:%S"
-    )
-    assert dataset_info["domain"][1] == datetime.strftime(
-        datetime(2020, 7, 1), "%Y-%m-%dT%H:%M:%S"
-    )
-
-
-@mock_s3
-def test_detections_datasets(app):
-    """test /datasets endpoint"""
-
-    # aws mocked resources
-    _setup_s3()
-
-    response = app.get("v1/datasets/ny")
-    assert response.status_code == 200
-
-    content = json.loads(response.content)
-    assert "datasets" in content
-
-    dataset_info = [d for d in content["datasets"] if d["id"] == "detections-plane"][0]
-    assert len(dataset_info["domain"]) == 2
-
-
-@mock_s3
-def test_datasets_daily(app):
-    """test /datasets endpoint"""
-
-    # aws mocked resources
-    _setup_s3()
-
-    response = app.get("/v1/datasets/tk")
-    assert response.status_code == 200
-
-    content = json.loads(response.content)
-    assert "datasets" in content
-
-    dataset_info = [d for d in content["datasets"] if d["id"] == "water-chlorophyll"][0]
-    assert len(dataset_info["domain"]) > 2
-    assert dataset_info["domain"][0] == datetime.strftime(
-        datetime(2020, 1, 29), "%Y-%m-%dT%H:%M:%S"
-    )
-    assert dataset_info["domain"][-1] == datetime.strftime(
-        datetime(2020, 3, 2), "%Y-%m-%dT%H:%M:%S"
-    )
-
-
-@mock_s3
-def test_global_datasets(app):
-    """test /datasets endpoint"""
-
-    # aws mocked resources
-    _setup_s3()
-
-    response = app.get("/v1/datasets/global")
-    assert response.status_code == 200
-
-    content = json.loads(response.content)
-    assert "datasets" in content
-
-    dataset_info = [d for d in content["datasets"] if d["id"] == "no2"][0]
-    assert len(dataset_info["domain"]) == 2
+    assert "co2" in [d["id"] for d in content["datasets"]]
+    assert "detections-plane" in [d["id"] for d in content["datasets"]]
+    assert "detections-ship" not in [d["id"] for d in content["datasets"]]
 
 
 @mock_s3
 def test_incorrect_dataset_id(app):
-    _setup_s3(empty=True)
+    _setup_s3()
+
     response = app.get("/v1/datasets/NOT_A_VALID_DATASET")
     assert response.status_code == 404

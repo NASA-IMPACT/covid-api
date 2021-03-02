@@ -1,18 +1,18 @@
 """covid_api api."""
 
-from fastapi import APIRouter
-
+from covid_api.api.api_v1.endpoints import detections, datasets  # isort:skip
 from covid_api.api.api_v1.endpoints import (
-    ogc,
-    detections,
-    timelapse,
-    datasets,
-    sites,
     groups,
-    tiles,
     metadata,
+    modis,
+    ogc,
     planet,
+    sites,
+    tiles,
+    timelapse,
 )
+
+from fastapi import APIRouter
 
 api_router = APIRouter()
 api_router.include_router(tiles.router, tags=["tiles"])
@@ -24,3 +24,4 @@ api_router.include_router(sites.router, tags=["sites"])
 api_router.include_router(groups.router, tags=["indicator groups"])
 api_router.include_router(detections.router, tags=["detections"])
 api_router.include_router(planet.router, tags=["planet"])
+api_router.include_router(modis.router, tags=["modis"])
