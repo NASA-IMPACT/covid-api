@@ -39,11 +39,11 @@ class DatasetManager(object):
 
     def _load_domain_metadata(self):
         try:
-            return json.loads(
-                s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
-            )
-            # with open('covid_api/db/static/datasets_g/MOD13A1.006.json') as datasets_json:
-            #     return json.load(datasets_json)
+            # return json.loads(
+            #     s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
+            # )
+            with open('covid_api/db/static/datasets_g/dev-datasets-metadata.json') as datasets_json:
+                return json.load(datasets_json)
         except botocore.errorfactory.ClientError as e:
 
             if e.response["Error"]["Code"] == "NoSuchKey":
@@ -98,21 +98,21 @@ class DatasetManager(object):
         except InvalidIdentifier:
             raise
 
-        spotlight_datasets = self._process(
-            self._load_domain_metadata()[site.id],
-            api_url=api_url,
-            spotlight_id=site.id,
-        )
+        # spotlight_datasets = self._process(
+        #     self._load_domain_metadata()[site.id],
+        #     api_url=api_url,
+        #     spotlight_id=site.id,
+        # )
 
         return Datasets(
             datasets=[
-                dataset.dict() for dataset in [*global_datasets, *spotlight_datasets]
+                dataset.dict() for dataset in [*global_datasets]#, *spotlight_datasets]
             ]
         )
 
     def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
-        print(self._load_domain_metadata())
+        # print(self._load_domain_metadata())
         datasets = self._process(
             datasets_domains_metadata=self._load_domain_metadata()["_all"],
             api_url=api_url,
