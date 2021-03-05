@@ -43,6 +43,11 @@ def handler(event, context):
 
     # TODO: defined TypedDicts for these!
     datasets = _gather_json_data(DATASETS_JSON_FILEPATH)
+    stac_api_url = 'https://wb-nightlights.s3.amazonaws.com/201204/catalog.json'
+    # stac_response = requests.get(stac_api_url)
+    # if stac_response.status_code == 200:
+    #     datasets = json.loads(stac_response.content)
+    # items = filter(datasets, 
     sites = _gather_json_data(SITES_JSON_FILEPATH)
 
     result = json.dumps(_gather_datasets_metadata(datasets, sites))

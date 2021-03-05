@@ -117,6 +117,7 @@ class DatasetManager(object):
             datasets_domains_metadata=self._load_domain_metadata()["_all"],
             api_url=api_url,
         )
+        print(datasets)
         return Datasets(datasets=[dataset.dict() for dataset in datasets])
 
     def list(self) -> List[str]:
@@ -178,11 +179,11 @@ class DatasetManager(object):
             dataset.source.tiles = self._format_urls(
                 tiles=dataset.source.tiles, **format_url_params
             )
-            if dataset.background_source:
+            if 'background_source' in dataset and dataset.background_source:
                 dataset.background_source.tiles = self._format_urls(
                     tiles=dataset.background_source.tiles, **format_url_params
                 )
-            if dataset.compare:
+            if 'compare' in dataset and dataset.compare:
                 dataset.compare.source.tiles = self._format_urls(
                     tiles=dataset.compare.source.tiles, **format_url_params
                 )

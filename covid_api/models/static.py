@@ -93,14 +93,14 @@ class Dataset(BaseModel):
     name: str
     type: str
 
-    is_periodic: bool = False
+    #is_periodic: bool = False
     time_unit: str = ""
     domain: List[str] = []
     source: Union[NonGeoJsonSource, GeoJsonSource]
-    background_source: Optional[Union[NonGeoJsonSource, GeoJsonSource]]
-    exclusive_with: List[str] = []
+    #background_source: Optional[Union[NonGeoJsonSource, GeoJsonSource]]
+    #exclusive_with: List[str] = []
     swatch: Swatch
-    compare: Optional[DatasetComparison]
+    #compare: Optional[DatasetComparison]
     legend: Optional[Legend]
     paint: Optional[Paint]
     info: str = ""

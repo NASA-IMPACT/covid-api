@@ -26,7 +26,6 @@ def get_datasets(
     """Return a list of datasets."""
     dataset_hash = utils.get_hash(spotlight_id="all")
     content = None
-
     if cache_client:
         content = cache_client.get_dataset_from_cache(dataset_hash)
         if content:

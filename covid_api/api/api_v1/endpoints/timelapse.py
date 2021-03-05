@@ -16,7 +16,7 @@ router = APIRouter()
 def timelapse(query: TimelapseRequest):
     """Handle /timelapse requests."""
     if query.type == "modis-vi":
-        url = f"s3://modis-vi-nasa/MOD13A1.006/2018.01.01.tif"
+        url = f"s3://modis-vi-nasa/MOD13A1.006/{query.month}.tif"
     else:
         url = f"s3://covid-eo-data/xco2-mean/xco2_16day_mean.{query.month}.tif"
     mean, median = get_zonal_stat(query.geojson, url)
