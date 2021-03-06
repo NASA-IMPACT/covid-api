@@ -93,7 +93,7 @@ class Dataset(BaseModel):
     name: str
     type: str
 
-    #is_periodic: bool = False
+    is_periodic: bool = False
     time_unit: str = ""
     domain: List[str] = []
     source: Union[NonGeoJsonSource, GeoJsonSource]

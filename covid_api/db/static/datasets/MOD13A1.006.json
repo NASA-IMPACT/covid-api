@@ -3,6 +3,7 @@
     "name": "MODIS Vegetation Indices MOD13A1.006",
     "type": "raster-timeseries",
     "time_unit": "day",
+    "is_periodic": false,
     "swatch": {
         "color": "#189C54",
         "name": "Dark Green"
