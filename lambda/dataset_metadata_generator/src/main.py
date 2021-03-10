@@ -3,21 +3,22 @@ import datetime
 import json
 import os
 import re
+import requests
 from typing import Any, Dict, List, Optional, Union
 
 import boto3
 
-BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+BASE_PATH = os.path.dirname('/Users/aimeebarciauskas/github/developmentseed/goddard-dashboard/covid-api/covid_api/db/static/')#os.path.abspath(__file__))
 DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datasets")
 SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
 
 
-BUCKET_NAME = os.environ["DATA_BUCKET_NAME"]
-DATASET_METADATA_FILENAME = os.environ["DATASET_METADATA_FILENAME"]
+#BUCKET_NAME = os.environ["DATA_BUCKET_NAME"]
+#DATASET_METADATA_FILENAME = os.environ["DATASET_METADATA_FILENAME"]
 
 
 s3 = boto3.resource("s3")
-bucket = s3.Bucket(BUCKET_NAME)
+bucket = s3.Bucket('BUCKET_NAME')
 
 DT_FORMAT = "%Y-%m-%d"
 MT_FORMAT = "%Y%m"
@@ -43,20 +44,54 @@ def handler(event, context):
 
     # TODO: defined TypedDicts for these!
     datasets = _gather_json_data(DATASETS_JSON_FILEPATH)
-    stac_api_url = 'https://wb-nightlights.s3.amazonaws.com/201204/catalog.json'
-    # stac_response = requests.get(stac_api_url)
-    # if stac_response.status_code == 200:
-    #     datasets = json.loads(stac_response.content)
-    # items = filter(datasets, 
+    stac_datasets = _fetch_stac_items()
     sites = _gather_json_data(SITES_JSON_FILEPATH)
 
     result = json.dumps(_gather_datasets_metadata(datasets, sites))
+    print(stac_datasets)
+    print(result)
 
-    bucket.put_object(
-        Body=result, Key=DATASET_METADATA_FILENAME, ContentType="application/json",
-    )
+    # bucket.put_object(
+    #     Body=result, Key=DATASET_METADATA_FILENAME, ContentType="application/json",
+    # )
     return result
 
+STAC_API_URL = 'https://eod-catalog-svc-prod.astraea.earth/collections'
+def _fetch_stac_items():
+    # request all collections
+    # for each collection we will want to add an item to the final list of datasets
+    stac_response = requests.get(STAC_API_URL)
+    if stac_response.status_code == 200:
+        stac_collections = json.loads(stac_response.content)["collections"]
+    stac_datasets = []
+    for collection in stac_collections:
+        # TODO: defined TypedDicts for these!
+        stac_dataset = {
+            "id": collection['id'],
+            "name": collection['title'],
+            "type": "raster",
+            "time_unit": "",
+            "is_periodic": False,
+            "swatch": {
+                "color": "",
+                "name": ""
+            },
+            "source": {
+                "type": "raster",
+                # For now, don't list any tiles. We will want to mosaic STAC search results.
+                "tiles": []
+            },
+            "legend": {
+                "type": "",
+                "min": "",
+                "max": "",
+                "stops": []
+            },
+            "info": collection['description']
+        }
+        stac_datasets.append(stac_dataset)
+
+    return stac_datasets
 
 def _gather_datasets_metadata(datasets: List[dict], sites: List[dict]):
     """Reads through the s3 bucket to generate a file that contains
