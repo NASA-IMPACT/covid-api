@@ -13,17 +13,17 @@ DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datasets")
 SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
 
 
-#BUCKET_NAME = os.environ["DATA_BUCKET_NAME"]
+BUCKET_NAME = 'modis-vi-nasa' #os.environ["DATA_BUCKET_NAME"]
 #DATASET_METADATA_FILENAME = os.environ["DATASET_METADATA_FILENAME"]
 
 
 s3 = boto3.resource("s3")
-bucket = s3.Bucket('BUCKET_NAME')
+bucket = s3.Bucket(BUCKET_NAME)
 
 DT_FORMAT = "%Y-%m-%d"
 MT_FORMAT = "%Y%m"
 
-
+# can test with python -c 'import main; import json; print(json.dumps(main.handler({}, {})))' | jq .
 def handler(event, context):
     """
     Params:
@@ -45,24 +45,24 @@ def handler(event, context):
     # TODO: defined TypedDicts for these!
     datasets = _gather_json_data(DATASETS_JSON_FILEPATH)
     stac_datasets = _fetch_stac_items()
+    datasets.extend(stac_datasets)
     sites = _gather_json_data(SITES_JSON_FILEPATH)
 
-    result = json.dumps(_gather_datasets_metadata(datasets, sites))
-    print(stac_datasets)
-    print(result)
-
+    result = _gather_datasets_metadata(datasets, sites)
+    with open(f"dev-datasets-metadata.json", "w") as w:
+        w.write(json.dumps(result, indent=2))
     # bucket.put_object(
     #     Body=result, Key=DATASET_METADATA_FILENAME, ContentType="application/json",
     # )
     return result
 
-STAC_API_URL = 'https://eod-catalog-svc-prod.astraea.earth/collections'
+STAC_API_URL = 'https://earth-search.aws.element84.com/v0/collections'
 def _fetch_stac_items():
     # request all collections
     # for each collection we will want to add an item to the final list of datasets
     stac_response = requests.get(STAC_API_URL)
     if stac_response.status_code == 200:
-        stac_collections = json.loads(stac_response.content)["collections"]
+        stac_collections = json.loads(stac_response.content)
     stac_datasets = []
     for collection in stac_collections:
         # TODO: defined TypedDicts for these!
@@ -70,7 +70,7 @@ def _fetch_stac_items():
             "id": collection['id'],
             "name": collection['title'],
             "type": "raster",
-            "time_unit": "",
+            "time_unit": "day",
             "is_periodic": False,
             "swatch": {
                 "color": "",
@@ -115,23 +115,22 @@ def _gather_datasets_metadata(datasets: List[dict], sites: List[dict]):
     metadata: Dict[str, dict] = {}
 
     for dataset in datasets:
-        if not dataset.get("s3_location"):
-            continue
+        if dataset.get("s3_location"):
+            domain_args = {
+                "dataset_folder": dataset["s3_location"],
+                "is_periodic": dataset.get("is_periodic"),
+                "time_unit": dataset.get("time_unit"),
+            }
+            domain = _get_dataset_domain(**domain_args)
+            dataset['domain'] = domain
 
-        domain_args = {
-            "dataset_folder": dataset["s3_location"],
-            "is_periodic": dataset.get("is_periodic"),
-            "time_unit": dataset.get("time_unit"),
-        }
-
-        domain = _get_dataset_domain(**domain_args)
-
-        metadata.setdefault("_all", {}).update({dataset["id"]: {"domain": domain}})
+        
+        metadata.setdefault("_all", {}).update({dataset["id"]: dataset})
 
         if _is_global_dataset(dataset):
 
             metadata.setdefault("global", {}).update(
-                {dataset["id"]: {"domain": domain}}
+                {dataset["id"]: dataset}
             )
             continue
 
@@ -175,6 +174,7 @@ def _is_global_dataset(dataset: dict) -> bool:
         [
             i in dataset["source"]["tiles"][0]
             for i in ["{spotlightId}", "greatlakes", "togo"]
+            if dataset['source']['tiles']
         ]
     )
 
@@ -198,7 +198,7 @@ def _gather_s3_keys(
     set(str)
 
     """
-
+    
     keys = [x.key for x in bucket.objects.filter(Prefix=prefix)]
 
     if not spotlight_id:
@@ -243,7 +243,6 @@ def _get_dataset_domain(
         s3_keys_args["spotlight_id"] = spotlight_id
 
     keys = _gather_s3_keys(**s3_keys_args)
-
     if not keys:
         raise NoKeysFoundForSpotlight
 
@@ -253,7 +252,7 @@ def _get_dataset_domain(
 
         # matches either dates like: YYYYMM or YYYY_MM_DD
         pattern = re.compile(
-            r"[^a-zA-Z0-9]((?P<YEAR>\d{4})_(?P<MONTH>\d{2})_(?P<DAY>\d{2}))[^a-zA-Z0-9]"
+            r"[^a-zA-Z0-9]((?P<YEAR>\d{4})[_|.](?P<MONTH>\d{2})[_|.](?P<DAY>\d{2}))[^a-zA-Z0-9]"
         )
         if time_unit == "month":
             pattern = re.compile(

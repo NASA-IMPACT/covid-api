@@ -42,8 +42,8 @@ class DatasetManager(object):
             # return json.loads(
             #     s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
             # )
-            with open('covid_api/db/static/datasets_g/dev-datasets-metadata.json') as datasets_json:
-                return json.load(datasets_json)
+            with open('lambda/dataset_metadata_generator/src/dev-datasets-metadata.json', 'r') as datasets_json:
+                return json.loads(datasets_json.read())
         except botocore.errorfactory.ClientError as e:
 
             if e.response["Error"]["Code"] == "NoSuchKey":
@@ -83,14 +83,15 @@ class DatasetManager(object):
         (Datasets) pydantic model contains a list of datasets' metadata
         """
 
-        global_datasets = self._process(
-            self._load_domain_metadata()["global"],
-            api_url=api_url,
-            spotlight_id="global",
-        )
+        # global_datasets = self._process(
+        #     self._load_domain_metadata()["global"],
+        #     api_url=api_url,
+        #     spotlight_id="global",
+        # )
+        global_datasets = self._load_domain_metadata()["global"]
 
         if spotlight_id == "global":
-            return Datasets(datasets=[dataset.dict() for dataset in global_datasets])
+            return Datasets(datasets=[dataset for dataset in global_datasets.values()])
 
         # Verify that the requested spotlight exists
         try:
@@ -106,19 +107,19 @@ class DatasetManager(object):
 
         return Datasets(
             datasets=[
-                dataset.dict() for dataset in [*global_datasets]#, *spotlight_datasets]
+                dataset for dataset in [*global_datasets.values()]#, *spotlight_datasets]
             ]
         )
 
     def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
         # print(self._load_domain_metadata())
-        datasets = self._process(
-            datasets_domains_metadata=self._load_domain_metadata()["_all"],
-            api_url=api_url,
-        )
-        print(datasets)
-        return Datasets(datasets=[dataset.dict() for dataset in datasets])
+        # datasets = self._process(
+        #     datasets_domains_metadata=self._load_domain_metadata()["_all"],
+        #     api_url=api_url,
+        # )
+        datasets = self._load_domain_metadata()['_all']
+        return Datasets(datasets=[dataset for dataset in datasets.values()])
 
     def list(self) -> List[str]:
         """List all datasets"""

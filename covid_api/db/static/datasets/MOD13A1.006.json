@@ -4,6 +4,7 @@
     "type": "raster-timeseries",
     "time_unit": "day",
     "is_periodic": false,
+    "s3_location": "MOD13A1.006",
     "swatch": {
         "color": "#189C54",
         "name": "Dark Green"
