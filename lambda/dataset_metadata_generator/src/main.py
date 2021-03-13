@@ -8,14 +8,12 @@ from typing import Any, Dict, List, Optional, Union
 
 import boto3
 
-BASE_PATH = os.path.dirname('/Users/aimeebarciauskas/github/developmentseed/goddard-dashboard/covid-api/covid_api/db/static/')#os.path.abspath(__file__))
+BASE_PATH = os.path.abspath(__file__)
 DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datasets")
 SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
 
-
-BUCKET_NAME = 'modis-vi-nasa' #os.environ["DATA_BUCKET_NAME"]
-#DATASET_METADATA_FILENAME = os.environ["DATASET_METADATA_FILENAME"]
-
+BUCKET_NAME = os.environ["DATA_BUCKET_NAME"] || config.BUCKET
+DATASET_METADATA_FILENAME = os.environ["DATASET_METADATA_FILENAME"] || config.dataset_metadata_filename
 
 s3 = boto3.resource("s3")
 bucket = s3.Bucket(BUCKET_NAME)
@@ -49,11 +47,13 @@ def handler(event, context):
     sites = _gather_json_data(SITES_JSON_FILEPATH)
 
     result = _gather_datasets_metadata(datasets, sites)
-    with open(f"dev-datasets-metadata.json", "w") as w:
-        w.write(json.dumps(result, indent=2))
-    # bucket.put_object(
-    #     Body=result, Key=DATASET_METADATA_FILENAME, ContentType="application/json",
-    # )
+    if os.environ.get('RUN_LOCAL') == 'true':
+        with open(DATASET_METADATA_FILENAME, "w") as w:
+            w.write(json.dumps(result, indent=2))
+    else:
+        bucket.put_object(
+            Body=result, Key=DATASET_METADATA_FILENAME, ContentType="application/json",
+        )
     return result
 
 STAC_API_URL = 'https://earth-search.aws.element84.com/v0/collections'

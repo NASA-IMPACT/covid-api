@@ -39,11 +39,13 @@ class DatasetManager(object):
 
     def _load_domain_metadata(self):
         try:
-            # return json.loads(
-            #     s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
-            # )
-            with open('lambda/dataset_metadata_generator/src/dev-datasets-metadata.json', 'r') as datasets_json:
-                return json.loads(datasets_json.read())
+            if os.environ['RUN_LOCAL'] == True:
+                with open(DATASET_METADATA_FILENAME, 'r') as datasets_json:
+                    return json.loads(datasets_json.read())
+            else:
+                return json.loads(
+                    s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
+                )
         except botocore.errorfactory.ClientError as e:
 
             if e.response["Error"]["Code"] == "NoSuchKey":
