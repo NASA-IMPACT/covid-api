@@ -1,10 +1,13 @@
 """Config."""
 
 import os
+import yaml
+
+config = yaml.load(open('../stack/config.yml', 'r'))
 
 API_VERSION_STR = "/v1"
 
-PROJECT_NAME = "covid_api"
+PROJECT_NAME = config.PROJECT_NAME
 
 SERVER_NAME = os.getenv("SERVER_NAME")
 SERVER_HOST = os.getenv("SERVER_HOST")
