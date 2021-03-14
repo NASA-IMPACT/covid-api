@@ -1,0 +1,42 @@
+{
+    "id": "detections-plane",
+    "name": "Airplanes",
+    "type": "inference-timeseries",
+    "s3_location": "detections-plane",
+    "is_periodic": false,
+    "time_unit": "day",
+    "source": {
+        "type": "geojson",
+        "tiles": [
+            "{api_url}/detections/plane/{spotlightId}/{date}.geojson"
+        ]
+    },
+    "background_source": {
+        "type": "raster",
+        "tiles": [
+            "{api_url}/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
+        ]
+    },
+    "exclusive_with": [
+        "agriculture",
+        "no2",
+        "co2-diff",
+        "co2",
+        "gibs-population",
+        "car-count",
+        "nightlights-viirs",
+        "nightlights-hd",
+        "detection-multi",
+        "water-chlorophyll",
+        "water-spm",
+        "detections-ship",
+        "detections-contrail",
+        "detections-vehicles"
+    ],
+    "enabled": false,
+    "swatch": {
+        "color": "#C0C0C0",
+        "name": "Grey"
+    },
+    "info": "Grounded airplanes detected each day in PlanetScope imagery are shown in orange."
+}

@@ -1,0 +1,62 @@
+{
+    "id": "co2",
+    "name": "CO\u2082 (Avg)",
+    "type": "raster-timeseries",
+    "time_unit": "day",
+    "s3_location": "xco2-mean",
+    "is_periodic": true,
+    "source": {
+        "type": "raster",
+        "tiles": [
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-mean/xco2_16day_mean.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
+        ]
+    },
+    "exclusive_with": [
+        "agriculture",
+        "no2",
+        "co2-diff",
+        "gibs-population",
+        "car-count",
+        "nightlights-viirs",
+        "nightlights-hd",
+        "detection-multi",
+        "water-chlorophyll",
+        "water-spm",
+        "detections-ship",
+        "detections-plane",
+        "detections-contrail",
+        "detections-vehicles"
+    ],
+    "enabled": false,
+    "compare": {
+        "enabled": true,
+        "help": "Compare with baseline",
+        "year_diff": 0,
+        "map_label": "{date}: Base vs Mean",
+        "source": {
+            "type": "raster",
+            "tiles": [
+                "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-base/xco2_16day_base.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
+            ]
+        }
+    },
+    "swatch": {
+        "color": "#189C54",
+        "name": "Dark Green"
+    },
+    "legend": {
+        "type": "gradient-adjustable",
+        "min": "< 408 ppm",
+        "max": "> 419 ppm",
+        "stops": [
+            "#313695",
+            "#588cbf",
+            "#a3d2e5",
+            "#e8f6e8",
+            "#fee89c",
+            "#fba55c",
+            "#e24932"
+        ]
+    },
+    "info": "This layer shows the average background concentration of carbon dioxide (CO₂) in our atmosphere for 2020. Redder colors indicate more CO₂. Bluer colors indicate less CO₂."
+}
