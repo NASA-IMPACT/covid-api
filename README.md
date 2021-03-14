@@ -29,6 +29,16 @@ cd covid-api
 pip install -e .
 ```
 
+To run tests, this requires `tox` and python3.7:
+
+You can manage python versions with [pyenv](https://github.com/pyenv/pyenv). `.python-version` specifies installation and local use of python3.7.
+
+```bash
+pyenv install
+pip install tox
+tox
+```
+
 To run the app locally, generate a config file, generate static dataset json
 
 ```bash
