@@ -31,7 +31,6 @@ class DatasetManager(object):
             key: DatasetInternal.parse_obj(dataset)
             for key, dataset in dataset_objects['_all'].items()
         }
-        print(datasets)
         return datasets
 
     def _load_metadata_from_file(self):
@@ -176,11 +175,11 @@ class DatasetManager(object):
             dataset.source.tiles = self._format_urls(
                 tiles=dataset.source.tiles, **format_url_params
             )
-            if 'background_source' in dataset and dataset.background_source:
+            if dataset.background_source:
                 dataset.background_source.tiles = self._format_urls(
                     tiles=dataset.background_source.tiles, **format_url_params
                 )
-            if 'compare' in dataset and dataset.compare:
+            if dataset.compare:
                 dataset.compare.source.tiles = self._format_urls(
                     tiles=dataset.compare.source.tiles, **format_url_params
                 )

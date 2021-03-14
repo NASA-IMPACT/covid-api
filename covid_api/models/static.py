@@ -97,10 +97,10 @@ class Dataset(BaseModel):
     time_unit: str = ""
     domain: List[str] = []
     source: Union[NonGeoJsonSource, GeoJsonSource]
-    #background_source: Optional[Union[NonGeoJsonSource, GeoJsonSource]]
-    #exclusive_with: List[str] = []
+    background_source: Optional[Union[NonGeoJsonSource, GeoJsonSource]]
+    exclusive_with: Optional[List[str]] = []
     swatch: Swatch
-    #compare: Optional[DatasetComparison]
+    compare: Optional[DatasetComparison]
     legend: Optional[Legend]
     paint: Optional[Paint]
     info: str = ""
