@@ -42,3 +42,4 @@ CACHE_ENGINE: memcached
 CACHE_NODE_NUM: 1
 
 DATASET_METADATA_FILENAME: dev-dataset-metadata.json
+STAC_API_URL: https://earth-search.aws.element84.com/v0

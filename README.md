@@ -24,9 +24,21 @@ Issues and pull requests are more than welcome.
 **dev install**
 
 ```bash
-$ git clone https://github.com/NASA-IMPACT/covid-api.git
-$ cd covid-api
-$ pip install -e .[dev]
+git clone https://github.com/NASA-IMPACT/covid-api.git
+cd covid-api
+pip install -e .
+```
+
+To run the app locally, generate a config file, generate static dataset json
+
+```bash
+# Copy and configure the app
+cp stack/config.yml.example stack/config.yml
+# Generate json metadata
+export RUN_LOCAL=true
+python -m lambda.dataset_metadata_generator.src.main
+# Run the app
+uvicorn covid_api.main:app --reload
 ```
 
 This repo is set to use `pre-commit` to run *my-py*, *flake8*, *pydocstring* and *black* ("uncompromising Python code formatter") when commiting new code.
@@ -45,9 +57,17 @@ mypy.....................................................................Passed
 [precommit cc12c5a] fix a really important thing
  ```
 
- ## Development
+# Dataset Metadata
 
- ```bash
- pip install -e . --no-cache-dir
- uvicorn covid_api.main:app --reload
- ```
+Metadata is used to list serve data via `/datasets`, `/tiles`, and `/timelapse` There are 2 possible sources of metadata for serving these resources.
+
+1. Static JSON files, stored in `covid_api/db/static/datasets/`
+2. STAC API, defined in `stack/config.yml`
+
+## Generator Lambda
+
+In `lambda/dataset_metadata_generator` is code for a lambda to asynchronously generate metadata json files.
+
+This lambda generates metadata in 2 ways:
+1. Reads through the s3 bucket to generate a file that contains the datasets for each given spotlight option (_all, global, tk, ny, sf, la, be, du, gh) and their respective domain for each spotlight.
+2. Fetches collections from a STAC catalogue and generates a metadata object for each collection.

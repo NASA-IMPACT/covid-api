@@ -1,4 +1,4 @@
-""" config """
+"""Config."""
 
 import os
 import yaml

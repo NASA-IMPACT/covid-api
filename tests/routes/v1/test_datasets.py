@@ -86,7 +86,7 @@ def test_metadata_file_generation_triggered_if_not_found(
         # from S3 will fail. This is not a problem since this test is just to ascertain
         # that the lambda was in fact triggered.
         try:
-            dataset_manager()._load_remote_metadata()
+            dataset_manager()._load_metadata_from_file()
         except botocore.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "404":
                 pass

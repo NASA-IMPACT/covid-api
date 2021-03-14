@@ -26,24 +26,15 @@ class DatasetManager(object):
         pass
 
     def _data(self):
-        static_dataset_files = [
-            os.path.splitext(f)[0] for f in os.listdir(data_dir) if f.endswith(".json")
-        ]
-        static_datasets = {
-            dataset: DatasetInternal.parse_file(
-                os.path.join(data_dir, f"{dataset}.json")
-            )
-            for dataset in static_dataset_files
+        dataset_objects = self._load_metadata_from_file()
+        datasets = {
+            key: DatasetInternal.parse_obj(dataset)
+            for key, dataset in dataset_objects['_all'].items()
         }
-        datasets = self._load_remote_metadata()
-        #print(datasets['_all'])
-        #print(datasets['global'])
-        print(static_datasets)
-
-        datasets.update(static_datasets)
+        print(datasets)
         return datasets
 
-    def _load_remote_metadata(self):
+    def _load_metadata_from_file(self):
         try:
             if os.environ.get('RUN_LOCAL') == 'true':
                 with open(f"{DATASET_METADATA_FILENAME}", 'r') as datasets_json:
@@ -92,7 +83,7 @@ class DatasetManager(object):
         """
 
         global_datasets = self._process(
-            self._load_remote_metadata()["global"],
+            self._load_metadata_from_file()["global"],
             api_url=api_url,
             spotlight_id="global",
         )
@@ -106,12 +97,11 @@ class DatasetManager(object):
         except InvalidIdentifier:
             raise
 
-        # spotlight_datasets = self._process(
-        #     self._load_remote_metadata()[site.id],
-        #     api_url=api_url,
-        #     spotlight_id=site.id,
-        # )
-        spotlight_datasets = []
+        spotlight_datasets = self._process(
+            self._load_metadata_from_file()[site.id],
+            api_url=api_url,
+            spotlight_id=site.id,
+        )
 
         return Datasets(
             datasets=[
@@ -122,7 +112,7 @@ class DatasetManager(object):
     def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
         datasets = self._process(
-            datasets_domains_metadata=self._data()["_all"],
+            datasets_domains_metadata=self._load_metadata_from_file()["_all"],
             api_url=api_url,
         )
         return Datasets(datasets=[dataset.dict() for dataset in datasets])

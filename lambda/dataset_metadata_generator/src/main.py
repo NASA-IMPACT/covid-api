@@ -10,17 +10,17 @@ import yaml
 import boto3
 
 BASE_PATH = os.path.abspath('.')
+config = yaml.load(open(f"{BASE_PATH}/stack/config.yml", 'r'), Loader=yaml.FullLoader)
 if os.environ.get('RUN_LOCAL') == 'true':
-    config = yaml.load(open(f"{BASE_PATH}/../../../stack/config.yml", 'r'), Loader=yaml.FullLoader)
-    local_path = "../../../covid_api/db/static"
+    local_path = f"{BASE_PATH}/covid_api/db/static"
     DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, f"{local_path}/datasets")
     SITES_JSON_FILEPATH = os.path.join(BASE_PATH, f"{local_path}/sites")
 else:
-    config = dict()
     DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datasets")
     SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
 
 DATASET_METADATA_FILENAME = os.environ.get("DATASET_METADATA_FILENAME", config.get('DATASET_METADATA_FILENAME'))
+STAC_API_URL = config['STAC_API_URL']
 
 s3 = boto3.resource("s3")
 bucket = s3.Bucket(os.environ.get("DATA_BUCKET_NAME", config.get('BUCKET')))
@@ -28,7 +28,8 @@ bucket = s3.Bucket(os.environ.get("DATA_BUCKET_NAME", config.get('BUCKET')))
 DT_FORMAT = "%Y-%m-%d"
 MT_FORMAT = "%Y%m"
 
-# can test with python -c 'import main; import json; print(json.dumps(main.handler({}, {})))' | jq .
+# Can test this with python -m lambda.dataset_metadata_generator.src.main | jq .
+# From the root directory of this project.
 def handler(event, context):
     """
     Params:
@@ -56,6 +57,7 @@ def handler(event, context):
     result = _gather_datasets_metadata(datasets, sites)
     if os.environ.get('RUN_LOCAL') == 'true':
         with open(DATASET_METADATA_FILENAME, "w") as w:
+            print(f"Writing to local file: {DATASET_METADATA_FILENAME}")
             w.write(json.dumps(result, indent=2))
     else:
         bucket.put_object(
@@ -63,11 +65,9 @@ def handler(event, context):
         )
     return result
 
-STAC_API_URL = 'https://earth-search.aws.element84.com/v0/collections'
 def _fetch_stac_items():
-    # request all collections
-    # for each collection we will want to add an item to the final list of datasets
-    stac_response = requests.get(STAC_API_URL)
+    """ Fetches collections from a STAC catalogue and generates a metadata object for each collection. """
+    stac_response = requests.get(f"{STAC_API_URL}/collections")
     if stac_response.status_code == 200:
         stac_collections = json.loads(stac_response.content)
     stac_datasets = []
@@ -94,7 +94,8 @@ def _fetch_stac_items():
                 "max": "",
                 "stops": []
             },
-            "info": collection['description']
+            "info": collection['description'],
+            "domain": []
         }
         stac_datasets.append(stac_dataset)
 
@@ -175,7 +176,7 @@ def _gather_json_data(dirpath: str) -> List[dict]:
 
 
 def _is_global_dataset(dataset: dict) -> bool:
-    """Returns wether the given dataset is spotlight specific (FALSE)
+    """Returns whether the given dataset is spotlight specific (FALSE)
     or non-spotlight specific (TRUE)"""
     return not any(
         [
@@ -302,3 +303,6 @@ class NoKeysFoundForSpotlight(Exception):
     """Exception to be thrown if no keys are found for a given spotlight"""
 
     pass
+
+if __name__ == "__main__":
+    json.dumps(handler({}, {}))

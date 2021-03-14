@@ -1,5 +1,5 @@
 {
-    "id": "modis-vi",
+    "id": "MOD13A1.006",
     "name": "MODIS Vegetation Indices MOD13A1.006",
     "type": "raster-timeseries",
     "time_unit": "day",
