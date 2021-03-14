@@ -3,7 +3,7 @@
 import os
 import yaml
 
-config_object = yaml.load(open(f"stack/config.yml", 'r'), Loader=yaml.FullLoader)
+config_object = yaml.load(open(f"{os.path.abspath('.')}/stack/config.yml", 'r'), Loader=yaml.FullLoader)
 API_VERSION_STR = "/v1"
 
 PROJECT_NAME = config_object['PROJECT_NAME']
