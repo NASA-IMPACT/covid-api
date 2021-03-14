@@ -13,7 +13,6 @@ from covid_api.core.config import INDICATOR_BUCKET
 DATASET_METADATA_FILENAME = "dev-dataset-metadata.json"
 DATASET_METADATA_GENERATOR_FUNCTION_NAME = "dev-dataset-metadata-generator"
 
-
 @mock_s3
 def _setup_s3(empty=False):
     s3 = boto3.resource("s3")
@@ -87,7 +86,7 @@ def test_metadata_file_generation_triggered_if_not_found(
         # from S3 will fail. This is not a problem since this test is just to ascertain
         # that the lambda was in fact triggered.
         try:
-            dataset_manager()._load_domain_metadata()
+            dataset_manager()._load_remote_metadata()
         except botocore.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "404":
                 pass

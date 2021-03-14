@@ -17,7 +17,6 @@ from covid_api.models.static import DatasetInternal, Datasets, GeoJsonSource
 
 data_dir = os.path.join(os.path.dirname(__file__))
 
-
 class DatasetManager(object):
     """Default Dataset holder."""
 
@@ -27,19 +26,22 @@ class DatasetManager(object):
         pass
 
     def _data(self):
-        datasets = [
+        static_dataset_files = [
             os.path.splitext(f)[0] for f in os.listdir(data_dir) if f.endswith(".json")
         ]
-        return {
+        static_datasets = {
             dataset: DatasetInternal.parse_file(
                 os.path.join(data_dir, f"{dataset}.json")
             )
-            for dataset in datasets
+            for dataset in static_dataset_files
         }
+        remote_datasets = self._load_remote_metadata()
+        return remote_datasets.update(static_datasets)
 
-    def _load_domain_metadata(self):
+
+    def _load_remote_metadata(self):
         try:
-            if os.environ['RUN_LOCAL'] == True:
+            if os.environ.get('RUN_LOCAL') == 'true':
                 with open(DATASET_METADATA_FILENAME, 'r') as datasets_json:
                     return json.loads(datasets_json.read())
             else:
@@ -85,12 +87,11 @@ class DatasetManager(object):
         (Datasets) pydantic model contains a list of datasets' metadata
         """
 
-        # global_datasets = self._process(
-        #     self._load_domain_metadata()["global"],
-        #     api_url=api_url,
-        #     spotlight_id="global",
-        # )
-        global_datasets = self._load_domain_metadata()["global"]
+        global_datasets = self._process(
+            self._load_remote_metadata()["global"],
+            api_url=api_url,
+            spotlight_id="global",
+        )
 
         if spotlight_id == "global":
             return Datasets(datasets=[dataset for dataset in global_datasets.values()])
@@ -102,7 +103,7 @@ class DatasetManager(object):
             raise
 
         # spotlight_datasets = self._process(
-        #     self._load_domain_metadata()[site.id],
+        #     self._load_remote_metadata()[site.id],
         #     api_url=api_url,
         #     spotlight_id=site.id,
         # )
@@ -115,12 +116,12 @@ class DatasetManager(object):
 
     def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
-        # print(self._load_domain_metadata())
+        # print(self._load_remote_metadata())
         # datasets = self._process(
-        #     datasets_domains_metadata=self._load_domain_metadata()["_all"],
+        #     datasets_domains_metadata=self._load_remote_metadata()["_all"],
         #     api_url=api_url,
         # )
-        datasets = self._load_domain_metadata()['_all']
+        datasets = self._load_remote_metadata()['_all']
         return Datasets(datasets=[dataset for dataset in datasets.values()])
 
     def list(self) -> List[str]:

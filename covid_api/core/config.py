@@ -1,13 +1,12 @@
-"""Config."""
+""" config """
 
 import os
 import yaml
 
-config = yaml.load(open('../stack/config.yml', 'r'))
-
+config = yaml.load(open(f"./stack/config.yml", 'r'), Loader=yaml.FullLoader)
 API_VERSION_STR = "/v1"
 
-PROJECT_NAME = config.PROJECT_NAME
+PROJECT_NAME = config['PROJECT_NAME']
 
 SERVER_NAME = os.getenv("SERVER_NAME")
 SERVER_HOST = os.getenv("SERVER_HOST")
@@ -24,7 +23,7 @@ MEMCACHE_PASSWORD = os.environ.get("MEMCACHE_PASSWORD")
 INDICATOR_BUCKET = os.environ.get("INDICATOR_BUCKET", "covid-eo-data")
 
 DATASET_METADATA_FILENAME = os.environ.get(
-    "DATASET_METADATA_FILENAME", config.dataset_metadata_filename
+    "DATASET_METADATA_FILENAME", config['DATASET_METADATA_FILENAME']
 )
 
 DATASET_METADATA_GENERATOR_FUNCTION_NAME = os.environ.get(

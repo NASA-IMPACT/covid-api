@@ -5,18 +5,25 @@ import os
 import re
 import requests
 from typing import Any, Dict, List, Optional, Union
+import yaml
 
 import boto3
 
-BASE_PATH = os.path.abspath(__file__)
-DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datasets")
-SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
+BASE_PATH = os.path.abspath('.')
+if os.environ.get('RUN_LOCAL') == 'true':
+    config = yaml.load(open(f"{BASE_PATH}/../../../stack/config.yml", 'r'), Loader=yaml.FullLoader)
+    local_path = "../../../covid_api/db/static"
+    DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, f"{local_path}/datasets")
+    SITES_JSON_FILEPATH = os.path.join(BASE_PATH, f"{local_path}/sites")
+else:
+    config = dict()
+    DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datasets")
+    SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
 
-BUCKET_NAME = os.environ["DATA_BUCKET_NAME"] || config.BUCKET
-DATASET_METADATA_FILENAME = os.environ["DATASET_METADATA_FILENAME"] || config.dataset_metadata_filename
+DATASET_METADATA_FILENAME = os.environ.get("DATASET_METADATA_FILENAME", config.get('DATASET_METADATA_FILENAME'))
 
 s3 = boto3.resource("s3")
-bucket = s3.Bucket(BUCKET_NAME)
+bucket = s3.Bucket(os.environ.get("DATA_BUCKET_NAME", config.get('BUCKET')))
 
 DT_FORMAT = "%Y-%m-%d"
 MT_FORMAT = "%Y%m"
