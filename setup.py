@@ -20,7 +20,7 @@ inst_reqs = [
     "boto3",
     "requests",
     "mercantile",
-    "yaml",
+    "pyyaml",
 ]
 extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit"],
