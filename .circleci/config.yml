@@ -12,6 +12,9 @@ jobs:
           name: install dependencies
           command: pip install tox codecov pre-commit --user
       - run:
+          name: copy config.yml
+          command: cp stack/config.yml.example stack/config.yml
+      - run:
           name: test
           command: ~/.local/bin/tox
       - run:
