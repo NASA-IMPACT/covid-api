@@ -136,4 +136,6 @@ def test_euports_datasets(gather_datasets_metadata, datasets, sites):
     assert set(content["du"].keys()) == {
         "nightlights-hd",
         "nightlights-viirs",
+        "water-chlorophyll",
+        "detections-plane"
     }
