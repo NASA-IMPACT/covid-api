@@ -33,7 +33,7 @@ class DatasetManager(object):
             try:
                 datasets[key] = DatasetInternal.parse_obj(dataset)
             except pydantic.error_wrappers.ValidationError:
-                file_path = f"{os.path.abspath('.')}/covid_api/db/static/datasets/{key}.json"
+                file_path = f"{data_dir}/{key}.json"
                 if os.path.exists(file_path):
                     local_dataset = json.loads(open(file_path, "r").read())
                     local_dataset.update(dataset)
