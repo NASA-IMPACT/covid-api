@@ -1,6 +1,7 @@
 """ covid_api static datasets """
 import json
 import os
+import pydantic
 from typing import List
 
 import botocore
@@ -27,10 +28,17 @@ class DatasetManager(object):
 
     def _data(self):
         dataset_objects = self._load_metadata_from_file()
-        datasets = {
-            key: DatasetInternal.parse_obj(dataset)
-            for key, dataset in dataset_objects['_all'].items()
-        }
+        datasets = {}
+        for key, dataset in dataset_objects['_all'].items():
+            try:
+                datasets[key] = DatasetInternal.parse_obj(dataset)
+            except pydantic.error_wrappers.ValidationError:
+                file_path = f"{os.path.abspath('.')}/covid_api/db/static/datasets/{key}.json"
+                if os.path.exists(file_path):
+                    local_dataset = json.loads(open(file_path, "r").read())
+                    local_dataset.update(dataset)
+                    dataset = DatasetInternal.parse_obj(local_dataset)
+                    datasets[key] = DatasetInternal.parse_obj(dataset)
         return datasets
 
     def _load_metadata_from_file(self):
@@ -96,11 +104,15 @@ class DatasetManager(object):
         except InvalidIdentifier:
             raise
 
-        spotlight_datasets = self._process(
-            self._load_metadata_from_file()[site.id],
-            api_url=api_url,
-            spotlight_id=site.id,
-        )
+        spotlight_metadata = self._load_metadata_from_file().get(site.id)
+        if spotlight_metadata:
+            spotlight_datasets = self._process(
+                spotlight_metadata,
+                api_url=api_url,
+                spotlight_id=site.id,
+            )
+        else:
+            spotlight_datasets = []
 
         return Datasets(
             datasets=[
@@ -162,7 +174,7 @@ class DatasetManager(object):
         for k, dataset in output_datasets.items():
 
             # overload domain with domain returned from s3 file
-            dataset.domain = datasets_domains_metadata[k]["domain"]
+            dataset.domain = datasets_domains_metadata[k].get("domain")
 
             # format url to contain the correct API host and
             # spotlight id (if a spotlight was requested)

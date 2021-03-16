@@ -79,23 +79,12 @@ def _fetch_stac_items():
             "type": "raster",
             "time_unit": "day",
             "is_periodic": False,
-            "swatch": {
-                "color": "",
-                "name": ""
-            },
             "source": {
                 "type": "raster",
                 # For now, don't list any tiles. We will want to mosaic STAC search results.
                 "tiles": []
             },
-            "legend": {
-                "type": "",
-                "min": "",
-                "max": "",
-                "stops": []
-            },
             "info": collection['description'],
-            "domain": []
         }
         stac_datasets.append(stac_dataset)
 
