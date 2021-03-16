@@ -20,49 +20,61 @@ def _setup_s3(empty=False):
     bucket.create()
     if empty:
         return bucket
+    datasets_domains = {
+        "_all": {
+            "co2": {
+                "domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]
+            },
+            "detections-plane": {
+                "domain": [
+                    "2019-01-01T00:00:00Z",
+                    "2019-10-10T00:00:00Z",
+                    "2020-01-01T:00:00:00Z",
+                ]
+            },
+        },
+        "global": {
+            "co2": {
+                "domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]
+            }
+        },
+        "tk": {
+            "detections-plane": {
+                "domain": [
+                    "2019-01-01T00:00:00Z",
+                    "2019-10-10T00:00:00Z",
+                    "2020-01-01T:00:00:00Z",
+                ]
+            }
+        },
+        "ny": {
+            "detections-ship": {
+                "domain": [
+                    "2019-01-01T00:00:00Z",
+                    "2019-10-10T00:00:00Z",
+                    "2020-01-01T:00:00:00Z",
+                ]
+            }
+        },
+    }
+    for site_key in datasets_domains.keys():
+        for dataset_id, domain_data in datasets_domains[site_key].items():
+            datasets_domains[site_key][dataset_id] = {
+                "id": dataset_id,
+                "name": "test name",
+                "type": "test type",
+                "source": {
+                    "tiles": [ "data.tif" ],
+                    "type": "test type"
+                },
+                "domain": domain_data.get('domain')
+            }
+    dataset_metadata_json = json.dumps(datasets_domains)
     s3_keys = [
         ("indicators/test/super.csv", b"test"),
         (
             DATASET_METADATA_FILENAME,
-            json.dumps(
-                {
-                    "_all": {
-                        "co2": {
-                            "domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]
-                        },
-                        "detections-plane": {
-                            "domain": [
-                                "2019-01-01T00:00:00Z",
-                                "2019-10-10T00:00:00Z",
-                                "2020-01-01T:00:00:00Z",
-                            ]
-                        },
-                    },
-                    "global": {
-                        "co2": {
-                            "domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]
-                        }
-                    },
-                    "tk": {
-                        "detections-plane": {
-                            "domain": [
-                                "2019-01-01T00:00:00Z",
-                                "2019-10-10T00:00:00Z",
-                                "2020-01-01T:00:00:00Z",
-                            ]
-                        }
-                    },
-                    "ny": {
-                        "detections-ship": {
-                            "domain": [
-                                "2019-01-01T00:00:00Z",
-                                "2019-10-10T00:00:00Z",
-                                "2020-01-01T:00:00:00Z",
-                            ]
-                        }
-                    },
-                }
-            ),
+            dataset_metadata_json,
         ),
     ]
     for key, content in s3_keys:
@@ -114,8 +126,8 @@ def test_spotlight_datasets(app):
     response = app.get("v1/datasets/tk")
 
     assert response.status_code == 200
-
     content = json.loads(response.content)
+
     assert "co2" in [d["id"] for d in content["datasets"]]
     assert "detections-plane" in [d["id"] for d in content["datasets"]]
     assert "detections-ship" not in [d["id"] for d in content["datasets"]]

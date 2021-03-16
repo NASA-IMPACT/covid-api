@@ -131,7 +131,6 @@ def _gather_datasets_metadata(datasets: List[dict], sites: List[dict]):
             }
             domain = _get_dataset_domain(**domain_args)
             dataset['domain'] = domain
-
         
         metadata.setdefault("_all", {}).update({dataset["id"]: dataset})
 
@@ -151,10 +150,9 @@ def _gather_datasets_metadata(datasets: List[dict], sites: List[dict]):
 
             # skip adding dataset to metadata object if no dates were found for the given
             # spotlight (indicates dataset is not valid for that spotlight)
-            try:
-                domain = _get_dataset_domain(**domain_args)
-            except NoKeysFoundForSpotlight:
-                continue
+            # try:
+            domain = _get_dataset_domain(**domain_args)
+            #if domain == []: continue
 
             metadata.setdefault(site["id"], {}).update(
                 {dataset["id"]: {"domain": domain}}
@@ -251,8 +249,9 @@ def _get_dataset_domain(
         s3_keys_args["spotlight_id"] = spotlight_id
 
     keys = _gather_s3_keys(**s3_keys_args)
-    if not keys:
-        raise NoKeysFoundForSpotlight
+    if not keys: # and not os.environ.get('RUN_LOCAL') == 'true':
+        #raise NoKeysFoundForSpotlight
+        keys = []
 
     dates = []
 

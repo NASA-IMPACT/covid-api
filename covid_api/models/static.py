@@ -92,18 +92,17 @@ class Dataset(BaseModel):
     id: str
     name: str
     type: str
-
     is_periodic: bool = False
-    time_unit: str = ""
-    domain: List[str] = []
+    time_unit: Optional[str] = ""
+    domain: Optional[List[str]] = []
     source: Union[NonGeoJsonSource, GeoJsonSource]
     background_source: Optional[Union[NonGeoJsonSource, GeoJsonSource]]
     exclusive_with: Optional[List[str]] = []
-    swatch: Swatch
+    swatch: Optional[Swatch]
     compare: Optional[DatasetComparison]
     legend: Optional[Legend]
     paint: Optional[Paint]
-    info: str = ""
+    info: Optional[str] = ""
 
 
 class DatasetExternal(Dataset):
