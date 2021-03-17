@@ -29,8 +29,8 @@ class DatasetManager(object):
     def _data(self):
         dataset_objects = self._load_metadata_from_file()
         return {
-            dataset: DatasetInternal.parse_obj(dataset)
-            for dataset in dataset_objects
+            key: DatasetInternal.parse_obj(dataset)
+            for key, dataset in dataset_objects['_all'].items()
         }
 
     def _load_metadata_from_file(self):
