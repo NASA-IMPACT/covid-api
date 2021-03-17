@@ -2,6 +2,7 @@ PROJECT_NAME: covid-api
 STAGE: dev
 # primary bucket
 BUCKET: covid-eo-data
+
 # Additional environement variable to set in the task/lambda
 TASK_ENV:
 # Existing VPC to point ECS/LAMBDA stacks towards. Defaults to creating a new
@@ -42,4 +43,24 @@ CACHE_ENGINE: memcached
 CACHE_NODE_NUM: 1
 
 DATASET_METADATA_FILENAME: dev-dataset-metadata.json
-STAC_API_URL: https://earth-search.aws.element84.com/v0
+# STAC_API_URL: https://earth-search.aws.element84.com/v0
+DATASETS:
+  STATIC:
+  - agriculture.json
+  - co2-diff.json
+  - co2.json
+  - detections-contrail.json
+  - detections-plane.json
+  - detections-ship.json
+  - detections-vehicles.json
+  - nightlights-hd.json
+  - nightlights-viirs.json
+  - no2-diff.json
+  - no2.json
+  - population.json
+  - recovery.json
+  - slowdown.json
+  - togo-ag.json
+  - water-chlorophyll.json
+  - water-pzd.json
+  - water-spm.json

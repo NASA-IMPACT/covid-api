@@ -28,28 +28,16 @@ class DatasetManager(object):
 
     def _data(self):
         dataset_objects = self._load_metadata_from_file()
-        datasets = {}
-        for key, dataset in dataset_objects['_all'].items():
-            try:
-                datasets[key] = DatasetInternal.parse_obj(dataset)
-            except pydantic.error_wrappers.ValidationError:
-                file_path = f"{data_dir}/{key}.json"
-                if os.path.exists(file_path):
-                    local_dataset = json.loads(open(file_path, "r").read())
-                    local_dataset.update(dataset)
-                    dataset = DatasetInternal.parse_obj(local_dataset)
-                    datasets[key] = DatasetInternal.parse_obj(dataset)
-        return datasets
+        return {
+            dataset: DatasetInternal.parse_obj(dataset)
+            for dataset in dataset_objects
+        }
 
     def _load_metadata_from_file(self):
         try:
-            if os.environ.get('RUN_LOCAL') == 'true':
-                with open(f"{DATASET_METADATA_FILENAME}", 'r') as datasets_json:
-                    return json.loads(datasets_json.read())
-            else:
-                return json.loads(
-                    s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
-                )
+            return json.loads(
+                s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
+            )
         except botocore.errorfactory.ClientError as e:
 
             if e.response["Error"]["Code"] == "NoSuchKey":

@@ -11,13 +11,9 @@ import boto3
 
 BASE_PATH = os.path.abspath('.')
 config = yaml.load(open(f"{BASE_PATH}/stack/config.yml", 'r'), Loader=yaml.FullLoader)
-if os.environ.get('RUN_LOCAL') == 'true':
-    local_path = f"{BASE_PATH}/covid_api/db/static"
-    DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, f"{local_path}/datasets")
-    SITES_JSON_FILEPATH = os.path.join(BASE_PATH, f"{local_path}/sites")
-else:
-    DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "datasets")
-    SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
+
+DATASETS_JSON_FILEPATH = os.path.join(BASE_PATH, "covid_api/db/static/datasets")
+SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "covid_api/db/static/sites")
 
 DATASET_METADATA_FILENAME = os.environ.get("DATASET_METADATA_FILENAME", config.get('DATASET_METADATA_FILENAME'))
 STAC_API_URL = config['STAC_API_URL']
@@ -49,20 +45,17 @@ def handler(event, context):
     """
 
     # TODO: defined TypedDicts for these!
-    datasets = _gather_json_data(DATASETS_JSON_FILEPATH)
+    listed_datasets = config['DATASETS']['STATIC']
+    datasets = _gather_json_data(DATASETS_JSON_FILEPATH, filter=listed_datasets)
     stac_datasets = _fetch_stac_items()
     datasets.extend(stac_datasets)
     sites = _gather_json_data(SITES_JSON_FILEPATH)
 
     result = _gather_datasets_metadata(datasets, sites)
-    if os.environ.get('RUN_LOCAL') == 'true':
-        with open(DATASET_METADATA_FILENAME, "w") as w:
-            print(f"Writing to local file: {DATASET_METADATA_FILENAME}")
-            w.write(json.dumps(result, indent=2))
-    else:
-        bucket.put_object(
-            Body=result, Key=DATASET_METADATA_FILENAME, ContentType="application/json",
-        )
+    # TODO: Protect from running _not_ in "production" deployment
+    bucket.put_object(
+        Body=json.dumps(result), Key=DATASET_METADATA_FILENAME, ContentType="application/json",
+    )
     return result
 
 def _fetch_stac_items():
@@ -117,6 +110,7 @@ def _gather_datasets_metadata(datasets: List[dict], sites: List[dict]):
                 "dataset_folder": dataset["s3_location"],
                 "is_periodic": dataset.get("is_periodic"),
                 "time_unit": dataset.get("time_unit"),
+                "dataset_bucket": dataset.get("s3_bucket"),
             }
             domain = _get_dataset_domain(**domain_args)
             dataset['domain'] = domain
@@ -139,9 +133,10 @@ def _gather_datasets_metadata(datasets: List[dict], sites: List[dict]):
 
             # skip adding dataset to metadata object if no dates were found for the given
             # spotlight (indicates dataset is not valid for that spotlight)
-            # try:
-            domain = _get_dataset_domain(**domain_args)
-            #if domain == []: continue
+            try:
+                domain = _get_dataset_domain(**domain_args)
+            except NoKeysFoundForSpotlight:
+                continue
 
             metadata.setdefault(site["id"], {}).update(
                 {dataset["id"]: {"domain": domain}}
@@ -149,13 +144,14 @@ def _gather_datasets_metadata(datasets: List[dict], sites: List[dict]):
     return metadata
 
 
-def _gather_json_data(dirpath: str) -> List[dict]:
+def _gather_json_data(dirpath: str, filter: List[str] = None) -> List[dict]:
     """Gathers all JSON files from within a diven directory"""
 
     results = []
-
     for filename in os.listdir(dirpath):
         if not filename.endswith(".json"):
+            continue
+        if filter and not filename in filter:
             continue
         with open(os.path.join(dirpath, filename)) as f:
             results.append(json.load(f))
@@ -175,7 +171,9 @@ def _is_global_dataset(dataset: dict) -> bool:
 
 
 def _gather_s3_keys(
-    spotlight_id: Optional[Union[str, List]] = None, prefix: Optional[str] = "",
+    spotlight_id: Optional[Union[str, List]] = None,
+    prefix: Optional[str] = "",
+    dataset_bucket: Optional[str] = None
 ) -> List[str]:
     """
     Returns a set of S3 keys. If no args are provided, the keys will represent
@@ -193,8 +191,9 @@ def _gather_s3_keys(
     set(str)
 
     """
-    
-    keys = [x.key for x in bucket.objects.filter(Prefix=prefix)]
+    s3_dataset_bucket = bucket if dataset_bucket == None else s3.Bucket(dataset_bucket)
+
+    keys = [x.key for x in s3_dataset_bucket.objects.filter(Prefix=prefix)]
 
     if not spotlight_id:
         return keys
@@ -209,6 +208,7 @@ def _gather_s3_keys(
 def _get_dataset_domain(
     dataset_folder: str,
     is_periodic: bool,
+    dataset_bucket: Optional[str] = None,
     spotlight_id: Optional[Union[str, List]] = None,
     time_unit: Optional[str] = "day",
 ):
@@ -236,11 +236,12 @@ def _get_dataset_domain(
     s3_keys_args: Dict[str, Any] = {"prefix": dataset_folder}
     if spotlight_id:
         s3_keys_args["spotlight_id"] = spotlight_id
+    if dataset_bucket:
+        s3_keys_args['dataset_bucket'] = dataset_bucket
 
     keys = _gather_s3_keys(**s3_keys_args)
-    if not keys: # and not os.environ.get('RUN_LOCAL') == 'true':
-        #raise NoKeysFoundForSpotlight
-        keys = []
+    if not keys:
+        raise NoKeysFoundForSpotlight
 
     dates = []
 

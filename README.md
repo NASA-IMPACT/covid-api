@@ -44,8 +44,6 @@ To run the app locally, generate a config file, generate static dataset json
 ```bash
 # Copy and configure the app
 cp stack/config.yml.example stack/config.yml
-# Generate json metadata
-export RUN_LOCAL=true
 python -m lambda.dataset_metadata_generator.src.main
 # Run the app
 uvicorn covid_api.main:app --reload
