@@ -84,3 +84,17 @@ This lambda generates metadata in 2 ways:
 
 1. Reads through the s3 bucket to generate a file that contains the datasets for each given spotlight option (_all, global, tk, ny, sf, la, be, du, gh) and their respective domain for each spotlight.
 2. If STAC_API_URL is configured in `stack/config.yml`, fetches collections from a STAC catalogue and generates a metadata object for each collection.
+
+## Deployment
+
+```bash
+# Note: zsh users need to use
+npm install -g aws-cdk
+pip install -e ".[deploy]"
+
+export AWS_PROFILE=CHANGEME
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq .Account -r)
+export AWS_REGION=$(aws configure get region)
+cdk synth
+cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION --all
+```
