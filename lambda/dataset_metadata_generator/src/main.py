@@ -47,8 +47,9 @@ def handler(event, context):
     # TODO: defined TypedDicts for these!
     listed_datasets = config['DATASETS']['STATIC']
     datasets = _gather_json_data(DATASETS_JSON_FILEPATH, filter=listed_datasets)
-    stac_datasets = _fetch_stac_items()
-    datasets.extend(stac_datasets)
+    if STAC_API_URL:
+        stac_datasets = _fetch_stac_items()
+        datasets.extend(stac_datasets)
     sites = _gather_json_data(SITES_JSON_FILEPATH)
 
     result = _gather_datasets_metadata(datasets, sites)
