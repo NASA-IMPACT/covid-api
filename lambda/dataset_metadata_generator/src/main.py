@@ -63,7 +63,7 @@ def _fetch_stac_items():
     """ Fetches collections from a STAC catalogue and generates a metadata object for each collection. """
     stac_response = requests.get(f"{STAC_API_URL}/collections")
     if stac_response.status_code == 200:
-        stac_collections = json.loads(stac_response.content)
+        stac_collections = json.loads(stac_response.content).get('collections')
     stac_datasets = []
     for collection in stac_collections:
         # TODO: defined TypedDicts for these!

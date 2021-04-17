@@ -6,7 +6,7 @@ import yaml
 config = yaml.load(open('config.yml', 'r'), Loader=yaml.FullLoader)
 
 PROJECT_NAME = config['PROJECT_NAME']
-STAGE = config['STAGE'] || 'dev'
+STAGE = config.get('STAGE') or 'dev'
 
 # primary bucket
 BUCKET = config['BUCKET']
@@ -16,7 +16,7 @@ TASK_ENV: dict = dict()
 
 # Existing VPC to point ECS/LAMBDA stacks towards. Defaults to creating a new
 # VPC if no ID is supplied.
-VPC_ID = os.environ.get("VPC_ID") || config['VPC_ID']
+VPC_ID = os.environ.get("VPC_ID") or config['VPC_ID']
 
 
 ################################################################################

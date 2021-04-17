@@ -18,7 +18,7 @@ Here is the metadata for one of the datasets (Nightlights-VIIRS) availabe in the
       "name": "Nightlights VIIRS",
       "type": "raster-timeseries",
       "isPeriodic": true,
-      "timeUnit": "day",
+      "time_unit": "day",
       "domain": [
         "2020-01-01T00:00:00Z",
         "2020-12-01T00:00:00Z"
@@ -70,7 +70,7 @@ The dataset source tiles are under the key `source.tiles`. Items surrounded by c
 
 The `{x}` and `{y}` values, in combination with the zoom level, `{z}`, identify the [Slippy Map Tilename](https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames) of the tile to fetch. (eg: a tile containing Los Angeles has `/{z}/{x}/{y}` values: `9/87/204`).  
 
-`{date}` should be of the format `YYYYMM`, if the value of `timeUnit` is `month` , and `YYYY_MM_DD`, if the value of `timeUnit` is `day`. 
+`{date}` should be of the format `YYYYMM`, if the value of `time_unit` is `month` , and `YYYY_MM_DD`, if the value of `time_unit` is `day`. 
 
 Dates available for the dataset are given by the `domain` key. If the `isPeriodic` value is `True`, then `domain` will only contain 2 dates, the start and end date. Any date within that range will be valid (remember that dates can either be daily (`YYYY_MM_DD`) or monthly ( `YYYYMM`)). For example, a periodic, monthly dataset can be requested with `202001` as the `{date}` field, to get data for January 2020 and `202002` for February 2020). 
 

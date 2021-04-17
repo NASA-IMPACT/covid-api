@@ -104,8 +104,8 @@ def indicator_folders() -> List:
     response = s3.list_objects_v2(
         Bucket=INDICATOR_BUCKET, Prefix="indicators/", Delimiter="/",
     )
-    return [obj["Prefix"].split("/")[1] for obj in response["CommonPrefixes"]]
-
+    common_prefixes = response.get('CommonPrefixes')
+    return [obj["Prefix"].split("/")[1] for obj in common_prefixes] if common_prefixes else []
 
 def indicator_exists(identifier: str, indicator: str):
     """Check if an indicator exists for a site"""
