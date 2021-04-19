@@ -1,14 +1,12 @@
 {
     "id": "fb-population-density",
     "name": "Facebook High-Resolution Population Density",
-    "type": "raster-timeseries",
+    "type": "raster",
     "time_unit": "day",
-    "s3_location": "fb-dataforgood-population-density",
-    "is_periodic": false,
     "source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/dataforgood-fb-population-density/2019_07_01.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/dataforgood-fb-population-density/cog.tif&rescale=0,255&resampling_method=bilinear&color_map=ylorrd"
         ]
     },
     "exclusive_with": [
@@ -27,21 +25,19 @@
         "detections-vehicles"
     ],
     "swatch": {
-        "color": "#189C54",
-        "name": "Dark Green"
+        "color": "#C0C0C0",
+        "name": "Grey"
     },
     "legend": {
-        "type": "gradient-adjustable",
-        "min": "< 408 ppm",
-        "max": "> 419 ppm",
+        "type": "gradient",
+        "min": "less",
+        "max": "more",
         "stops": [
-            "#313695",
-            "#588cbf",
-            "#a3d2e5",
-            "#e8f6e8",
-            "#fee89c",
-            "#fba55c",
-            "#e24932"
+            "#FFEFCB",
+            "#FBA54A",
+            "#FB9F46",
+            "#F35228",
+            "#BD0026"
         ]
     },
     "info": ""

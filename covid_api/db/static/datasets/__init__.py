@@ -109,11 +109,12 @@ class DatasetManager(object):
 
     def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
-        # print(self._load_domain_metadata())
+        print([d for d in self._data()])
         datasets = self._process(
             datasets_domains_metadata=self._load_domain_metadata()["_all"],
             api_url=api_url,
         )
+        print([d.id for d in datasets])
         return Datasets(datasets=[dataset.dict() for dataset in datasets])
 
     def list(self) -> List[str]:
@@ -153,6 +154,7 @@ class DatasetManager(object):
         (list) : datasets metadata objects (to be serialized as a pydantic Datasets
             model)
         """
+
         output_datasets = {
             k: v
             for k, v in self._data().items()
@@ -162,7 +164,7 @@ class DatasetManager(object):
         for k, dataset in output_datasets.items():
 
             # overload domain with domain returned from s3 file
-            dataset.domain = datasets_domains_metadata[k]["domain"]
+            dataset.domain = datasets_domains_metadata.get(k, {}).get("domain", [])
 
             # format url to contain the correct API host and
             # spotlight id (if a spotlight was requested)
