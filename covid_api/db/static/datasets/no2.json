@@ -12,7 +12,7 @@
     ]
   },
   "paint": {
-      "raster-opacity": 0.9
+    "raster-opacity": 0.9
   },
   "exclusive_with": [
     "agriculture",
@@ -27,6 +27,7 @@
     "water-spm",
     "detections-ship",
     "detections-plane",
+    "detections-contrail",
     "detections-vehicles"
   ],
   "enabled": true,

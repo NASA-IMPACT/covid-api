@@ -1,14 +1,14 @@
 {
-    "id": "water-spm",
-    "name": "Turbidity",
+    "id": "water-pzd",
+    "name": "Photic Zone Depth Anomaly",
     "type": "raster-timeseries",
     "time_unit": "day",
-    "s3_location": "spm_anomaly",
     "is_periodic": false,
+    "s3_location": "pzd_anomaly",
     "source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/spm_anomaly/anomaly-spm-{spotlightId}-{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/pzd_anomaly/anomaly-pzd-{spotlightId}-{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
         ]
     },
     "exclusive_with": [
@@ -21,7 +21,7 @@
         "nightlights-viirs",
         "nightlights-hd",
         "detection-multi",
-        "water-chlorophyll",
+        "water-spm",
         "detections-ship",
         "detections-plane",
         "detections-contrail",
@@ -44,5 +44,5 @@
             "#67001F"
         ]
     },
-    "info": "Turbidity refers to the amount of sediment or particles suspended in water. Redder colors indicate more sediment and murkier water. Bluer colors indicate less sediment and clearer water."
+    "info": "Photic zone depth (PZD) is the depth at which only 1% of the surface irradiation remains, and is an indicator of water clarity. PZD is impacted by concentrations of chlorophyll-a, suspended solids, and CDOM. Redder colors indicate increased water clarity. Bluer colors indicate decreased water clarity. White areas indicate no change."
 }
