@@ -110,12 +110,10 @@ class DatasetManager(object):
 
     def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
-        print([d for d in self._data()])
         datasets = self._process(
             datasets_domains_metadata=self._load_domain_metadata()["_all"],
             api_url=api_url,
         )
-        print([d.id for d in datasets])
         return Datasets(datasets=[dataset.dict() for dataset in datasets])
 
     def list(self) -> List[str]:

@@ -11,13 +11,11 @@ inst_reqs = [
     "python-binary-memcached",
     "rio-color",
     "rio-tiler==2.0a.11",
-    # "email-validator",
     "fiona",
     "shapely",
     "rasterio==1.1.8",
     "rasterstats",
     "geojson-pydantic",
-    # "boto3",
     "requests",
     "mercantile",
 ]
