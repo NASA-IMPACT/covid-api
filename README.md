@@ -71,7 +71,14 @@ mypy.....................................................................Passed
 
 ### Modifying datasets
 
-To modify the existing datasets, one can configure datasets to be listed by revising the list under `DATASETS: STATIC:`stack/config.yml` and / or listing datasets from an external STAC_API_URL.
+To modify the existing datasets, one can configure datasets to be listed by revising the list under
+
+```yaml
+DATASETS:
+  STATIC:
+```
+
+in stack/config.yml` and / or listing datasets from an external `STAC_API_URL`.
 
 Metadata is used to list serve data via `/datasets`, `/tiles`, and `/timelapse` There are 2 possible sources of metadata for serving these resources.
 
@@ -83,7 +90,7 @@ In `lambda/dataset_metadata_generator` is code for a lambda to asynchronously ge
 This lambda generates metadata in 2 ways:
 
 1. Reads through the s3 bucket to generate a file that contains the datasets for each given spotlight option (_all, global, tk, ny, sf, la, be, du, gh) and their respective domain for each spotlight.
-2. If STAC_API_URL is configured in `stack/config.yml`, fetches collections from a STAC catalogue and generates a metadata object for each collection.
+2. If `STAC_API_URL` is configured in `stack/config.yml`, fetches collections from a STAC catalogue and generates a metadata object for each collection.
 
 ## Deployment
 
@@ -99,3 +106,12 @@ cdk synth
 cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION --all
 cdk deploy --all
 ```
+
+## DID:
+- Be more specific about mangum version, to address `enable_lifespan` unexpected argument error. Deprecated argument for Mangum in https://github.com/jordaneremieff/mangum/commit/497f778510118fcf268438526f8117f360d63a34
+
+
+## TODOs:
+
+- All example datasets should be from an open bucket
+- https://github.com/NASA-IMPACT/covid-api/issues/120

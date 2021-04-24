@@ -1,8 +1,8 @@
-PROJECT_NAME: covid-api
+PROJECT_NAME: my-eo-lab-project
 STAGE: dev
-# primary bucket
-BUCKET: covid-eo-data
-INDICATOR_BUCKET: covid-eo-data
+# UPDATE ME: primary bucket
+BUCKET: data-bucket
+INDICATOR_BUCKET: data-bucket
 
 # Additional environement variable to set in the task/lambda
 TASK_ENV:
@@ -44,7 +44,7 @@ CACHE_ENGINE: memcached
 CACHE_NODE_NUM: 1
 
 DATASET_METADATA_FILENAME: dev-dataset-metadata.json
-# STAC_API_URL: https://earth-search.aws.element84.com/v0
+STAC_API_URL: https://earth-search.aws.element84.com/v0
 DATASETS:
   STATIC:
   - agriculture.json
