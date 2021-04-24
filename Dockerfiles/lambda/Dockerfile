@@ -16,8 +16,16 @@ RUN cd /var/task && find . -type f -name '*.pyc' | while read f; do n=$(echo $f 
 RUN cd /var/task && find . -type d -a -name '__pycache__' -print0 | xargs -0 rm -rf
 RUN cd /var/task && find . -type f -a -name '*.py' -print0 | xargs -0 rm -f
 RUN find /var/task -type d -a -name 'tests' -print0 | xargs -0 rm -rf
-RUN rm -rdf /var/task/numpy/doc/
+RUN echo "Remove lambda python packages"
+RUN rm -rdf /var/task/numpy/doc/ 
 RUN rm -rdf /var/task/stack
+RUN rm -rdf /var/task/boto3*
+RUN rm -rdf /var/task/botocore*
+RUN rm -rdf /var/task/docutils*
+RUN rm -rdf /var/task/dateutil*
+RUN rm -rdf /var/task/jmespath*
+RUN rm -rdf /var/task/s3transfer*
 
-
+RUN mkdir /var/task/stack
+COPY stack/config.yml /var/task/stack/config.yml
 COPY lambda/handler.py /var/task/handler.py

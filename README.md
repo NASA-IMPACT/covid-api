@@ -11,7 +11,7 @@ First, add your AWS and Planet credentials to a new file called `.env`. You can 
 
 To run the API locally:
 
-```
+```bash
 $ docker-compose up --build
 ```
 
@@ -97,4 +97,5 @@ export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq .Account -r)
 export AWS_REGION=$(aws configure get region)
 cdk synth
 cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION --all
+cdk deploy --all
 ```
