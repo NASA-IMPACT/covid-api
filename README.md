@@ -12,7 +12,10 @@ First, add your AWS credentials to a new file called `.env`. You can see an exam
 To run the API locally:
 
 ```bash
-$ docker-compose up --build
+# First, add your AWS credentials to a new file called `.env`. You can see an example of this file at `.env.example`.
+cp .env.example .env
+# Edit .env
+docker-compose up --build
 ```
 
 The API should be running on `http://localhost:8000`.
@@ -28,16 +31,6 @@ git clone https://github.com/NASA-IMPACT/covid-api.git
 cd covid-api
 pyenv install
 pip install -e .
-```
-### Running tests
-
-To run tests, this requires `tox` and python3.7:
-
-You can manage python versions with [pyenv](https://github.com/pyenv/pyenv). `.python-version` specifies installation and local use of python3.7.
-
-```bash
-pip install tox
-tox
 ```
 
 ### Running the app locally
@@ -104,7 +97,6 @@ pip install -e ".[deploy]"
 export AWS_PROFILE=CHANGEME
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq .Account -r)
 export AWS_REGION=$(aws configure get region)
-cdk synth
 cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION --all
 cdk deploy --all
 ```

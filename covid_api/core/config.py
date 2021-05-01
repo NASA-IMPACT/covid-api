@@ -7,6 +7,8 @@ import yaml
 config_object = yaml.load(
     open(f"{os.path.abspath('.')}/stack/config.yml", "r"), Loader=yaml.FullLoader
 )
+
+STAGE = os.environ.get("STAGE", config_object["STAGE"])
 API_VERSION_STR = "/v1"
 
 PROJECT_NAME = config_object["PROJECT_NAME"]

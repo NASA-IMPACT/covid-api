@@ -9,6 +9,7 @@ RUN sed -i 's/DEFAULT@SECLEVEL=2/DEFAULT@SECLEVEL=1/' /etc/ssl/openssl.cnf
 COPY README.md /app/README.md
 COPY covid_api/ /app/covid_api/
 COPY setup.py /app/setup.py
+COPY example-dataset-metadata.json /app/example-dataset-metadata.json
 RUN mkdir /app/stack
 COPY stack/config.yml /app/stack/config.yml
 

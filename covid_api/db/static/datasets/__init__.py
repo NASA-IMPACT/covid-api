@@ -1,22 +1,20 @@
 """ covid_api static datasets """
 import json
 import os
-import pydantic
 from typing import List
 
 import botocore
 
-from covid_api.core.config import (
-    DATASET_METADATA_FILENAME,
-    DATASET_METADATA_GENERATOR_FUNCTION_NAME,
-    INDICATOR_BUCKET,
-)
+from covid_api.core.config import (DATASET_METADATA_FILENAME,
+                                   DATASET_METADATA_GENERATOR_FUNCTION_NAME,
+                                   INDICATOR_BUCKET)
 from covid_api.db.static.errors import InvalidIdentifier
 from covid_api.db.static.sites import sites
 from covid_api.db.utils import invoke_lambda, s3_get
 from covid_api.models.static import DatasetInternal, Datasets, GeoJsonSource
 
 data_dir = os.path.join(os.path.dirname(__file__))
+
 
 class DatasetManager(object):
     """Default Dataset holder."""
@@ -30,7 +28,7 @@ class DatasetManager(object):
         dataset_objects = self._load_metadata_from_file()
         return {
             key: DatasetInternal.parse_obj(dataset)
-            for key, dataset in dataset_objects['_all'].items()
+            for key, dataset in dataset_objects["_all"].items()
         }
 
     def _load_metadata_from_file(self):
@@ -50,13 +48,16 @@ class DatasetManager(object):
                 # "Payload" returned by the lambda_invocation (see docstring).
                 # Instead the thread is held while the lambda executes and then
                 # loads the metadata from s3.
-
-                invoke_lambda(
-                    lambda_function_name=DATASET_METADATA_GENERATOR_FUNCTION_NAME
-                )
-                return json.loads(
-                    s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
-                )
+                try:
+                    invoke_lambda(
+                        lambda_function_name=DATASET_METADATA_GENERATOR_FUNCTION_NAME
+                    )
+                    return json.loads(
+                        s3_get(bucket=INDICATOR_BUCKET, key=DATASET_METADATA_FILENAME)
+                    )
+                except botocore.errorfactory.ClientError as e:
+                    if e.response["Error"]["Code"] == "ResourceNotFoundException":
+                        return json.loads(open("example-dataset-metadata.json").read())
 
     def get(self, spotlight_id: str, api_url: str) -> Datasets:
         """
@@ -95,9 +96,7 @@ class DatasetManager(object):
         spotlight_metadata = self._load_metadata_from_file().get(site.id)
         if spotlight_metadata:
             spotlight_datasets = self._process(
-                spotlight_metadata,
-                api_url=api_url,
-                spotlight_id=site.id,
+                spotlight_metadata, api_url=api_url, spotlight_id=site.id,
             )
         else:
             spotlight_datasets = []

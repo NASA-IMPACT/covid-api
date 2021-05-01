@@ -1,16 +1,4 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: 19.10b0
-    hooks:
-      - id: black
-        language_version: python3
-        args: ["--safe"]
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.4.2
-    hooks:
-      - id: isort
-        language_version: python3
 
   - repo: https://github.com/PyCQA/flake8
     rev: 3.8.3

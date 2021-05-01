@@ -40,3 +40,10 @@ services:
       - MEMCACHED_PASSWORD=mypassword
     ports:
       - "11211:11211"
+
+  dashboard:
+    build:
+      context: https://github.com/nasa-impact/covid-dashboard.git#abarciauskas-bgse_sample-app
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"

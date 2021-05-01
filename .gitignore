@@ -38,7 +38,6 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
-.tox/
 .coverage
 .coverage.*
 .cache
@@ -109,3 +108,4 @@ cdk.out/*
 .vscode
 config.yml
 *dataset-metadata.json
+!example-dataset-metadata.json
