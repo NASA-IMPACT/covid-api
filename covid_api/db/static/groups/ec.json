@@ -1,6 +1,0 @@
-{
-    "id": "ec",
-    "label": "Economy",
-    "prose": null,
-    "indicators": ["nightlights", "ship-detections"]
-}

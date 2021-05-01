@@ -13,6 +13,7 @@ from covid_api.core.config import INDICATOR_BUCKET
 DATASET_METADATA_FILENAME = "dev-dataset-metadata.json"
 DATASET_METADATA_GENERATOR_FUNCTION_NAME = "dev-dataset-metadata-generator"
 
+
 @mock_s3
 def _setup_s3(empty=False):
     s3 = boto3.resource("s3")
@@ -21,41 +22,10 @@ def _setup_s3(empty=False):
     if empty:
         return bucket
     datasets_domains = {
-        "_all": {
-            "co2": {
-                "domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]
-            },
-            "detections-plane": {
-                "domain": [
-                    "2019-01-01T00:00:00Z",
-                    "2019-10-10T00:00:00Z",
-                    "2020-01-01T:00:00:00Z",
-                ]
-            },
-        },
-        "global": {
-            "co2": {
-                "domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]
-            }
-        },
-        "tk": {
-            "detections-plane": {
-                "domain": [
-                    "2019-01-01T00:00:00Z",
-                    "2019-10-10T00:00:00Z",
-                    "2020-01-01T:00:00:00Z",
-                ]
-            }
-        },
-        "ny": {
-            "detections-ship": {
-                "domain": [
-                    "2019-01-01T00:00:00Z",
-                    "2019-10-10T00:00:00Z",
-                    "2020-01-01T:00:00:00Z",
-                ]
-            }
-        },
+        "_all": {"co2": {"domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]}},
+        "global": {"co2": {"domain": ["2019-01-01T00:00:00Z", "2020-01-01T00:00:00Z"]}},
+        "tk": {},
+        "ny": {},
     }
     for site_key in datasets_domains.keys():
         for dataset_id, domain_data in datasets_domains[site_key].items():
@@ -63,19 +33,13 @@ def _setup_s3(empty=False):
                 "id": dataset_id,
                 "name": "test name",
                 "type": "test type",
-                "source": {
-                    "tiles": [ "data.tif" ],
-                    "type": "test type"
-                },
-                "domain": domain_data.get('domain')
+                "source": {"tiles": ["data.tif"], "type": "test type"},
+                "domain": domain_data.get("domain"),
             }
     dataset_metadata_json = json.dumps(datasets_domains)
     s3_keys = [
         ("indicators/test/super.csv", b"test"),
-        (
-            DATASET_METADATA_FILENAME,
-            dataset_metadata_json,
-        ),
+        (DATASET_METADATA_FILENAME, dataset_metadata_json,),
     ]
     for key, content in s3_keys:
         bucket.put_object(Body=content, Key=key)
@@ -117,7 +81,6 @@ def test_datasets(app):
     content = json.loads(response.content)
 
     assert "co2" in [d["id"] for d in content["datasets"]]
-    assert "detections-plane" in [d["id"] for d in content["datasets"]]
 
 
 @mock_s3
@@ -129,8 +92,6 @@ def test_spotlight_datasets(app):
     content = json.loads(response.content)
 
     assert "co2" in [d["id"] for d in content["datasets"]]
-    assert "detections-plane" in [d["id"] for d in content["datasets"]]
-    assert "detections-ship" not in [d["id"] for d in content["datasets"]]
 
 
 @mock_s3

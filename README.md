@@ -7,7 +7,7 @@ More information for data contributors like expected input format and delivery m
 
 ## Local environment
 
-First, add your AWS and Planet credentials to a new file called `.env`. You can see an example of this file at `.env.example`.
+First, add your AWS credentials to a new file called `.env`. You can see an example of this file at `.env.example`.
 
 To run the API locally:
 
@@ -49,6 +49,8 @@ NOTE: This requires read and write access to the s3 bucket in `stack/config.yml`
 ```bash
 # Copy and configure the app
 cp stack/config.yml.example stack/config.yml
+# Create or add buckets for your data files
+export AWS_PROFILE=CHANGEME
 python -m lambda.dataset_metadata_generator.src.main
 # Run the app
 uvicorn covid_api.main:app --reload
@@ -78,7 +80,7 @@ DATASETS:
   STATIC:
 ```
 
-in stack/config.yml` and / or listing datasets from an external `STAC_API_URL`.
+in `stack/config.yml` and / or listing datasets from an external `STAC_API_URL`.
 
 Metadata is used to list serve data via `/datasets`, `/tiles`, and `/timelapse` There are 2 possible sources of metadata for serving these resources.
 

@@ -13,32 +13,8 @@ def _setup_s3():
     bucket = s3.Bucket("covid-eo-data")
     bucket.create()
     s3_keys = [
-        ("indicators/test/super.csv", b"test"),
-        ("xco2-mean/GOSAT_XCO2_2019_01_01_be_BG_circle_cog.tif", b"test"),
-        ("xco2-mean/GOSAT_XCO2_2019_04_01_be_BG_circle_cog.tif", b"test"),
-        ("xco2-mean/GOSAT_XCO2_2019_06_01_be_BG_circle_cog.tif", b"test"),
-        ("oc3_chla_anomaly/anomaly-chl-tk-2020_01_29.tif", b"test"),
-        ("oc3_chla_anomaly/anomaly-chl-tk-2020_02_05.tif", b"test"),
-        ("oc3_chla_anomaly/anomaly-chl-tk-2020_03_02.tif", b"test"),
-        ("bm_500m_daily/VNP46A2_V011_be_2020_01_01_cog.tif", b"test"),
-        ("bm_500m_daily/VNP46A2_V011_be_2020_02_29_cog.tif", b"test"),
-        ("bm_500m_daily/VNP46A2_V011_be_2020_03_20_cog.tif", b"test"),
-        ("bm_500m_daily/VNP46A2_V011_EUPorts_2020_01_01_cog.tif", b"test"),
-        ("bm_500m_daily/VNP46A2_V011_EUPorts_2020_02_29_cog.tif", b"test"),
-        ("bm_500m_daily/VNP46A2_V011_EUPorts_2020_03_20_cog.tif", b"test"),
-        ("bmhd_30m_monthly/BMHD_VNP46A2_du_202005_cog.tif", b"test"),
-        ("bmhd_30m_monthly/BMHD_VNP46A2_du_202006_cog.tif", b"test"),
-        ("bmhd_30m_monthly/BMHD_VNP46A2_du_202007_cog.tif", b"test"),
-        ("OMNO2d_HRM/OMI_trno2_0.10x0.10_200401_Col3_V4.nc.tif", b"test"),
-        ("OMNO2d_HRM/OMI_trno2_0.10x0.10_200708_Col3_V4.nc.tif", b"test"),
-        ("OMNO2d_HRM/OMI_trno2_0.10x0.10_200901_Col3_V4.nc.tif", b"test"),
-        ("detections-plane/ny/2020_01_09.geojson", b"test"),
-        ("detections-plane/ny/2020_01_21.geojson", b"test"),
-        ("detections-plane/ny/2020_02_02.geoson", b"test"),
-        ("detections-ship/ny/2020_01_09.geojson", b"test"),
-        ("detections-ship/ny/2020_01_21.geojson", b"test"),
-        ("detections-ship/ny/2020_02_02.geoson", b"test"),
-        ("indicators/test/super.csv", b"test"),
+        # TODO(aimee) - update this test
+        ("indicators/test/super.csv", b"test")
     ]
     for key, content in s3_keys:
         bucket.put_object(Body=content, Key=key)
@@ -137,5 +113,5 @@ def test_euports_datasets(gather_datasets_metadata, datasets, sites):
         "nightlights-hd",
         "nightlights-viirs",
         "water-chlorophyll",
-        "detections-plane"
+        "detections-plane",
     }

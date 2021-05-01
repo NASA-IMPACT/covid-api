@@ -11,7 +11,8 @@ There are two categories of datasets: `global`, datasets that span the entire gl
 Appending a site id from the `/sites` endpoint to the `/datasets` endpoint will return all the datasets that are available for that spotlight (ie: [`/datasets/be`](https://8ib71h0627.execute-api.us-east-1.amazonaws.com/v1/) will return all datasets available for the Beijing spotlight). The [`/datasets/global` endpoint](https://8ib71h0627.execute-api.us-east-1.amazonaws.com/v1/datasets/global) will return all of the global spotlights. Note that all global spotlights are also included in the datasets specific to a spotlight, since the data does exist for that spotlight. 
 
 Here is the metadata for one of the datasets (Nightlights-VIIRS) availabe in the Beijing spotlight (dataset metadata for all Beijing datasets can be found at the `/datasets/be` enpoint)
-```plain
+
+```json
 
 {
       "id": "nightlights-viirs",
@@ -38,12 +39,8 @@ Here is the metadata for one of the datasets (Nightlights-VIIRS) availabe in the
         "gibs-population",
         "car-count",
         "nightlights-hd",
-        "detection-multi",
         "water-chlorophyll",
-        "water-spm",
-        "detections-ship",
-        "detections-plane",
-        "detections-vehicles"
+        "water-spm"
       ],
       "swatch": {
         "color": "#C0C0C0",

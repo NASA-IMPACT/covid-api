@@ -42,8 +42,8 @@ jobs:
           name: develop branch deployed to staging cdk stack            
           command: |
             if [ "${CIRCLE_BRANCH}" == "develop" ]; then
-              STAGE='staging' cdk deploy covid-api-dataset-metadata-generator-staging --region us-east-1 --require-approval never  
-              STAGE='staging' VPC_ID='vpc-0fa3007e738c7bbdf' cdk deploy covid-api-lambda-staging --region us-east-1 --require-approval never
+              STAGE='staging' cdk deploy ${PREFIX}-dataset-metadata-generator-staging --region ${AWS_REGION} --require-approval never  
+              STAGE='staging' VPC_ID='${VPC_ID}' cdk deploy ${PREFIX}-lambda-staging --region ${AWS_REGION} --require-approval never
             fi
 
   deploy-production:
@@ -67,8 +67,8 @@ jobs:
           name: master branch deployed to production cdk stack
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              STAGE='prod' cdk deploy covid-api-dataset-metadata-generator-prod --region us-east-1 --require-approval never  
-              STAGE='prod' cdk deploy covid-api-lambda-prod --region us-east-1 --require-approval never
+              STAGE='prod' cdk deploy ${PREFIX}-dataset-metadata-generator-prod --region ${AWS_REGION} --require-approval never  
+              STAGE='prod' cdk deploy ${PREFIX}-lambda-prod --region ${AWS_REGION} --require-approval never
             fi
 
 workflows:

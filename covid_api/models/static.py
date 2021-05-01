@@ -2,7 +2,6 @@
 
 from typing import Any, List, Optional, Union
 
-from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import Polygon
 from pydantic import BaseModel  # , validator
 
@@ -154,24 +153,3 @@ class IndicatorObservation(BaseModel):
     baseline_conf_low: Optional[float] = None
     baseline_conf_high: Optional[float] = None
     anomaly: Optional[str] = None
-
-
-class IndicatorGroup(BaseModel):
-    """Indicator Group Model."""
-
-    id: str
-    label: str
-    prose: Optional[str]
-    indicators: List[str]
-
-
-class IndicatorGroups(BaseModel):
-    """Indicator Group List Model."""
-
-    groups: List[IndicatorGroup]
-
-
-class Detection(FeatureCollection):
-    """Detection Model"""
-
-    pass
