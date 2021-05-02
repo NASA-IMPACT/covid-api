@@ -5,32 +5,20 @@ A lightweight tile server for COVID data, based on [titiler](https://github.com/
 ## Contributing data
 More information for data contributors like expected input format and delivery mechanisms, can be found in the [data guidelines](guidelines/README.md).
 
-## Local environment
+## Local Environment
 
 First, add your AWS credentials to a new file called `.env`. You can see an example of this file at `.env.example`.
 
-To run the API locally:
-
-```bash
-# First, add your AWS credentials to a new file called `.env`. You can see an example of this file at `.env.example`.
-cp .env.example .env
-# Edit .env
-docker-compose up --build
-```
-
-The API should be running on `http://localhost:8000`.
-
-## Contribution & Development
-
-Issues and pull requests are more than welcome.
-
-### Installing the application
+### Clone and configure
 
 ```bash
 git clone https://github.com/NASA-IMPACT/covid-api.git
 cd covid-api
-pyenv install
-pip install -e .
+
+# Add your AWS credentials to a new file called `.env`. You can see an example of this file at `.env.example`.
+cp .env.example .env
+# Copy and configure the app
+cp stack/config.yml.example stack/config.yml
 ```
 
 ### Running the app locally
@@ -40,14 +28,26 @@ To run the app locally, generate a config file and generate the static dataset j
 NOTE: This requires read and write access to the s3 bucket in `stack/config.yml`.
 
 ```bash
-# Copy and configure the app
-cp stack/config.yml.example stack/config.yml
+pyenv install
+pip install -e .
 # Create or add buckets for your data files
 export AWS_PROFILE=CHANGEME
 python -m lambda.dataset_metadata_generator.src.main
 # Run the app
 uvicorn covid_api.main:app --reload
 ```
+
+### Running the app with docker:
+
+```bash
+docker-compose up --build
+```
+
+The API should be running on `http://localhost:8000`.
+
+## Contribution & Development
+
+Issues and pull requests are more than welcome.
 
 ### If developing on the appplication, use pre-commit
 
@@ -87,25 +87,38 @@ This lambda generates metadata in 2 ways:
 1. Reads through the s3 bucket to generate a file that contains the datasets for each given spotlight option (_all, global, tk, ny, sf, la, be, du, gh) and their respective domain for each spotlight.
 2. If `STAC_API_URL` is configured in `stack/config.yml`, fetches collections from a STAC catalogue and generates a metadata object for each collection.
 
-## Deployment
+## Cloud Deployment
+
+Requirements:
+
+* npm
+* jq
+
+### Install AWS CDK, pip requirements and run CDK bootstrap
+
+`./install.sh` should only be run once and if requirements set in `setup.py` change.
 
 ```bash
-# Note: zsh users need to use
-npm install -g aws-cdk
-pip install -e ".[deploy]"
-
 export AWS_PROFILE=CHANGEME
-export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq .Account -r)
-export AWS_REGION=$(aws configure get region)
-cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION --all
-cdk deploy --all
+# Install requirements: aws-cdk and pip
+# Bootstrap the account
+# Should only need to run this once unless pip requirements change.
+./install.sh
 ```
 
-## DID:
-- Be more specific about mangum version, to address `enable_lifespan` unexpected argument error. Deprecated argument for Mangum in https://github.com/jordaneremieff/mangum/commit/497f778510118fcf268438526f8117f360d63a34
+Deploy the app!
 
+This currently deploys 2 stacks.
 
-## TODOs:
+```bash
+export AWS_PROFILE=CHANGEME
+./deploy.sh
+```
 
-- All example datasets should be from an open bucket
-- https://github.com/NASA-IMPACT/covid-api/issues/120
+Deploy the dashboard!
+
+```bash
+git clone git@github.com:NASA-IMPACT/covid-dashboard.git#abarciauskas-bgse_sample-app
+cd covid-dashboard
+API_URL= yarn deploy
+```

@@ -154,13 +154,14 @@ class covidApiLambdaStack(core.Stack):
         lambda_function.add_to_role_policy(ec2_network_access)
 
         # defines an API Gateway Http API resource backed by our "dynamoLambda" function.
-        apigw.HttpApi(
+        api = apigw.HttpApi(
             self,
             f"{id}-endpoint",
             default_integration=apigw_integrations.LambdaProxyIntegration(
                 handler=lambda_function
             ),
         )
+        core.CfnOutput(self, "API Endpoint", value=api.url)
 
     def create_package(self, code_dir: str) -> aws_lambda.Code:
         """Build docker image and create package."""
