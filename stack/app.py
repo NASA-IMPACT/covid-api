@@ -2,7 +2,7 @@
 
 import os
 import shutil
-from typing import Any, Union
+from typing import Any
 
 import config
 
@@ -10,8 +10,6 @@ import config
 from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_apigatewayv2_integrations as apigw_integrations
 from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_ecs as ecs
-from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_elasticache as escache
 from aws_cdk import aws_events, aws_events_targets
 from aws_cdk import aws_iam as iam
@@ -178,90 +176,6 @@ class covidApiLambdaStack(core.Stack):
         )
 
 
-class covidApiECSStack(core.Stack):
-    """Covid API ECS Fargate Stack."""
-
-    def __init__(
-        self,
-        scope: core.Construct,
-        id: str,
-        cpu: Union[int, float] = 256,
-        memory: Union[int, float] = 512,
-        mincount: int = 1,
-        maxcount: int = 50,
-        task_env: dict = {},
-        code_dir: str = "./",
-        **kwargs: Any,
-    ) -> None:
-        """Define stack."""
-        super().__init__(scope, id, **kwargs)
-
-        # add cache
-        if config.VPC_ID:
-            vpc = ec2.Vpc.from_lookup(self, f"{id}-vpc", vpc_id=config.VPC_ID,)
-        else:
-            vpc = ec2.Vpc(self, f"{id}-vpc")
-
-        cluster = ecs.Cluster(self, f"{id}-cluster", vpc=vpc)
-
-        task_env = DEFAULT_ENV.copy()
-        task_env.update(
-            dict(
-                MODULE_NAME="covid_api.main",
-                VARIABLE_NAME="app",
-                WORKERS_PER_CORE="1",
-                LOG_LEVEL="error",
-            )
-        )
-        task_env.update(task_env)
-
-        fargate_service = ecs_patterns.ApplicationLoadBalancedFargateService(
-            self,
-            f"{id}-service",
-            cluster=cluster,
-            cpu=cpu,
-            memory_limit_mib=memory,
-            desired_count=mincount,
-            public_load_balancer=True,
-            listener_port=80,
-            task_image_options=dict(
-                image=ecs.ContainerImage.from_asset(
-                    code_dir,
-                    exclude=["cdk.out", ".git"],
-                    file="Dockerfiles/ecs/Dockerfile",
-                ),
-                container_port=80,
-                environment=task_env,
-            ),
-        )
-
-        scalable_target = fargate_service.service.auto_scale_task_count(
-            min_capacity=mincount, max_capacity=maxcount
-        )
-
-        # https://github.com/awslabs/aws-rails-provisioner/blob/263782a4250ca1820082bfb059b163a0f2130d02/lib/aws-rails-provisioner/scaling.rb#L343-L387
-        scalable_target.scale_on_request_count(
-            "RequestScaling",
-            requests_per_target=50,
-            scale_in_cooldown=core.Duration.seconds(240),
-            scale_out_cooldown=core.Duration.seconds(30),
-            target_group=fargate_service.target_group,
-        )
-
-        # scalable_target.scale_on_cpu_utilization(
-        #     "CpuScaling", target_utilization_percent=70,
-        # )
-
-        fargate_service.service.connections.allow_from_any_ipv4(
-            port_range=ec2.Port(
-                protocol=ec2.Protocol.ALL,
-                string_representation="All port 80",
-                from_port=80,
-            ),
-            description="Allows traffic on port 80 from NLB",
-        )
-
-
 class covidApiDatasetMetadataGeneratorStack(core.Stack):
     """Dataset metadata generator stack - comprises a lambda and a Cloudwatch
     event that triggers a new lambda execution every 24hrs"""
@@ -361,21 +275,6 @@ for key, value in {
 }.items():
     if value:
         core.Tag.add(app, key, value)
-
-ecs_stackname = f"{config.PROJECT_NAME}-ecs-{config.STAGE}"
-covidApiECSStack(
-    app,
-    ecs_stackname,
-    cpu=config.TASK_CPU,
-    memory=config.TASK_MEMORY,
-    mincount=config.MIN_ECS_INSTANCES,
-    maxcount=config.MAX_ECS_INSTANCES,
-    task_env=config.TASK_ENV,
-    env=dict(
-        account=os.environ["CDK_DEFAULT_ACCOUNT"],
-        region=os.environ["CDK_DEFAULT_REGION"],
-    ),
-)
 
 lambda_stackname = f"{config.PROJECT_NAME}-lambda-{config.STAGE}"
 covidApiLambdaStack(
