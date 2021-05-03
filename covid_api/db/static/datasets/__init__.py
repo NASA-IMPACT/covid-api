@@ -127,7 +127,6 @@ class DatasetManager(object):
                 )
                 for tile in tiles
             ]
-        api_url = "http://localhost:8000"
         return [tile.replace("{api_url}", api_url) for tile in tiles]
 
     def _process(
