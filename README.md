@@ -120,5 +120,5 @@ Deploy the dashboard!
 ```bash
 git clone git@github.com:NASA-IMPACT/covid-dashboard.git#abarciauskas-bgse_sample-app
 cd covid-dashboard
-API_URL= yarn deploy
+API_URL=ADDME yarn deploy
 ```
