@@ -10,6 +10,6 @@ COPY README.md /app/README.md
 COPY covid_api/ /app/covid_api/
 COPY setup.py /app/setup.py
 
-RUN pip install -e /app/. --no-cache-dir
+RUN pip install -e /app/. boto3 --no-cache-dir 
 
 CMD ["/start-reload.sh"]
