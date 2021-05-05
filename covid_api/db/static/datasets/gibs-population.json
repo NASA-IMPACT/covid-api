@@ -1,5 +1,5 @@
 {
-  "id": "population",
+  "id": "gibs-population",
   "name": "Population",
   "type": "raster",
   "time_unit": "day",
@@ -21,7 +21,8 @@
     "detection-ship",
     "detection-multi",
     "water-chlorophyll",
-    "water-spm"
+    "water-spm",
+    "water-pzd"
   ],
   "swatch": {
     "color": "#C0C0C0",

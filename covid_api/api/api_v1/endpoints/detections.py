@@ -27,7 +27,6 @@ def get_detection(ml_type: MLTypes, site: SiteNames, date: str):
     """ Handle /detections requests."""
 
     try:
-
         return json.loads(
             s3_get(
                 bucket=config.INDICATOR_BUCKET,

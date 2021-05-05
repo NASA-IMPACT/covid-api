@@ -22,6 +22,7 @@
         "no2",
         "co2-diff",
         "co2",
+        "fb-population-density",
         "gibs-population",
         "car-count",
         "nightlights-viirs",
@@ -29,6 +30,7 @@
         "detection-multi",
         "water-chlorophyll",
         "water-spm",
+        "water-pzd",
         "detections-plane",
         "detections-contrail",
         "detections-vehicles"
