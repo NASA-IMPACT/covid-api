@@ -8,7 +8,7 @@
     "source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/bmhd_30m_monthly/BMHD_VNP46A2_{spotlightId}_{date}_cog.tif&resampling_method=bilinear&bidx=1%2C2%2C3"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/bmhd_30m_monthly/BMHD_VNP46A2_{spotlightId}_{date}_cog.tif&bidx=1&rescale=0,255&color_map=inferno"
         ]
     },
     "exclusive_with": [
@@ -16,12 +16,14 @@
         "no2",
         "co2-diff",
         "co2",
+        "fb-population-density",
         "gibs-population",
         "car-count",
         "nightlights-viirs",
         "detection-multi",
         "water-chlorophyll",
         "water-spm",
+        "water-pzd",
         "detections-ship",
         "detections-plane",
         "detections-contrail",

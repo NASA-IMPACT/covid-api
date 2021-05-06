@@ -17,6 +17,7 @@
         "agriculture",
         "co2",
         "co2-diff",
+        "gifb-population-density",
         "gibs-population",
         "car-count",
         "nightlights-viirs",
@@ -24,7 +25,8 @@
         "detection-ship",
         "detection-multi",
         "water-chlorophyll",
-        "water-spm"
+        "water-spm",
+        "water-pzd"
     ],
     "enabled": true,
     "swatch": {

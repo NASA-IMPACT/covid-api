@@ -35,7 +35,7 @@ Here is the metadata for one of the datasets (Nightlights-VIIRS) availabe in the
         "no2",
         "co2-diff",
         "co2",
-        "gibs-population",
+        "fb-population-density",
         "car-count",
         "nightlights-hd",
         "detection-multi",

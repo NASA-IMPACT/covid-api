@@ -14,6 +14,7 @@ services:
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_ENDPOINT_URL=http://localstack:4566
       - CPL_TMPDIR=/tmp
       - GDAL_CACHEMAX=75%
       - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
@@ -24,15 +25,38 @@ services:
       - MEMCACHE_HOST=memcached
       - MEMCACHE_USERNAME=myuser
       - MEMCACHE_PASSWORD=mypassword
+      - DISABLE_CACHE=yesplase
       - PLANET_API_KEY=${PLANET_API_KEY}
-      - DATASET_METADATA_FILENAME=${STAGE}-dataset-metadata.json
-      - DATASET_METADATA_GENERATOR_FUNCTION_NAME=${STAGE}-dataset-metadata-generator
+      - DATASET_METADATA_FILENAME=dev-dataset-metadata.json
+      - DATASET_METADATA_GENERATOR_FUNCTION_NAME=dev-dataset-metadata-generator
       - PORT=8000
       - PYTHONWARNINGS=ignore
       - VARIABLE_NAME=app
       - VSI_CACHE=TRUE
       - VSI_CACHE_SIZE=536870912
       - WORKERS_PER_CORE=5
+    
+    # localstack for local development only. AWS S3 used for staging/production
+  localstack:
+    image: localstack/localstack:0.12.7
+    environment:
+      SERVICES: s3
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_ENDPOINT_URL: http://localhost:4566
+      AWS_DEFAULT_REGION: us-east-1
+      HOSTNAME: localhost
+      HOSTNAME_EXTERNAL: localhost
+      DATA_BUCKET_NAME: covid-eo-data
+      DATASET_METADATA_FILENAME: dev-dataset-metadata.json
+    ports:
+      - "4566:4566"
+    volumes: 
+      - ./localstack/setup.sh:/docker-entrypoint-initaws.d/setup.sh
+      - ./lambda/dataset_metadata_generator/src/main.py:/docker-entrypoint-initaws.d/main.py
+      - ./covid_api/db/static/datasets:/docker-entrypoint-initaws.d/datasets
+      - ./covid_api/db/static/sites:/docker-entrypoint-initaws.d/sites
+      
 
   memcached:
     image: remotepixel/memcached-sasl:latest
@@ -41,3 +65,5 @@ services:
       - MEMCACHED_PASSWORD=mypassword
     ports:
       - "11211:11211"
+
+  
