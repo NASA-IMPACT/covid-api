@@ -79,3 +79,27 @@ The URL for requesting data from the `nightlights-viirs` data for Beijing, for x
 [https://8ib71h0627.execute-api.us-east-1.amazonaws.com/v1/9/421/193@1x?url=s3://covid-eo-data/bm_500m_daily/VNP46A2_V011_be_2020_01_01_cog.tif&resampling_method=nearest&bidx=1&rescale=0%2C100&color_map=viridis](https://8ib71h0627.execute-api.us-east-1.amazonaws.com/v1/9/421/193@1x?url=s3://covid-eo-data/bm_500m_daily/VNP46A2_V011_be_2020_01_01_cog.tif&resampling_method=nearest&bidx=1&rescale=0%2C100&color_map=viridis)
 
 Which will display in the browser.
+
+You can also download the above tile with a curl command: 
+
+```bash
+curl 'https://8ib71h0627.execute-api.us-east-1.amazonaws.com/v1/9/421/193@1x?url=s3://covid-eo-data/bm_500m_daily/VNP46A2_V011_be_2020_01_01_cog.tif&resampling_method=nearest&bidx=1&rescale=0%2C100&color_map=viridis' -o tile.tif
+```
+
+The source COGs, from which the API generates the tiles are publicly available at the location specified by the `url` parameter in the link above. For example, the source COG for the above tile can be downloaded using the [aws-cli](https://aws.amazon.com/cli/) with the following command: 
+
+```bash
+aws s3 cp s3://covid-eo-data/bm_500m_daily/VNP46A2_V011_be_2020_01_01_cog.tif ./cog.tif --no-sign-request
+```
+
+Some of the COGs can be quite large. To verify the size before downloading use this command: 
+
+```bash
+aws s3 ls s3://covid-eo-data/bm_500m_daily/VNP46A2_V011_be_2020_01_01_cog.tif --summarize --human-readable --no-sign-request
+
+# Output: 
+2021-03-24 08:50:12    5.9 MiB VNP46A2_V011_be_2020_01_01_cog.tif
+
+Total Objects: 1
+   Total Size: 5.9 MiB
+```

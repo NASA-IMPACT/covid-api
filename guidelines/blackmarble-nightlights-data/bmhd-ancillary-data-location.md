@@ -1,0 +1,1 @@
+The ancillary data refered to in `COVIDDashboardProductReadme.docx` can be found at `s3://covid-eo-data/bmhd_ancillary/`
