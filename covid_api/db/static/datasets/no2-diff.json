@@ -17,6 +17,7 @@
     "exclusive_with": [
         "co2",
         "co2-diff",
+        "fb-population-density",
         "gibs-population",
         "car-count",
         "nightlights-viirs",
@@ -25,6 +26,7 @@
         "detection-multi",
         "water-chlorophyll",
         "water-spm",
+        "water-pzd",
         "no2"
     ],
     "enabled": false,

@@ -2,6 +2,7 @@
 
 import csv
 import json
+import os
 from datetime import datetime
 from typing import Dict, List
 
@@ -11,15 +12,23 @@ from botocore import config
 from covid_api.core.config import DT_FORMAT, INDICATOR_BUCKET
 from covid_api.models.static import IndicatorObservation
 
-s3 = boto3.client("s3")
-
-_lambda = boto3.client(
-    "lambda",
+s3_params = dict(service_name="s3")
+lambda_params = dict(
+    service_name="lambda",
     region_name="us-east-1",
     config=config.Config(
         read_timeout=900, connect_timeout=900, retries={"max_attempts": 0}
     ),
 )
+
+if os.environ.get("AWS_ENDPOINT_URL"):
+    print("Loading from local")
+    s3_params["endpoint_url"] = os.environ["AWS_ENDPOINT_URL"]
+    lambda_params["endpoint_url"] = os.environ["AWS_ENDPOINT_URL"]
+
+s3 = boto3.client(**s3_params)
+
+_lambda = boto3.client(**lambda_params)
 
 
 def invoke_lambda(
@@ -104,7 +113,7 @@ def indicator_folders() -> List:
     response = s3.list_objects_v2(
         Bucket=INDICATOR_BUCKET, Prefix="indicators/", Delimiter="/",
     )
-    return [obj["Prefix"].split("/")[1] for obj in response["CommonPrefixes"]]
+    return [obj["Prefix"].split("/")[1] for obj in response.get("CommonPrefixes", [])]
 
 
 def indicator_exists(identifier: str, indicator: str):

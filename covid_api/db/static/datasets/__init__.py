@@ -54,6 +54,7 @@ class DatasetManager(object):
                 # "Payload" returned by the lambda_invocation (see docstring).
                 # Instead the thread is held while the lambda executes and then
                 # loads the metadata from s3.
+
                 invoke_lambda(
                     lambda_function_name=DATASET_METADATA_GENERATOR_FUNCTION_NAME
                 )
@@ -109,7 +110,6 @@ class DatasetManager(object):
 
     def get_all(self, api_url: str) -> Datasets:
         """Fetch all Datasets. Overload domain with S3 scanned domain"""
-        # print(self._load_domain_metadata())
         datasets = self._process(
             datasets_domains_metadata=self._load_domain_metadata()["_all"],
             api_url=api_url,
@@ -153,6 +153,7 @@ class DatasetManager(object):
         (list) : datasets metadata objects (to be serialized as a pydantic Datasets
             model)
         """
+
         output_datasets = {
             k: v
             for k, v in self._data().items()
@@ -162,12 +163,14 @@ class DatasetManager(object):
         for k, dataset in output_datasets.items():
 
             # overload domain with domain returned from s3 file
-            dataset.domain = datasets_domains_metadata[k]["domain"]
+            dataset.domain = datasets_domains_metadata.get(k, {}).get("domain", [])
 
             # format url to contain the correct API host and
             # spotlight id (if a spotlight was requested)
             format_url_params = dict(api_url=api_url)
             if spotlight_id:
+                if k == "nightlights-viirs" and spotlight_id in ["du", "gh"]:
+                    spotlight_id = "EUPorts"
                 format_url_params.update(dict(spotlight_id=spotlight_id))
 
             dataset.source.tiles = self._format_urls(
@@ -184,11 +187,7 @@ class DatasetManager(object):
             # source URLs of background tiles for `detections-*` datasets are
             # handled differently in the front end so the the `source` objects
             # get updated here
-            if k in [
-                "detections-ship",
-                "detections-plane",
-                "detections-vehicles",
-            ]:
+            if k.startswith("detections-"):
                 dataset.source = GeoJsonSource(
                     type=dataset.source.type, data=dataset.source.tiles[0]
                 ).dict()

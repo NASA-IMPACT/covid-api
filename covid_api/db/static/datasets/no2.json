@@ -12,12 +12,13 @@
     ]
   },
   "paint": {
-      "raster-opacity": 0.9
+    "raster-opacity": 0.9
   },
   "exclusive_with": [
     "agriculture",
     "co2",
     "co2-diff",
+    "fb-population-density",
     "gibs-population",
     "car-count",
     "nightlights-viirs",
@@ -25,8 +26,10 @@
     "detection-multi",
     "water-chlorophyll",
     "water-spm",
+    "water-pzd",
     "detections-ship",
     "detections-plane",
+    "detections-contrail",
     "detections-vehicles"
   ],
   "enabled": true,

@@ -41,23 +41,12 @@ TASK_MEMORY: int = 512
 ################################################################################
 TIMEOUT: int = 10
 MEMORY: int = 1536
-MAX_CONCURRENT: int = 500 if STAGE == "prod" else 50
+
+# stack skips setting concurrency if this value is 0
+# the stack will instead use unreserved lambda concurrency
+MAX_CONCURRENT: int = 500 if STAGE == "prod" else 0
 
 # Cache
 CACHE_NODE_TYPE = "cache.m5.large"
 CACHE_ENGINE = "memcached"
 CACHE_NODE_NUM = 1
-
-################################################################################
-#                                                                              #
-#                         DATASET METADATA GENERATOR                           #
-#                                                                              #
-################################################################################
-DATASET_METADATA_FILENAME = (
-    "dataset-metadata.json" if STAGE == "prod" else "dev-dataset-metadata.json"
-)
-DATASET_METADATA_GENERATOR_FUNCTION_NAME = (
-    "dataset-metadata-generator"
-    if STAGE == "prod"
-    else "dev-dataset-metadata-generator"
-)

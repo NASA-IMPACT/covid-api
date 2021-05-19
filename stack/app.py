@@ -132,19 +132,24 @@ class covidApiLambdaStack(core.Stack):
             )
         )
 
-        lambda_function = aws_lambda.Function(
-            self,
-            f"{id}-lambda",
+        lambda_function_props = dict(
             runtime=aws_lambda.Runtime.PYTHON_3_7,
             code=self.create_package(code_dir),
             handler="handler.handler",
             memory_size=memory,
-            reserved_concurrent_executions=concurrent,
             timeout=core.Duration.seconds(timeout),
             environment=lambda_env,
             security_groups=[lambda_function_security_group],
             vpc=vpc,
         )
+
+        if concurrent:
+            lambda_function_props["reserved_concurrent_executions"] = concurrent
+
+        lambda_function = aws_lambda.Function(
+            self, f"{id}-lambda", **lambda_function_props
+        )
+
         lambda_function.add_to_role_policy(s3_full_access_to_data_bucket)
         lambda_function.add_to_role_policy(logs_access)
         lambda_function.add_to_role_policy(ec2_network_access)
@@ -379,8 +384,8 @@ covidApiLambdaStack(
     memory=config.MEMORY,
     timeout=config.TIMEOUT,
     concurrent=config.MAX_CONCURRENT,
-    dataset_metadata_filename=config.DATASET_METADATA_FILENAME,
-    dataset_metadata_generator_function_name=config.DATASET_METADATA_GENERATOR_FUNCTION_NAME,
+    dataset_metadata_filename=f"{config.STAGE}-dataset-metadata.json",
+    dataset_metadata_generator_function_name=f"{config.STAGE}-dataset-metadata-generator",
     env=dict(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
@@ -393,8 +398,8 @@ dataset_metadata_generator_stackname = (
 covidApiDatasetMetadataGeneratorStack(
     app,
     dataset_metadata_generator_stackname,
-    dataset_metadata_filename=config.DATASET_METADATA_FILENAME,
-    dataset_metadata_generator_function_name=config.DATASET_METADATA_GENERATOR_FUNCTION_NAME,
+    dataset_metadata_filename=f"{config.STAGE}-dataset-metadata.json",
+    dataset_metadata_generator_function_name=f"{config.STAGE}-dataset-metadata-generator",
 )
 
 app.synth()

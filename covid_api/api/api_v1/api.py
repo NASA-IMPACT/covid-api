@@ -4,6 +4,7 @@ from covid_api.api.api_v1.endpoints import detections, datasets  # isort:skip
 from covid_api.api.api_v1.endpoints import (
     groups,
     metadata,
+    modis,
     ogc,
     planet,
     sites,
@@ -23,3 +24,4 @@ api_router.include_router(sites.router, tags=["sites"])
 api_router.include_router(groups.router, tags=["indicator groups"])
 api_router.include_router(detections.router, tags=["detections"])
 api_router.include_router(planet.router, tags=["planet"])
+api_router.include_router(modis.router, tags=["modis"])

@@ -1,20 +1,20 @@
 {
-    "id": "detections-ship",
-    "name": "Shipping",
+    "id": "detections-contrail",
+    "name": "Contrails",
     "type": "inference-timeseries",
-    "s3_location": "detections-ship",
+    "s3_location": "detections-contrail",
     "is_periodic": false,
     "time_unit": "day",
     "source": {
         "type": "geojson",
         "tiles": [
-            "{api_url}/detections/ship/{spotlightId}/{date}.geojson"
+            "{api_url}/detections/contrail/{spotlightId}/{date}.geojson"
         ]
     },
     "background_source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/planet/{z}/{x}/{y}?date={date}&site={spotlightId}"
+            "{api_url}/modis/{z}/{x}/{y}?date={date}"
         ]
     },
     "exclusive_with": [
@@ -31,8 +31,8 @@
         "water-chlorophyll",
         "water-spm",
         "water-pzd",
+        "detections-ship",
         "detections-plane",
-        "detections-contrail",
         "detections-vehicles"
     ],
     "enabled": false,
@@ -40,5 +40,5 @@
         "color": "#C0C0C0",
         "name": "Grey"
     },
-    "info": "Ships detected each day in PlanetScope imagery are shown in orange."
+    "info": "Contrails detected each day, displayed over MODIS Imagery"
 }

@@ -15,9 +15,16 @@ SITES_JSON_FILEPATH = os.path.join(BASE_PATH, "sites")
 BUCKET_NAME = os.environ["DATA_BUCKET_NAME"]
 DATASET_METADATA_FILENAME = os.environ["DATASET_METADATA_FILENAME"]
 
+# Use this bucket to read dataset info from prod S3 bucket
+bucket = boto3.resource("s3").Bucket(BUCKET_NAME)
+# If running in AWS, save metadata file to same bucket
+metadata_host_bucket = bucket
 
-s3 = boto3.resource("s3")
-bucket = s3.Bucket(BUCKET_NAME)
+# If running locally, save metadata file to local S3 bucket
+if os.environ.get("AWS_ENDPOINT_URL"):
+    metadata_host_bucket = boto3.resource(
+        "s3", endpoint_url=os.environ["AWS_ENDPOINT_URL"]
+    ).Bucket(BUCKET_NAME)
 
 
 def handler(event, context):
@@ -44,7 +51,10 @@ def handler(event, context):
 
     result = json.dumps(_gather_datasets_metadata(datasets, sites))
 
-    bucket.put_object(
+    print(
+        f"Saving generated metadata to {DATASET_METADATA_FILENAME} in bucket {metadata_host_bucket.name}"
+    )
+    metadata_host_bucket.put_object(
         Body=result, Key=DATASET_METADATA_FILENAME, ContentType="application/json",
     )
     return result
@@ -72,16 +82,17 @@ def _gather_datasets_metadata(datasets: List[dict], sites: List[dict]):
     metadata: Dict[str, dict] = {}
 
     for dataset in datasets:
+        print(f"Processing dataset: {dataset['name']}")
         if not dataset.get("s3_location"):
-            continue
+            domain = []
+        else:
+            domain_args = {
+                "dataset_folder": dataset["s3_location"],
+                "is_periodic": dataset.get("is_periodic"),
+                "time_unit": dataset.get("time_unit"),
+            }
 
-        domain_args = {
-            "dataset_folder": dataset["s3_location"],
-            "is_periodic": dataset.get("is_periodic"),
-            "time_unit": dataset.get("time_unit"),
-        }
-
-        domain = _get_dataset_domain(**domain_args)
+            domain = _get_dataset_domain(**domain_args)
 
         metadata.setdefault("_all", {}).update({dataset["id"]: {"domain": domain}})
 
@@ -253,3 +264,7 @@ class NoKeysFoundForSpotlight(Exception):
     """Exception to be thrown if no keys are found for a given spotlight"""
 
     pass
+
+
+if __name__ == "__main__":
+    handler(event={}, context={})

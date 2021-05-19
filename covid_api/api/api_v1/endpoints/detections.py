@@ -12,7 +12,7 @@ from fastapi import APIRouter, HTTPException
 router = APIRouter()
 
 # TODO: unhardcoded types and dates
-MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple", "plane", "vehicles"]])  # type: ignore
+MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple", "plane", "vehicles", "contrail"]])  # type: ignore
 
 
 @router.get(
@@ -25,6 +25,7 @@ MLTypes = Enum("MLTypes", [(ml, ml) for ml in ["ship", "multiple", "plane", "veh
 )
 def get_detection(ml_type: MLTypes, site: SiteNames, date: str):
     """ Handle /detections requests."""
+
     try:
         return json.loads(
             s3_get(

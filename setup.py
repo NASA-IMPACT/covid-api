@@ -11,14 +11,13 @@ inst_reqs = [
     "python-binary-memcached",
     "rio-color",
     "rio-tiler==2.0a.11",
-    "email-validator",
     "fiona",
     "shapely",
     "rasterio==1.1.8",
     "rasterstats",
     "geojson-pydantic",
-    "boto3",
     "requests",
+    "mercantile",
 ]
 extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit"],
@@ -43,7 +42,7 @@ extra_reqs = {
 
 setup(
     name="covid_api",
-    version="0.4.0",
+    version="0.6.1",
     description=u"",
     long_description=long_description,
     long_description_content_type="text/markdown",

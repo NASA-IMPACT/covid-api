@@ -1,14 +1,14 @@
 {
-    "id": "water-chlorophyll",
-    "name": "Chlorophyll-a Anomaly",
+    "id": "water-pzd",
+    "name": "Photic Zone Depth Anomaly",
     "type": "raster-timeseries",
     "time_unit": "day",
     "is_periodic": false,
-    "s3_location": "oc3_chla_anomaly",
+    "s3_location": "pzd_anomaly",
     "source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/oc3_chla_anomaly/anomaly-chl-{spotlightId}-{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/pzd_anomaly/anomaly-pzd-{spotlightId}-{date}.tif&resampling_method=bilinear&bidx=1&rescale=-100%2C100&color_map=rdbu_r"
         ]
     },
     "exclusive_with": [
@@ -23,7 +23,7 @@
         "nightlights-hd",
         "detection-multi",
         "water-spm",
-        "water-pzd",
+        "water-chlorophyll",
         "detections-ship",
         "detections-plane",
         "detections-contrail",
@@ -46,5 +46,5 @@
             "#67001F"
         ]
     },
-    "info": "Chlorophyll-a is an indicator of algae growth. Redder colors indicate increases in chlorophyll-a and worse water quality. Bluer colors indicate decreases in chlorophyll-a and improved water quality. White areas indicate no change."
+    "info": "Photic zone depth (PZD) is the depth at which only 1% of the surface irradiation remains, and is an indicator of water clarity. PZD is impacted by concentrations of chlorophyll-a, suspended solids, and CDOM. Redder colors indicate increased water clarity. Bluer colors indicate decreased water clarity. White areas indicate no change."
 }

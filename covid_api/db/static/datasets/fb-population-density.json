@@ -1,0 +1,50 @@
+{
+    "id": "fb-population-density",
+    "name": "Facebook Population Density",
+    "type": "raster",
+    "time_unit": "day",
+    "source": {
+        "type": "raster",
+        "tiles": [
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/dataforgood-fb-population-density/cog.tif&rescale=0,69&resampling_method=nearest&color_map=ylorrd"
+        ]
+    },
+    "paint": {
+        "raster-opacity": 0.9
+    },
+    "exclusive_with": [
+        "agriculture",
+        "no2",
+        "co2-diff",
+        "gibs-population",
+        "car-count",
+        "nightlights-viirs",
+        "nightlights-hd",
+        "detection-multi",
+        "water-chlorophyll",
+        "water-spm",
+        "water-pzd",
+        "detections-ship",
+        "detections-plane",
+        "detections-vehicles"
+    ],
+    "enabled": true,
+    "swatch": {
+        "color": "#C0C0C0",
+        "name": "Grey"
+    },
+    "legend": {
+        "type": "gradient",
+        "min": "less",
+        "max": "more",
+        "stops": [
+            "#99c5e0",
+            "#f9eaa9",
+            "#f7765d",
+            "#c13b72",
+            "#461070",
+            "#050308"
+        ]
+    },
+    "info": "Facebook high-resolution population density: Darker areas indicate higher population density areas and lighter areas indicate lower population density areas"
+}
