@@ -40,6 +40,7 @@ class TimelapseRequest(BaseModel):
 
     @validator("date_range")
     def validate_date_objects(cls, v):
+
         """Validator"""
         if not len(v) == 2:
             raise ValueError("Field `dateRange` must contain exactly 2 dates")

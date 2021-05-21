@@ -62,17 +62,14 @@ def timelapse(request: Request, query: TimelapseRequest):
     url = _extract_s3_url(dataset)
 
     if query.date:
-        print("SINGE DATE IN QUERY - calculating")
 
         # format S3 URL template with date object
         url = _insert_date(url, dataset, query.date)
-        print("URL: ", url)
         return _get_mean_median(query, url, dataset)
 
     if query.date_range:
 
         start = _validate_query_date(dataset, query.date_range[0])
-
         end = _validate_query_date(dataset, query.date_range[1])
 
         if dataset.time_unit == "day":
@@ -91,7 +88,7 @@ def timelapse(request: Request, query: TimelapseRequest):
         print("DATES TO QUERY: ", dates)
 
         stats = []
-        with futures.ThreadPoolExecutor(max_workers=15) as executor:
+        with futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_stats_queries = {
                 executor.submit(
                     _get_mean_median, query, _insert_date(url, dataset, date), dataset
