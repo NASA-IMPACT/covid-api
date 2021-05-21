@@ -1,6 +1,10 @@
 """API metadata."""
 import re
-from datetime import datetime
+from concurrent import futures
+from datetime import datetime, timedelta
+from typing import List, Union
+
+from dateutil.relativedelta import relativedelta
 
 from covid_api.api.utils import get_zonal_stat
 from covid_api.core.config import API_VERSION_STR
@@ -17,10 +21,35 @@ from starlette.requests import Request
 router = APIRouter()
 
 
+# TODO: validate inputs with typing/pydantic models
+def _get_mean_median(query, url, dataset):
+
+    # format S3 URL template with spotlightId, if dataset is
+    # spotlight specific
+    if "{spotlightId}" in url:
+        if not query.spotlight_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Must provide a `spotlight_id` for dataset: {dataset.id}",
+            )
+        url = _insert_spotlight_id(url, query.spotlight_id)
+    try:
+        print("REQUESTING ZONAL STATS for URL", url)
+        mean, median = get_zonal_stat(query.geojson, url)
+        print("DONE! ", mean, median)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to calculate mean/median values. This is likely due to a bounding box extending beyond the borders of the tile.",
+        )
+
+    return dict(mean=mean, median=median)
+
+
 @router.post(
     "/timelapse",
     responses={200: {"description": "Return timelapse values for a given geometry"}},
-    response_model=TimelapseValue,
+    response_model=Union[TimelapseValue, List[TimelapseValue]],
 )
 def timelapse(request: Request, query: TimelapseRequest):
     """Handle /timelapse requests."""
@@ -32,22 +61,54 @@ def timelapse(request: Request, query: TimelapseRequest):
     # extract S3 URL template from dataset metadata info
     url = _extract_s3_url(dataset)
 
-    # format S3 URL template with date object
-    url = _insert_date(url, dataset, query.date)
+    if query.date:
+        print("SINGE DATE IN QUERY - calculating")
 
-    # format S3 URL template with spotlightId, if dataset is
-    # spotlight specific
-    if "{spotlightId}" in url:
-        url = _insert_spotlight_id(url, query.spotlight_id)
-    try:
-        mean, median = get_zonal_stat(query.geojson, url)
-    except ValueError:
-        raise HTTPException(
-            status_code=400,
-            detail="Unable to calculate mean/median values. This is likely due to a bounding box extending beyond the borders of the tile.",
-        )
+        # format S3 URL template with date object
+        url = _insert_date(url, dataset, query.date)
+        print("URL: ", url)
+        return _get_mean_median(query, url, dataset)
 
-    return dict(mean=mean, median=median)
+    if query.date_range:
+
+        start = _validate_query_date(dataset, query.date_range[0])
+
+        end = _validate_query_date(dataset, query.date_range[1])
+
+        if dataset.time_unit == "day":
+            # Add 1 to days to ensure it contains the end date as well
+            dates = [
+                datetime.strftime((start + timedelta(days=x)), "%Y_%m_%d")
+                for x in range(0, (end - start).days + 1)
+            ]
+
+        if dataset.time_unit == "month":
+            num_months = (end.year - start.year) * 12 + (end.month - start.month)
+            dates = [
+                datetime.strftime((start + relativedelta(months=+x)), "%Y%m")
+                for x in range(0, num_months + 1)
+            ]
+        print("DATES TO QUERY: ", dates)
+
+        stats = []
+        with futures.ThreadPoolExecutor(max_workers=15) as executor:
+            future_stats_queries = {
+                executor.submit(
+                    _get_mean_median, query, _insert_date(url, dataset, date), dataset
+                ): date
+                for date in dates
+            }
+            print("FUTURE stats queries: ", future_stats_queries)
+            for future in futures.as_completed(future_stats_queries):
+                date = future_stats_queries[future]
+                print("FROM FUTURE: ", date)
+                try:
+                    print("RESULT: ", future.result())
+                    stats.append({"date": date, **future.result()})
+                except HTTPException as e:
+                    stats.append({"date": date, "error": e.detail})
+        print("STATS TO BE RETURNED: ", stats)
+        return stats
 
 
 def _get_dataset_metadata(request: Request, query: TimelapseRequest):
@@ -97,7 +158,7 @@ def _insert_date(url: str, dataset: Dataset, date: str):
 def _validate_query_date(dataset: Dataset, date: str):
     date_format = "%Y_%m_%d" if dataset.time_unit == "day" else "%Y%m"
     try:
-        datetime.strptime(date, date_format)
+        return datetime.strptime(date, date_format)
     except ValueError:
         raise HTTPException(
             status_code=400,

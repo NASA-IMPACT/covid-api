@@ -214,7 +214,6 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
     """Return zonal statistics."""
     geom = shape(geojson.geometry.dict())
     with rasterio.open(raster) as src:
-
         # read the raster data matching the geometry bounds
         window = bounds_window(geom.bounds, src.transform)
         # store our window information & read
