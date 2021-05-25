@@ -34,22 +34,25 @@ def _get_mean_median(query, url, dataset):
             )
         url = _insert_spotlight_id(url, query.spotlight_id)
     try:
-        print("REQUESTING ZONAL STATS for URL", url)
         mean, median = get_zonal_stat(query.geojson, url)
-        print("DONE! ", mean, median)
-    except ValueError:
+        return dict(mean=mean, median=median)
+
+    except Exception:
         raise HTTPException(
             status_code=400,
-            detail="Unable to calculate mean/median values. This is likely due to a bounding box extending beyond the borders of the tile.",
+            detail=(
+                "Unable to calculate mean/median values. This either due to a bounding box "
+                "extending beyond the edges of the COG or there are no COGs available for the "
+                "requested date range."
+            ),
         )
-
-    return dict(mean=mean, median=median)
 
 
 @router.post(
     "/timelapse",
     responses={200: {"description": "Return timelapse values for a given geometry"}},
-    response_model=Union[TimelapseValue, List[TimelapseValue]],
+    response_model=Union[List[TimelapseValue], TimelapseValue],
+    response_model_exclude_none=True,
 )
 def timelapse(request: Request, query: TimelapseRequest):
     """Handle /timelapse requests."""
@@ -67,45 +70,48 @@ def timelapse(request: Request, query: TimelapseRequest):
         url = _insert_date(url, dataset, query.date)
         return _get_mean_median(query, url, dataset)
 
+    # Gather a list of dates to query
     if query.date_range:
 
-        start = _validate_query_date(dataset, query.date_range[0])
-        end = _validate_query_date(dataset, query.date_range[1])
-
         if dataset.time_unit == "day":
-            # Add 1 to days to ensure it contains the end date as well
+            # Get start and end dates
+            start = datetime.strptime(query.date_range[0], "%Y_%m_%d")
+            end = datetime.strptime(query.date_range[1], "%Y_%m_%d")
+
+            # Populated all days in between Add 1 to days to ensure it contains the end date as well
             dates = [
                 datetime.strftime((start + timedelta(days=x)), "%Y_%m_%d")
                 for x in range(0, (end - start).days + 1)
             ]
 
         if dataset.time_unit == "month":
+            # Get start and end dates, as a
+            start = datetime.strptime(query.date_range[0], "%Y%m")
+            end = datetime.strptime(query.date_range[1], "%Y%m")
             num_months = (end.year - start.year) * 12 + (end.month - start.month)
             dates = [
                 datetime.strftime((start + relativedelta(months=+x)), "%Y%m")
                 for x in range(0, num_months + 1)
             ]
-        print("DATES TO QUERY: ", dates)
 
-        stats = []
-        with futures.ThreadPoolExecutor(max_workers=10) as executor:
+        with futures.ThreadPoolExecutor(max_workers=15) as executor:
             future_stats_queries = {
                 executor.submit(
                     _get_mean_median, query, _insert_date(url, dataset, date), dataset
                 ): date
                 for date in dates
             }
-            print("FUTURE stats queries: ", future_stats_queries)
+
+            stats = []
+
             for future in futures.as_completed(future_stats_queries):
                 date = future_stats_queries[future]
-                print("FROM FUTURE: ", date)
                 try:
-                    print("RESULT: ", future.result())
                     stats.append({"date": date, **future.result()})
                 except HTTPException as e:
+
                     stats.append({"date": date, "error": e.detail})
-        print("STATS TO BE RETURNED: ", stats)
-        return stats
+            return stats
 
 
 def _get_dataset_metadata(request: Request, query: TimelapseRequest):
