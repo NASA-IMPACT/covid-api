@@ -223,13 +223,8 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
         # calculate the coverage of pixels for weighting
         pctcover = rasterize_pctcover(geom, atrans=window_affine, shape=data.shape[1:])
 
-        # Create a mask of the data that filters out the tile's `nodata` value. In order
-        # to ensure the average calculation isn't incorrectly affected by large, negative,
-        # `nodata` values.
-        masked_data = np.ma.masked_equal(data[0], src.nodata)
-
         return (
-            np.average(masked_data, weights=pctcover),
+            np.average(data[0], weights=pctcover),
             np.nanmedian(data),
         )
 
