@@ -25,6 +25,7 @@ class PolygonFeature(Feature):
 class TimelapseValue(BaseModel):
     """"Timelapse values model."""
 
+    date: Optional[str]
     mean: float
     median: float
 
