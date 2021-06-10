@@ -13,6 +13,7 @@ inst_reqs = [
     "rio-tiler==2.0a.11",
     "fiona",
     "shapely",
+    "area",
     "rasterio==1.1.8",
     "rasterstats",
     "geojson-pydantic",

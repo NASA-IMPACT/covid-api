@@ -39,8 +39,10 @@ TASK_MEMORY: int = 512
 #                                 LAMBDA                                       #
 #                                                                              #
 ################################################################################
-TIMEOUT: int = 10
-MEMORY: int = 1536
+# TIMEOUT: int = 10
+TIMEOUT: int = 30
+MEMORY: int = 3008
+# MEMORY: int = 10240
 
 # stack skips setting concurrency if this value is 0
 # the stack will instead use unreserved lambda concurrency

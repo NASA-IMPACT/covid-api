@@ -70,31 +70,31 @@ def timelapse(request: Request, query: TimelapseRequest):
         url = _insert_date(url, dataset, query.date)
         return _get_mean_median(query, url, dataset)
 
-    # Gather a list of dates to query
     if query.date_range:
 
         if dataset.time_unit == "day":
             # Get start and end dates
-            start = datetime.strptime(query.date_range[0], "%Y_%m_%d")
-            end = datetime.strptime(query.date_range[1], "%Y_%m_%d")
+            start = _validate_query_date(dataset, query.date_range[0])
+            end = _validate_query_date(dataset, query.date_range[1])
 
-            # Populated all days in between Add 1 to days to ensure it contains the end date as well
+            # Populate all days in between Add 1 to days to ensure it contains the end date as well
             dates = [
                 datetime.strftime((start + timedelta(days=x)), "%Y_%m_%d")
                 for x in range(0, (end - start).days + 1)
             ]
 
         if dataset.time_unit == "month":
-            # Get start and end dates, as a
             start = datetime.strptime(query.date_range[0], "%Y%m")
             end = datetime.strptime(query.date_range[1], "%Y%m")
+
             num_months = (end.year - start.year) * 12 + (end.month - start.month)
+
             dates = [
                 datetime.strftime((start + relativedelta(months=+x)), "%Y%m")
                 for x in range(0, num_months + 1)
             ]
 
-        with futures.ThreadPoolExecutor(max_workers=15) as executor:
+        with futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_stats_queries = {
                 executor.submit(
                     _get_mean_median, query, _insert_date(url, dataset, date), dataset
@@ -102,16 +102,16 @@ def timelapse(request: Request, query: TimelapseRequest):
                 for date in dates
             }
 
-            stats = []
+        stats = []
 
-            for future in futures.as_completed(future_stats_queries):
-                date = future_stats_queries[future]
-                try:
-                    stats.append({"date": date, **future.result()})
-                except HTTPException as e:
+        for future in futures.as_completed(future_stats_queries):
+            date = future_stats_queries[future]
+            try:
+                stats.append({"date": date, **future.result()})
+            except HTTPException as e:
+                stats.append({"date": date, "error": e.detail})
 
-                    stats.append({"date": date, "error": e.detail})
-            return stats
+        return sorted(stats, key=lambda s: s["date"])
 
 
 def _get_dataset_metadata(request: Request, query: TimelapseRequest):
@@ -165,7 +165,10 @@ def _validate_query_date(dataset: Dataset, date: str):
     except ValueError:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid date format. {date} should be either YYYY_MM_DD or YYYYMM",
+            detail=(
+                f"Invalid date format. {date} should be like "
+                f"{'YYYYMM' if dataset.time_unit == 'month' else 'YYYY_MM_DD'}"
+            ),
         )
 
 
