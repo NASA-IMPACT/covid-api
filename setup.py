@@ -6,7 +6,7 @@ with open("README.md") as f:
     long_description = f.read()
 
 inst_reqs = [
-    "fastapi==0.60.0",
+    "fastapi==0.65.2",
     "jinja2",
     "python-binary-memcached",
     "rio-color",
