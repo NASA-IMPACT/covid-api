@@ -24,7 +24,9 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+Pipfile
 
+cdk.context.json
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

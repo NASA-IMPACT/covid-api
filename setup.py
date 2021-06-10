@@ -13,11 +13,13 @@ inst_reqs = [
     "rio-tiler==2.0a.11",
     "fiona",
     "shapely",
+    "area",
     "rasterio==1.1.8",
     "rasterstats",
     "geojson-pydantic",
     "requests",
     "mercantile",
+    "python-dateutil",
 ]
 extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit"],
