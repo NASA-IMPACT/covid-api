@@ -1,4 +1,5 @@
 """Tilelapse models."""
+
 import re
 from typing import List, Optional
 
@@ -22,16 +23,14 @@ class PolygonFeature(Feature):
 
 
 class TimelapseValue(BaseModel):
-    """ "Timelapse values model."""
+    """"Timelapse values model."""
 
-    mean: Optional[float]
-    median: Optional[float]
-    date: Optional[str]
-    error: Optional[str]
+    mean: float
+    median: float
 
 
 class TimelapseRequest(BaseModel):
-    """ "Timelapse request model."""
+    """"Timelapse request model."""
 
     # TODO: parse date/date_range into a python `datetime` object (maybe using a validator? )
     # TODO: validate that exactly one of `date` or `date_range` is supplied

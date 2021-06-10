@@ -3,7 +3,7 @@
     "name": "NO\u2082 (Diff)",
     "type": "raster-timeseries",
     "time_unit": "month",
-    "is_periodic": true,
+    "is_periodic": false,
     "s3_location": "OMNO2d_HRMDifference",
     "source": {
         "type": "raster",

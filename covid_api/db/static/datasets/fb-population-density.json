@@ -35,16 +35,15 @@
     },
     "legend": {
         "type": "gradient",
-        "min": "less",
-        "max": "more",
+        "min": "0 people/30m²",
+        "max": "69 people/30m²",
         "stops": [
-            "#99c5e0",
-            "#f9eaa9",
-            "#f7765d",
-            "#c13b72",
-            "#461070",
-            "#050308"
+            "#FFEFCB",
+            "#FBA54A",
+            "#FB9F46",
+            "#F35228",
+            "#BD0026"
         ]
     },
-    "info": "Facebook high-resolution population density: Darker areas indicate higher population density areas and lighter areas indicate lower population density areas"
+    "info": "Facebook high-resolution population density: Darker areas indicate higher population density areas and lighter areas indicate lower population density areas, with a 30m² resolution"
 }

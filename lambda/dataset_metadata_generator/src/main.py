@@ -27,6 +27,10 @@ if os.environ.get("AWS_ENDPOINT_URL"):
     ).Bucket(BUCKET_NAME)
 
 
+DT_FORMAT = "%Y-%m-%d"
+MT_FORMAT = "%Y%m"
+
+
 def handler(event, context):
     """
     Params:
