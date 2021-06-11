@@ -13,6 +13,7 @@ inst_reqs = [
     "rio-tiler==2.0a.11",
     "fiona",
     "shapely",
+    "area",
     "rasterio==1.1.8",
     "rasterstats",
     "geojson-pydantic",
@@ -42,7 +43,7 @@ extra_reqs = {
 
 setup(
     name="covid_api",
-    version="0.6.1",
+    version="0.6.2",
     description=u"",
     long_description=long_description,
     long_description_content_type="text/markdown",
