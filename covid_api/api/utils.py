@@ -186,7 +186,11 @@ def rasterize_pctcover(geom, atrans, shape):
     # Create percent cover grid as the difference between them
     # at this point all cells are known 100% coverage,
     # we'll update this array for exterior points
-    pctcover = alltouched - exterior
+
+    # alltouched and exterior are dtype `uint8` - which
+    # rounds the pctcover values of partially covered
+    # cells to 0. We cast to float to avoid this.
+    pctcover = (alltouched - exterior).astype(float)
 
     # loop through indicies of all exterior cells
     for r, c in zip(*np.where(exterior == 1)):
@@ -206,7 +210,6 @@ def rasterize_pctcover(geom, atrans, shape):
 
         # update pctcover with percentage based on area proportion
         pctcover[r, c] = cell_overlap.area / cell.area
-
     return pctcover
 
 
@@ -214,6 +217,7 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
     """Return zonal statistics."""
     geom = shape(geojson.geometry.dict())
     with rasterio.open(raster) as src:
+
         # read the raster data matching the geometry bounds
         window = bounds_window(geom.bounds, src.transform)
         # store our window information & read
@@ -223,8 +227,10 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
         # calculate the coverage of pixels for weighting
         pctcover = rasterize_pctcover(geom, atrans=window_affine, shape=data.shape[1:])
 
+        masked_data = np.ma.masked_values(data[0], src.nodatavals[0])
+
         return (
-            np.average(data[0], weights=pctcover),
+            np.ma.average(masked_data, weights=pctcover),
             np.nanmedian(data),
         )
 
