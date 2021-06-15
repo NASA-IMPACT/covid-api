@@ -247,7 +247,6 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
 
         return (
             np.ma.average(masked_data, weights=pctcover),
-            # np.nanmedian(data),
             np.ma.median(masked_data),
         )
 
