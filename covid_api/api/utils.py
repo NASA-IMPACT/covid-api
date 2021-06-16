@@ -238,16 +238,14 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
         window = bounds_window(geom.bounds, src.transform)
         # store our window information & read
         window_affine = src.window_transform(window)
-        data = src.read(window=window)
+        data = src.read(window=window, masked=True)
 
         # calculate the coverage of pixels for weighting
         pctcover = rasterize_pctcover(geom, atrans=window_affine, shape=data.shape[1:])
 
-        masked_data = np.ma.masked_values(data[0], src.nodatavals[0])
-
         return (
-            np.ma.average(masked_data, weights=pctcover),
-            np.ma.median(masked_data),
+            np.ma.average(data[0], weights=pctcover),
+            np.ma.median(data[0]),
         )
 
 
