@@ -37,8 +37,7 @@ def _get_mean_median(query, url, dataset):
         mean, median = get_zonal_stat(query.geojson, url)
         return dict(mean=mean, median=median)
 
-    except Exception as e:
-        print(e)
+    except Exception:
         raise HTTPException(
             status_code=400,
             detail=(
