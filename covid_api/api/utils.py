@@ -179,14 +179,33 @@ def _rasterize_geom(geom, shape, affinetrans, all_touched):
 
 
 def rasterize_pctcover(geom, atrans, shape):
-    """Rasterize features."""
+    """Rasterize features. Rasters can only be read in rectangles so the src.data
+    window corresponds to the bounding box of the requested geometry. In order
+    to avoid calculating zonal stats for data that is within the bounding box, but
+    outside of the shape itself, we create a mask the represents the percentage
+    of each raster cell that is covered by the geometry to use as weights when
+    calculating the mean.
+
+    Eg: the weights (pctcover values) for a circular geometry (within a square
+    raster) might look like:
+
+    0.0 0.1 0.3 0.1 0.0
+    0.0 0.5 1.0 0.5 0.0
+    0.0 1.0 1.0 1.0 0.0
+    0.0 0.5 1.0 0.5 0.0
+    0.0 0.1 0.3 0.1 0.0
+
+    """
     alltouched = _rasterize_geom(geom, shape, atrans, all_touched=True)
     exterior = _rasterize_geom(geom.exterior, shape, atrans, all_touched=True)
 
     # Create percent cover grid as the difference between them
     # at this point all cells are known 100% coverage,
-    # we'll update this array for exterior points
-    pctcover = alltouched - exterior
+    # we'll update this array for exterior points.
+    # alltouched and exterior are dtype `uint8` - which
+    # rounds the pctcover values of partially covered
+    # cells to 0. We cast to float to avoid this.
+    pctcover = (alltouched - exterior).astype(float)
 
     # loop through indicies of all exterior cells
     for r, c in zip(*np.where(exterior == 1)):
@@ -214,18 +233,19 @@ def get_zonal_stat(geojson: Feature, raster: str) -> Tuple[float, float]:
     """Return zonal statistics."""
     geom = shape(geojson.geometry.dict())
     with rasterio.open(raster) as src:
+
         # read the raster data matching the geometry bounds
         window = bounds_window(geom.bounds, src.transform)
         # store our window information & read
         window_affine = src.window_transform(window)
-        data = src.read(window=window)
+        data = src.read(window=window, masked=True)
 
         # calculate the coverage of pixels for weighting
         pctcover = rasterize_pctcover(geom, atrans=window_affine, shape=data.shape[1:])
 
         return (
-            np.average(data[0], weights=pctcover),
-            np.nanmedian(data),
+            np.ma.average(data[0], weights=pctcover),
+            np.ma.median(data[0]),
         )
 
 

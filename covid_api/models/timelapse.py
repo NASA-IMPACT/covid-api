@@ -25,9 +25,13 @@ class PolygonFeature(Feature):
 class TimelapseValue(BaseModel):
     """"Timelapse values model."""
 
+    # TODO: there should be a check that either
+    # mean and median are not-null OR error is not-null,
+    # but NOT BOTH.
     date: Optional[str]
-    mean: float
-    median: float
+    mean: Optional[float]
+    median: Optional[float]
+    error: Optional[str]
 
 
 class TimelapseRequest(BaseModel):
