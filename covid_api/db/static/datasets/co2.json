@@ -8,7 +8,7 @@
     "source": {
         "type": "raster",
         "tiles": [
-            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-mean/xco2_16day_mean.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-mean/xco2_16day_mean.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.0003908%2C0.0004225&color_map=rdylbu_r&color_formula=gamma r {gamma}"
         ]
     },
     "exclusive_with": [
@@ -48,8 +48,8 @@
     },
     "legend": {
         "type": "gradient-adjustable",
-        "min": "< 408 ppm",
-        "max": "> 419 ppm",
+        "min": "< 391 ppm",
+        "max": "> 423 ppm",
         "stops": [
             "#313695",
             "#588cbf",
