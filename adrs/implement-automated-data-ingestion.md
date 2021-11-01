@@ -1,4 +1,4 @@
-# Ingest New Data
+# Implement automated data ingestion
 
 ## Status
 
