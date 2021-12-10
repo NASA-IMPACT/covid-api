@@ -1,0 +1,123 @@
+{
+    "stac_version": "1.0.0",
+    "stac_extensions": [],
+    "type": "Feature",
+    "id": "co2",
+    "name": "CO\u2082 (Avg)",
+    "info": "This layer shows the average background concentration of carbon dioxide (CO₂) in our atmosphere for 2020. Redder colors indicate more CO₂. Bluer colors indicate less CO₂.",
+    "bbox": [
+        -180,
+        -90,
+        180,
+        90
+    ],
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [
+                    -180,
+                    -90
+                ],
+                [
+                    180,
+                    -90
+                ],
+                [
+                    180,
+                    90
+                ],
+                [
+                    180,
+                    -90
+                ],
+                [
+                    -180,
+                    -90
+                ]
+            ]
+        ]
+    },
+    "properties": {
+        "s3_location": "xco2-mean",
+        "is_periodic": true,
+        "time_unit": "day",
+        "type": "raster-timeseries",
+        "exclusive_with": [
+            "agriculture",
+            "no2",
+            "co2-diff",
+            "fb-population-density",
+            "gibs-population",
+            "car-count",
+            "nightlights-viirs",
+            "nightlights-hd",
+            "detection-multi",
+            "water-chlorophyll",
+            "water-spm",
+            "water-pzd",
+            "detections-ship",
+            "detections-plane",
+            "detections-contrail",
+            "detections-vehicles"
+        ],
+        "enabled": false
+    },
+    "collection": "collection",
+    "links": [
+        {
+            "rel": "collection",
+            "href": "./collection.json",
+            "type": "application/json",
+            "title": "Collection"
+        },
+        {
+            "rel": "root",
+            "href": "./collection.json",
+            "type": "application/json",
+            "title": "Collection"
+        },
+        {
+            "rel": "parent",
+            "href": "./collection.json",
+            "type": "application/json",
+            "title": "Collection"
+        }
+    ],
+    "source": {
+        "type": "raster",
+        "tiles": [
+            "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-mean/xco2_16day_mean.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.0003908%2C0.0004225&color_map=rdylbu_r&color_formula=gamma r {gamma}"
+        ]
+    },
+    "compare": {
+        "enabled": true,
+        "help": "Compare with baseline",
+        "year_diff": 0,
+        "map_label": "{date}: Base vs Mean",
+        "source": {
+            "type": "raster",
+            "tiles": [
+                "{api_url}/{z}/{x}/{y}@1x?url=s3://covid-eo-data/xco2-base/xco2_16day_base.{date}.tif&resampling_method=bilinear&bidx=1&rescale=0.000408%2C0.000419&color_map=rdylbu_r&color_formula=gamma r {gamma}"
+            ]
+        }
+    },
+    "legend": {
+        "type": "gradient-adjustable",
+        "min": "< 391 ppm",
+        "max": "> 423 ppm",
+        "stops": [
+            "#313695",
+            "#588cbf",
+            "#a3d2e5",
+            "#e8f6e8",
+            "#fee89c",
+            "#fba55c",
+            "#e24932"
+        ]
+    },
+    "swatch": {
+        "color": "#189C54",
+        "name": "Dark Green"
+    }
+}
