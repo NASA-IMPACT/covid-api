@@ -725,7 +725,7 @@ def planet_mosaic_tile(scenes, x, y, z):
     mosaic_tile = np.zeros((4, 256, 256), dtype=np.uint8)
     for scene in scenes:
         api_num = math.floor(random.random() * 3) + 1
-        url = f"https://tiles{api_num}.planet.com/data/v1/PSScene3Band/{scene}/{z}/{x}/{y}.png?api_key={PLANET_API_KEY}"
+        url = f"https://tiles{api_num}.planet.com/data/v1/PSScene/{scene}/{z}/{x}/{y}.png?api_key={PLANET_API_KEY}"
         r = requests.get(url)
         with MemoryFile(BytesIO(r.content)) as memfile:
             with memfile.open() as src:
